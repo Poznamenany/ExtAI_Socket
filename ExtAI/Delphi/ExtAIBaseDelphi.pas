@@ -18,11 +18,6 @@ type
     fStates: TExtAIStates;
     // Thread loop
     procedure Execute(); override;
-    // Server Events
-    procedure OnServerConnected(Sender: TObject);
-    procedure OnConnectionFailed(const aMsg: String);
-    procedure OnForcedDisconnect(Sender: TObject);
-    procedure OnStatusMessage(const aMsg: String);
     // Game Events
     procedure OnMissionStart(); virtual;
     procedure OnTick(aTick: Cardinal); virtual;
@@ -52,10 +47,6 @@ begin
 
   fActive := True;
   fClient := TExtAINetClient.Create(aAuthor, aName, aDescription, aVersion);
-  fClient.OnConnectSucceed := OnServerConnected;
-  fClient.OnConnectFailed := OnConnectionFailed;
-  fClient.OnForcedDisconnect := OnForcedDisconnect;
-  fClient.OnStatusMessage := OnStatusMessage;
 
   fActions := TExtAIActions.Create(fClient);
   fEvents := TExtAIEvents.Create();
@@ -68,7 +59,7 @@ begin
   fEvents.OnPlayerVictory := OnPlayerVictory;
   fEvents.OnPlayerDefeated := OnPlayerDefeated;
 
-  gClientLog.Log('Create');
+  gClientLog.Log('Create TExtAIBaseDelphi');
 end;
 
 
@@ -76,7 +67,7 @@ destructor TExtAIBaseDelphi.Destroy();
 begin
   if Client.Connected then
     Client.Disconnect();
-  gClientLog.Log('Destroy');
+  gClientLog.Log('Destroy TExtAIBaseDelphi');
   fClient.Free;
   fActions.Free;
   fEvents.Free;
@@ -100,30 +91,6 @@ end;
 procedure TExtAIBaseDelphi.TerminateSimulation();
 begin
   fActive := False;
-end;
-
-
-procedure TExtAIBaseDelphi.OnServerConnected(Sender: TObject);
-begin
-  gClientLog.Log('Connect succeed - IP: ' + Client.Client.MyIPString());
-end;
-
-
-procedure TExtAIBaseDelphi.OnConnectionFailed(const aMsg: String);
-begin
-  gClientLog.Log('Connect failed: ' + aMsg);
-end;
-
-
-procedure TExtAIBaseDelphi.OnForcedDisconnect(Sender: TObject);
-begin
-  //gClientLog.Log('Forced disconnect');
-end;
-
-
-procedure TExtAIBaseDelphi.OnStatusMessage(const aMsg: String);
-begin
-  gClientLog.Log(aMsg);
 end;
 
 // Dummy Events so user does not have to define the methods in child class and can choose just the necessary

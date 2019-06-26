@@ -71,6 +71,7 @@ object Form1: TForm1
         Width = 89
         Height = 26
         Caption = 'Send action'
+        Enabled = False
         TabOrder = 1
         OnClick = btnClientSendActionClick
       end
@@ -80,6 +81,7 @@ object Form1: TForm1
         Width = 89
         Height = 26
         Caption = 'Send state'
+        Enabled = False
         TabOrder = 2
         OnClick = btnClientSendStateClick
       end

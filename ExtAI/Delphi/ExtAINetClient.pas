@@ -142,15 +142,16 @@ begin
   fConnected := True;
   if Assigned(fOnConnectSucceed) then
     fOnConnectSucceed(Self);
+  Status('Connect succeed - IP: ' + Client.MyIPString());
 end;
 
 
 procedure TExtAINetClient.ConnectFailed(const S: String);
 begin
   fConnected := False;
-  Status('Connection failed. ' + S);
   if Assigned(fOnConnectFailed) then
     fOnConnectFailed(S);
+  Status('Connection failed. ' + S);
 end;
 
 

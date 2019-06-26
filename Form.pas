@@ -38,6 +38,9 @@ type
   private
     fGame: TGame;
     fExtAIDelphi: TExtAIDelphi;
+    procedure ClientOnStatusMessage(const aMsg: String);
+    procedure ClientOnConnectSucceed(Sender: TObject);
+    procedure ClientOnForcedDisconnect(Sender: TObject);
   public
     { Public declarations }
     procedure Log(const aText: String);
@@ -63,6 +66,9 @@ begin
   gClientLog.Log('Initialization');
   fGame := TGame.Create(nil);
   fExtAIDelphi := TExtAIDelphi.Create();
+  fExtAIDelphi.Client.OnStatusMessage := ClientOnStatusMessage;
+  fExtAIDelphi.Client.OnConnectSucceed := ClientOnConnectSucceed;
+  fExtAIDelphi.Client.OnForcedDisconnect := ClientOnForcedDisconnect;
 end;
 
 
@@ -148,22 +154,12 @@ begin
   if (fExtAIDelphi.Client.Connected) then
   begin
     fExtAIDelphi.Client.Disconnect();
-    //bClientConnect.Caption := 'Connect client';
-    //btnClientSendAction.Enabled := False;
-    //btnClientSendState.Enabled := False;
+    btnClientConnect.Caption := 'Connect client';
+    btnClientSendAction.Enabled := False;
+    btnClientSendState.Enabled := False;
   end
-  else
-  begin
-    if GetIP(IP) then
-      fExtAIDelphi.Client.ConnectTo(IP, PORT);
-    //Sleep(1000);
-    if (fExtAIDelphi.Client.Connected) then
-    begin
-      //bClientConnect.Caption := 'Disconnect client';
-      //btnClientSendAction.Enabled := True;
-      //btnClientSendState.Enabled := True;
-    end;
-  end;
+  else if GetIP(IP) then
+    fExtAIDelphi.Client.ConnectTo(IP, PORT);
 end;
 
 
@@ -178,6 +174,31 @@ procedure TForm1.btnClientSendStateClick(Sender: TObject);
 begin
   //fExtAIDelphi.State.Log('This is debug message (States) from ExtAI in Delphi');
   ClientLog('States are not implemented');
+end;
+
+
+procedure TForm1.ClientOnConnectSucceed(Sender: TObject);
+begin
+  if (fExtAIDelphi.Client.Connected) then
+  begin
+    btnClientConnect.Caption := 'Disconnect client';
+    btnClientSendAction.Enabled := True;
+    //btnClientSendState.Enabled := True;
+  end;
+end;
+
+
+procedure TForm1.ClientOnForcedDisconnect(Sender: TObject);
+begin
+  btnClientConnect.Caption := 'Connect client';
+  btnClientSendAction.Enabled := False;
+  btnClientSendState.Enabled := False;
+end;
+
+
+procedure TForm1.ClientOnStatusMessage(const aMsg: String);
+begin
+  gClientLog.Log(aMsg);
 end;
 
 
