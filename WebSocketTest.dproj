@@ -112,7 +112,7 @@
         <DCCReference Include="src\ExtAI\ExtAINetworkTypes.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIMaster.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIInfo.pas"/>
-        <DCCReference Include="src\ExtAI\ExtAIMsgEvents.pas"/>
+        <DCCReference Include="ExtAI\Delphi\ExtAIMsgEvents.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIMsgStates.pas"/>
         <DCCReference Include="src\Hand.pas"/>
         <DCCReference Include="src\HandAI_Ext.pas"/>

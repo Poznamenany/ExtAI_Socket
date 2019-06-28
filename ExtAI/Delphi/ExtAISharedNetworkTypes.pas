@@ -94,7 +94,7 @@ const
   );
 
 type
-  TExtAINewMsgEvent = procedure (aData: Pointer; aLength: Cardinal) of object;
+  TExtAIEventNewMsg = procedure (aData: Pointer; aLength: Cardinal) of object;
 
 implementation
 

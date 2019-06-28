@@ -67,7 +67,7 @@ begin
   fServerClient.OnAction := fActions.ReceiveAction;
   fServerClient.OnState := fStates.NewState;
 
-  fEvents.OnNewMsg := fServerClient.AddScheduledMsg;
+  fEvents.OnSendEvent := fServerClient.AddScheduledMsg;
   fActions.OnLog := Log;
 end;
 

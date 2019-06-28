@@ -19,10 +19,10 @@ type
     // Thread loop
     procedure Execute(); override;
     // Game Events
-    procedure OnMissionStart(); virtual;
-    procedure OnTick(aTick: Cardinal); virtual;
-    procedure OnPlayerVictory(aHandIndex: SmallInt); virtual;
-    procedure OnPlayerDefeated(aHandIndex: SmallInt); virtual;
+    procedure OnMissionStart();                        virtual;
+    procedure OnTick(aTick: Cardinal);                 virtual;
+    procedure OnPlayerVictory(aHandIndex: SmallInt);   virtual;
+    procedure OnPlayerDefeated(aHandIndex: SmallInt);  virtual;
   public
     constructor Create(const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
     destructor Destroy(); override;
@@ -38,6 +38,7 @@ implementation
 uses
   Log;
 
+
 { TExtAIBaseDelphi }
 constructor TExtAIBaseDelphi.Create(const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
 begin
@@ -51,13 +52,13 @@ begin
   fActions := TExtAIActions.Create(fClient);
   fEvents := TExtAIEvents.Create();
   fStates := TExtAIStates.Create(fClient);
-  fClient.OnNewEvent := fEvents.NewEvent;
+  fClient.OnNewEvent := fEvents.Msg.ReceiveEvent;
   fClient.OnNewState := fStates.NewState;
 
-  fEvents.OnMissionStart := OnMissionStart;
-  fEvents.OnTick := OnTick;
-  fEvents.OnPlayerVictory := OnPlayerVictory;
-  fEvents.OnPlayerDefeated := OnPlayerDefeated;
+  fEvents.Msg.OnMissionStart := OnMissionStart;
+  fEvents.Msg.OnTick := OnTick;
+  fEvents.Msg.OnPlayerVictory := OnPlayerVictory;
+  fEvents.Msg.OnPlayerDefeated := OnPlayerDefeated;
 
   gClientLog.Log('Create TExtAIBaseDelphi');
 end;

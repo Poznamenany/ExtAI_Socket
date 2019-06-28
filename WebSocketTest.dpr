@@ -10,7 +10,7 @@ uses
   ExtAINetworkTypes in 'src\ExtAI\ExtAINetworkTypes.pas',
   ExtAIMaster in 'src\ExtAI\ExtAIMaster.pas',
   ExtAIInfo in 'src\ExtAI\ExtAIInfo.pas',
-  ExtAIMsgEvents in 'src\ExtAI\ExtAIMsgEvents.pas',
+  ExtAIMsgEvents in 'ExtAI\Delphi\ExtAIMsgEvents.pas',
   ExtAIMsgStates in 'src\ExtAI\ExtAIMsgStates.pas',
   Hand in 'src\Hand.pas',
   HandAI_Ext in 'src\HandAI_Ext.pas',

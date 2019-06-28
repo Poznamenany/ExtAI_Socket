@@ -21,7 +21,7 @@ type
     constructor Create(aClient: TExtAINetClient);
     destructor Destroy(); override;
 
-    // Actions
+    // Connect Msg directly with creator of ExtAI so he can type Actions.XY instead of Actions.Msg.XY
     property Msg: TExtAIMsgActions read fActions;
     property GroupOrderAttackUnit: TGroupOrderAttackUnit read fOnGroupOrderAttackUnit;
     property GroupOrderWalk: TGroupOrderWalk read fOnGroupOrderWalk;
@@ -43,9 +43,9 @@ begin
   // Connect callbacks
   fActions.OnSendAction := SendAction;
   // Connect properties
-  fOnGroupOrderAttackUnit := fActions.GroupOrderAttackUnit;
-  fOnGroupOrderWalk       := fActions.GroupOrderWalk;
-  fOnLog                  := fActions.Log;
+  fOnGroupOrderAttackUnit := fActions.GroupOrderAttackUnitW;
+  fOnGroupOrderWalk       := fActions.GroupOrderWalkW;
+  fOnLog                  := fActions.LogW;
 end;
 
 

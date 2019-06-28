@@ -12,18 +12,18 @@ type
     // Main variables
     fStream: TKExtAIMsgStream;
     // Triggers
-    fOnSendAction: TExtAINewMsgEvent;
-    fOnGroupOrderAttackUnit: TGroupOrderAttackUnit;
-    fOnGroupOrderWalk: TGroupOrderWalk;
-    fOnLog: TLog;
+    fOnSendAction            : TExtAIEventNewMsg;
+    fOnGroupOrderAttackUnit  : TGroupOrderAttackUnit;
+    fOnGroupOrderWalk        : TGroupOrderWalk;
+    fOnLog                   : TLog;
     // Send Actions
-    procedure InitMsg(aActType: TExtAIMsgTypeAction);
+    procedure InitMsg(aTypeAction: TExtAIMsgTypeAction);
     procedure FinishMsg();
     procedure SendAction();
     // Unpack Actions
-    procedure GroupOrderAttackUnit(); overload;
-    procedure GroupOrderWalk(); overload;
-    procedure Log(); overload;
+    procedure GroupOrderAttackUnitR();
+    procedure GroupOrderWalkR();
+    procedure LogR();
     // Others
     procedure NillEvents();
   public
@@ -31,17 +31,17 @@ type
     destructor Destroy(); override;
 
     // Connection to callbacks
-    property OnSendAction: TExtAINewMsgEvent write fOnSendAction;
-    property OnGroupOrderAttackUnit: TGroupOrderAttackUnit write fOnGroupOrderAttackUnit;
-    property OnGroupOrderWalk: TGroupOrderWalk write fOnGroupOrderWalk;
-    property OnLog: TLog write fOnLog;
+    property OnSendAction           : TExtAIEventNewMsg     write fOnSendAction;
+    property OnGroupOrderAttackUnit : TGroupOrderAttackUnit write fOnGroupOrderAttackUnit;
+    property OnGroupOrderWalk       : TGroupOrderWalk       write fOnGroupOrderWalk;
+    property OnLog                  : TLog                  write fOnLog;
 
     // Pack actions
-    procedure GroupOrderAttackUnit(aGroupID, aUnitID: Integer); overload;
-    procedure GroupOrderWalk(aGroupID, aX, aY, aDir: Integer); overload;
-    procedure Log(aLog: UnicodeString); overload;
+    procedure GroupOrderAttackUnitW(aGroupID, aUnitID: Integer);
+    procedure GroupOrderWalkW(aGroupID, aX, aY, aDir: Integer);
+    procedure LogW(aLog: UnicodeString);
 
-    procedure ReceiveAction(aData: Pointer; aTypeAction, aLength: Cardinal);
+    procedure ReceiveAction(aData: Pointer; aActionType, aLength: Cardinal);
   end;
 
 
@@ -76,11 +76,11 @@ begin
 end;
 
 
-procedure TExtAIMsgActions.InitMsg(aActType: TExtAIMsgTypeAction);
+procedure TExtAIMsgActions.InitMsg(aTypeAction: TExtAIMsgTypeAction);
 begin
   // Clear stream and create head with predefined 0 length
   fStream.Clear;
-  fStream.WriteMsgType(mkAction, Cardinal(aActType), TExtAIMsgLengthData(0));
+  fStream.WriteMsgType(mkAction, Cardinal(aTypeAction), TExtAIMsgLengthData(0));
 end;
 
 
@@ -105,15 +105,15 @@ begin
 end;
 
 
-procedure TExtAIMsgActions.ReceiveAction(aData: Pointer; aTypeAction, aLength: Cardinal);
+procedure TExtAIMsgActions.ReceiveAction(aData: Pointer; aActionType, aLength: Cardinal);
 begin
   fStream.Clear();
   fStream.Write(aData^, aLength);
   fStream.Position := 0;
-  case TExtAIMsgTypeAction(aTypeAction) of
-    taGroupOrderAttackUnit: GroupOrderAttackUnit();
-    taGroupOrderWalk:       GroupOrderWalk();
-    taLog:                  Log();
+  case TExtAIMsgTypeAction(aActionType) of
+    taGroupOrderAttackUnit: GroupOrderAttackUnitR();
+    taGroupOrderWalk:       GroupOrderWalkR();
+    taLog:                  LogR();
     else                    begin end;
   end;
 end;
@@ -122,14 +122,14 @@ end;
 // Actions
 
 
-procedure TExtAIMsgActions.GroupOrderAttackUnit(aGroupID, aUnitID: Integer);
+procedure TExtAIMsgActions.GroupOrderAttackUnitW(aGroupID, aUnitID: Integer);
 begin
   InitMsg(taGroupOrderAttackUnit);
   fStream.Write(aGroupID);
   fStream.Write(aUnitID);
   FinishMsg();
 end;
-procedure TExtAIMsgActions.GroupOrderAttackUnit();
+procedure TExtAIMsgActions.GroupOrderAttackUnitR();
 var
   GroupID, UnitID: Integer;
 begin
@@ -140,7 +140,7 @@ begin
 end;
 
 
-procedure TExtAIMsgActions.GroupOrderWalk(aGroupID, aX, aY, aDir: Integer);
+procedure TExtAIMsgActions.GroupOrderWalkW(aGroupID, aX, aY, aDir: Integer);
 begin
   InitMsg(taGroupOrderWalk);
   fStream.Write(aGroupID);
@@ -149,7 +149,7 @@ begin
   fStream.Write(aDir);
   FinishMsg();
 end;
-procedure TExtAIMsgActions.GroupOrderWalk();
+procedure TExtAIMsgActions.GroupOrderWalkR();
 var
   GroupID, X, Y, Dir: Integer;
 begin
@@ -162,13 +162,13 @@ begin
 end;
 
 
-procedure TExtAIMsgActions.Log(aLog: UnicodeString);
+procedure TExtAIMsgActions.LogW(aLog: UnicodeString);
 begin
   InitMsg(taLog);
   fStream.WriteW(aLog);
   FinishMsg();
 end;
-procedure TExtAIMsgActions.Log();
+procedure TExtAIMsgActions.LogR();
 var
   Txt: UnicodeString;
 begin

@@ -59,9 +59,9 @@ end;
 procedure THand.UpdateState(aTick: Cardinal);
 begin
   if (aTick = FIRST_TICK) then
-    fAIExt.Events.OnMissionStart();
+    fAIExt.Events.MissionStartW();
 
-  fAIExt.Events.OnTick(aTick);
+  fAIExt.Events.TickW(aTick);
 end;
 
 

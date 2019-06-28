@@ -120,7 +120,7 @@ var
 begin
   if (fGame.Hands <> nil) then
     for K := 0 to fGame.Hands.Count - 1 do
-      fGame.Hands[K].AIExt.Events.OnPlayerVictory(0);
+      fGame.Hands[K].AIExt.Events.PlayerVictoryW(0);
 end;
 
 
