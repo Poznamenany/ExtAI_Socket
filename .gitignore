@@ -16,6 +16,8 @@
 *.rar
 *.log.txt
 *res
+__history/*.*
+__recovery/*.*
 ExtAI/Delphi/__history/*.*
 ExtAI/Delphi/__recovery/*.*
 src/__history/*.*

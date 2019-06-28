@@ -7,9 +7,9 @@ interface
 // States of the ExtAI
 type
   // Definition of actions
-    TGroupOrderAttackUnit = procedure(aGroupID: Integer; aUnitID: Integer);
-    TGroupOrderWalk       = procedure(aGroupID: Integer; aX: Integer; aY: Integer; aDir: Integer);
-    TLog                  = procedure(aLog: string);
+    TGroupOrderAttackUnit = procedure(aGroupID, aUnitID: Integer) of object;
+    TGroupOrderWalk       = procedure(aGroupID, aX, aY, aDir: Integer) of object;
+    TLog                  = procedure(aLog: string) of object;
   // Definition of states
      {
      TUnitAt = function (aX: Integer; aY: Integer): Integer;

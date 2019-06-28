@@ -112,7 +112,6 @@
         <DCCReference Include="src\ExtAI\ExtAINetworkTypes.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIMaster.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIInfo.pas"/>
-        <DCCReference Include="src\ExtAI\ExtAIMsgActions.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIMsgEvents.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIMsgStates.pas"/>
         <DCCReference Include="src\Hand.pas"/>
@@ -125,6 +124,7 @@
         <DCCReference Include="ExtAI\Delphi\ExtAINetClientOverbyte.pas"/>
         <DCCReference Include="ExtAI\Delphi\ExtAISharedNetworkTypes.pas"/>
         <DCCReference Include="ExtAI\Delphi\ExtAIActions.pas"/>
+        <DCCReference Include="ExtAI\Delphi\ExtAIMsgActions.pas"/>
         <DCCReference Include="ExtAI\Delphi\ExtAIEvents.pas"/>
         <DCCReference Include="ExtAI\Delphi\ExtAIStates.pas"/>
         <DCCReference Include="ExtAI\Delphi\ExtAISharedInterface.pas"/>

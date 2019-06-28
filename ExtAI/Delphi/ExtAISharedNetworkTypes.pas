@@ -93,6 +93,9 @@ const
     SizeOf(TExtAIMsgTypeState)
   );
 
+type
+  TExtAINewMsgEvent = procedure (aData: Pointer; aLength: Cardinal) of object;
+
 implementation
 
 

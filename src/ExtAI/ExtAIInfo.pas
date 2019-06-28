@@ -23,6 +23,8 @@ type
     fVersion: Cardinal;
 
     procedure NewCfg(aData: Pointer; aTypeCfg, aLength: Cardinal);
+
+    procedure Log(aLog: UnicodeString);
   public
     constructor Create(aServerClient: TExtAIServerClient);
     destructor Destroy; override;
@@ -62,10 +64,11 @@ begin
   fDescription := '';
   fVersion := 0;
   fServerClient.OnCfg := NewCfg;
-  fServerClient.OnAction := fActions.NewAction;
+  fServerClient.OnAction := fActions.ReceiveAction;
   fServerClient.OnState := fStates.NewState;
 
   fEvents.OnNewMsg := fServerClient.AddScheduledMsg;
+  fActions.OnLog := Log;
 end;
 
 
@@ -113,6 +116,13 @@ begin
   finally
     M.Free;
   end;
+end;
+
+
+// Temporary location for logs from actions
+procedure TExtAIInfo.Log(aLog: UnicodeString);
+begin
+  gLog.Log(aLog);
 end;
 
 

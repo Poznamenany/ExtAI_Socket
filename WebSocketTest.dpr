@@ -10,7 +10,6 @@ uses
   ExtAINetworkTypes in 'src\ExtAI\ExtAINetworkTypes.pas',
   ExtAIMaster in 'src\ExtAI\ExtAIMaster.pas',
   ExtAIInfo in 'src\ExtAI\ExtAIInfo.pas',
-  ExtAIMsgActions in 'src\ExtAI\ExtAIMsgActions.pas',
   ExtAIMsgEvents in 'src\ExtAI\ExtAIMsgEvents.pas',
   ExtAIMsgStates in 'src\ExtAI\ExtAIMsgStates.pas',
   Hand in 'src\Hand.pas',
@@ -23,6 +22,7 @@ uses
   ExtAINetClientOverbyte in 'ExtAI\Delphi\ExtAINetClientOverbyte.pas',
   ExtAISharedNetworkTypes in 'ExtAI\Delphi\ExtAISharedNetworkTypes.pas',
   ExtAIActions in 'ExtAI\Delphi\ExtAIActions.pas',
+  ExtAIMsgActions in 'ExtAI\Delphi\ExtAIMsgActions.pas',
   ExtAIEvents in 'ExtAI\Delphi\ExtAIEvents.pas',
   ExtAIStates in 'ExtAI\Delphi\ExtAIStates.pas',
   ExtAISharedInterface in 'ExtAI\Delphi\ExtAISharedInterface.pas';
