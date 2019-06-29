@@ -1,4 +1,4 @@
-unit Consts;
+unit KM_Consts;
 interface
 
 type

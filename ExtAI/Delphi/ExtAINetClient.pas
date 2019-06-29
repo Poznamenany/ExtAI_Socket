@@ -48,6 +48,7 @@ type
     destructor Destroy; override;
 
     property Client: TExtAINetClientImplementation read fClient;
+    property ClientHandle: TExtAINetHandleIndex read fClientID;
     property Connected: Boolean read fConnected;
     property OnConnectSucceed: TNotifyEvent write fOnConnectSucceed;
     property OnConnectFailed: TGetStrProc write fOnConnectFailed;
@@ -69,10 +70,10 @@ implementation
 
 
 const
-  CLIENT_VERSION: Cardinal = 20190624;
+  CLIENT_VERSION: Cardinal = 20190629;
 
 
- { TExtAINetClient }
+{ TExtAINetClient }
 constructor TExtAINetClient.Create(const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
 begin
   inherited Create;
@@ -222,6 +223,11 @@ begin
       Status('Client version = ' + IntToStr( CLIENT_VERSION ));
       if (ServerVersion = CLIENT_VERSION) then
         SendExtAICfg();
+    end;
+    csClientHandle:
+    begin
+      fBuff.Read(fClientID, SizeOf(fClientID));
+      Status('Client handle: ' + IntToStr(fClientID));
     end;
     else Status('Unknown server cfg message');
   end;

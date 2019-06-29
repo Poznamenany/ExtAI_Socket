@@ -2,7 +2,7 @@ unit HandAI_Ext;
 interface
 uses
   Windows, System.SysUtils,
-  Consts, ExtAIMsgEvents;
+  KM_Consts, ExtAIMsgEvents;
 
 type
   // Main AI class in the hands

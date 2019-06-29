@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  Game, ExtAIDelphi, Log,
+  Game, ExtAIDelphi, Log, KM_Consts, ExtAINetServer, ExtAIInfo,
   // Detection of IP address
   Winsock, Vcl.ComCtrls;
 
@@ -27,9 +27,13 @@ type
     btnClientConnect: TButton;
     btnClientSendAction: TButton;
     btnClientSendState: TButton;
+    btnCreateExtAI: TButton;
     btnSendEvent: TButton;
+    btnSendState: TButton;
     btnServerStartMap: TButton;
     btnStartServer: TButton;
+    btnTerminateAI: TButton;
+    btnTerminateExtAIs: TButton;
     cbLoc0: TComboBox;
     cbLoc1: TComboBox;
     cbLoc2: TComboBox;
@@ -54,12 +58,14 @@ type
     edLoc9: TEdit;
     edLoc10: TEdit;
     edLoc11: TEdit;
+    edServerPort: TEdit;
     gbAIControlInterface: TGroupBox;
-    ExtAIs: TGroupBox;
+    gbExtAIs: TGroupBox;
     gbKP: TGroupBox;
     gbLobby: TGroupBox;
     gbServer: TGroupBox;
     gbSimulation: TGroupBox;
+    chbControlAll: TCheckBox;
     labLoc0: TLabel;
     labLoc1: TLabel;
     labLoc2: TLabel;
@@ -72,14 +78,10 @@ type
     labLoc9: TLabel;
     labLoc10: TLabel;
     labLoc11: TLabel;
+    labPortNumber: TLabel;
     mServerLog: TMemo;
-    prgServer: TProgressBar;
-
-    btnCreateExtAI: TButton;
-    btnTerminateExtAIs: TButton;
     pcLogExtAI: TPageControl;
-    chbControlAll: TCheckBox;
-    btnTerminateAI: TButton;
+    prgServer: TProgressBar;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnStartServerClick(Sender: TObject);
@@ -93,9 +95,13 @@ type
     procedure btnTerminateExtAIsClick(Sender: TObject);
     procedure pcOnChangeTab(Sender: TObject);
     procedure chbControlAllClick(Sender: TObject);
+    procedure btnAutoFillClick(Sender: TObject);
   private
     fGame: TGame;
     fExtAIAndGUIArr: TExtAIAndGUIArr;
+    fcbLoc: array[0..MAX_HANDS_COUNT-1] of TComboBox;
+    fedLoc: array[0..MAX_HANDS_COUNT-1] of TEdit;
+    procedure RefreshExtAIs(aAIInfo: TExtAIInfo);
     procedure ConnectClient(aIdx: Word);
     procedure DisconnectClient(aIdx: Integer);
     procedure RefreshAIGUI(Sender: TObject);
@@ -112,6 +118,7 @@ type
 const
   PORT = 1235;
   TAB_NAME = 'tsExtAI';
+  CLOSED_LOC = 'Closed';
 var
   ExtAI_TestBed: TExtAI_TestBed;
   csCriticalSection: TRTLCriticalSection;
@@ -127,10 +134,26 @@ begin
   gLog := TLog.Create(Log);
   gLog.Log('Initialization');
   fGame := TGame.Create(nil);
+  fGame.ExtAIMaster.OnAIConfigured := RefreshExtAIs;
+  fGame.ExtAIMaster.OnAIDisconnect := RefreshExtAIs;
 
   fExtAIAndGUIArr.Count := 0;
   fExtAIAndGUIArr.Number := 0;
   InitializeCriticalSection(csCriticalSection);
+
+  fedLoc[0]  := edLoc0;  fcbLoc[0]  := cbLoc0;
+  fedLoc[1]  := edLoc1;  fcbLoc[1]  := cbLoc1;
+  fedLoc[2]  := edLoc2;  fcbLoc[2]  := cbLoc2;
+  fedLoc[3]  := edLoc3;  fcbLoc[3]  := cbLoc3;
+  fedLoc[4]  := edLoc4;  fcbLoc[4]  := cbLoc4;
+  fedLoc[5]  := edLoc5;  fcbLoc[5]  := cbLoc5;
+  fedLoc[6]  := edLoc6;  fcbLoc[6]  := cbLoc6;
+  fedLoc[7]  := edLoc7;  fcbLoc[7]  := cbLoc7;
+  fedLoc[8]  := edLoc8;  fcbLoc[8]  := cbLoc8;
+  fedLoc[9]  := edLoc9;  fcbLoc[9]  := cbLoc9;
+  fedLoc[10] := edLoc10; fcbLoc[10] := cbLoc10;
+  fedLoc[11] := edLoc11; fcbLoc[11] := cbLoc11;
+  RefreshExtAIs(nil);
 end;
 
 
@@ -153,17 +176,78 @@ begin
     btnStartServer.Caption := 'Start Server';
     btnServerStartMap.Enabled := False;
     btnSendEvent.Enabled := False;
+    btnSendState.Enabled := False;
   end
   else
   begin
-    fGame.ExtAIMaster.Net.StartListening(PORT,'Testing server');
+    try
+      fGame.ExtAIMaster.Net.StartListening(StrToInt(edServerPort.Text),'Testing server');
+    except
+      Log('Invalid port');
+      Exit;
+    end;
     if (fGame.ExtAIMaster.Net.Listening) then
     begin
       prgServer.Style := pbstMarquee;
       btnStartServer.Caption := 'Stop Server';
       btnServerStartMap.Enabled := True;
-      btnSendEvent.Enabled := True;
+      //btnSendEvent.Enabled := True;
+      //btnSendState.Enabled := True;
     end;
+  end;
+end;
+
+
+procedure TExtAI_TestBed.RefreshExtAIs(aAIInfo: TExtAIInfo);
+var
+  ItemFound: Boolean;
+  K,L,Cnt: Integer;
+  SelectedName, NewName: String;
+  NewNames: array of String;
+  SelectedNames: array[0..MAX_HANDS_COUNT-1] of String;
+begin
+  // Get available AI players
+  Cnt := 0;
+  SetLength(NewNames,fGame.ExtAIMaster.AIs.Count);
+  for K := 0 to fGame.ExtAIMaster.AIs.Count-1 do
+    if fGame.ExtAIMaster.AIs[K].Configured then
+    begin
+      NewNames[Cnt] := fGame.ExtAIMaster.AIs[K].Name + ' ' + IntToStr(fGame.ExtAIMaster.AIs[K].ServerClient.Handle);
+      Cnt := Cnt + 1;
+    end;
+  // Filter already selected AI players
+  for K := Low(fedLoc) to High(fedLoc) do
+  begin
+    // Get actual selection
+    L := fcbLoc[K].ItemIndex;
+    SelectedNames[K] := fcbLoc[K].Items[L];
+    // Try to find selection in list of new names
+    ItemFound := False;
+    if (Length(SelectedNames[K]) > 0) then
+      for L := 0 to Cnt - 1 do
+        if (NewNames[L] = SelectedNames[K]) then
+        begin
+          // Confirm selection and remove AI from list of possible names
+          ItemFound := True;
+          Cnt := Cnt - 1;
+          NewNames[L] := NewNames[Cnt];
+          break;
+        end;
+    // Remove selection
+    if not ItemFound then
+      SelectedNames[K] := '';
+  end;
+  // Refresh combo boxes
+  for K := Low(fedLoc) to High(fedLoc) do
+  begin
+    fcbLoc[K].Items.Clear;
+    fcbLoc[K].Items.Add(CLOSED_LOC);
+    // Closed by default, first index if there is existing already selected AI
+    if (Length(SelectedNames[K]) > 0) then
+      fcbLoc[K].Items.Add(SelectedNames[K]);
+    fcbLoc[K].ItemIndex := fcbLoc[K].Items.Count - 1;
+    for L := 0 to Cnt - 1 do
+      fcbLoc[K].Items.Add(NewNames[L]);
   end;
 end;
 
@@ -175,8 +259,29 @@ end;
 
 
 procedure TExtAI_TestBed.btnServerStartMapClick(Sender: TObject);
+var
+  K, Cnt: Integer;
+  AIs: array of String;
 begin
-  fGame.StartEndGame();
+  // Get available AI players
+  Cnt := 0;
+  SetLength(AIs,MAX_HANDS_COUNT);
+  for K := Low(fedLoc) to High(fedLoc) do
+  begin
+    // Get actual selection
+    AIs[Cnt] := fcbLoc[K].Items[ fcbLoc[K].ItemIndex ];
+    if (Length(AIs[Cnt]) > 0) AND (AIs[Cnt] <> CLOSED_LOC) then
+    begin
+      AIs[Cnt] := AIs[Cnt].SubString(0, Pos(' ',AIs[Cnt]) - 1);
+      Cnt := Cnt + 1;
+    end;
+  end;
+  SetLength(AIs,Cnt);
+  fGame.StartEndGame(AIs);
+  if (fGame.GameState = gsLobby) then
+    btnServerStartMap.Caption := 'Start Map'
+  else
+    btnServerStartMap.Caption := 'Stop Map';
 end;
 
 
@@ -189,11 +294,30 @@ begin
       fGame.Hands[K].AIExt.Events.PlayerVictoryW(0);
 end;
 
+
+procedure TExtAI_TestBed.btnAutoFillClick(Sender: TObject);
+var
+  K,L: Integer;
+begin
+  for K := Low(fedLoc) to High(fedLoc) do
+    if (fcbLoc[K].ItemIndex = 0) then // Loc is closed
+    begin
+      if (fcbLoc[K].Items.Count > 1) then
+        fcbLoc[K].ItemIndex := 1
+      else
+        break;
+      // Refresh AIs
+      RefreshExtAIs(nil);
+    end;
+end;
+
+
 procedure TExtAI_TestBed.btnClientConnectClick(Sender: TObject);
 var
   Conn: Boolean;
   K, Idx: Integer;
 begin
+  // Send commant to all ExtAIs
   if chbControlAll.Checked then
   begin
     Conn := True;
@@ -206,6 +330,7 @@ begin
       else
         ConnectClient(Idx);
   end
+  // Send command only to selected AI
   else if GetSelectedClient(Idx) then
   begin
     if fExtAIAndGUIArr.Arr[Idx].AI.Client.Connected then
@@ -384,10 +509,17 @@ procedure TExtAI_TestBed.ConnectClient(aIdx: Word);
     WSACleanUp;
   end;
 var
+  Port: Integer;
   IP: String;
 begin
+  try
+    Port := StrToInt(edServerPort.Text);
+  except
+    Log('Invalid port');
+    Exit;
+  end;
   if GetIP(IP) then
-      fExtAIAndGUIArr.Arr[aIdx].AI.Client.ConnectTo(IP, PORT);
+      fExtAIAndGUIArr.Arr[aIdx].AI.Client.ConnectTo(IP, Port);
 end;
 
 

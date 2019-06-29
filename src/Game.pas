@@ -35,10 +35,11 @@ type
     property Tick: Cardinal read fTick;
 
     // Game controls
+    property GameState: TGameState read fGameState;
     property ExtAIMaster: TExtAIMaster read fExtAIMaster;
     property SimulationState: TSimulationState read fSimState;
     property Hands: TObjectList<THand> read fHands;
-    procedure StartEndGame();
+    procedure StartEndGame(AIs: array of String);
     procedure TerminateSimulation();
   end;
 
@@ -72,9 +73,9 @@ begin
 end;
 
 
-procedure TGame.StartEndGame();
+procedure TGame.StartEndGame(AIs: array of String);
 var
-  K: Integer;
+  K, L: Integer;
 begin
   fTick := 0;
   if not ExtAIMaster.Net.Listening then
@@ -88,14 +89,16 @@ begin
     // Use all ExtAI in every game for now
     fHands := TObjectList<THand>.Create();
     for K := 0 to ExtAIMaster.AIs.Count - 1 do
-    begin
-      fHands.Add(THand.Create(K));
-      // Set hand to ExtAI
-      fHands[K].SetAIType();
-      // Connect the interface
-      fHands[K].AIExt.Events := ExtAIMaster.AIs[K].Events;
-
-    end;
+      for L := Low(AIs) to High(AIs) do
+        if (AIs[L] = ExtAIMaster.AIs[K].Name) then
+        begin
+          fHands.Add(THand.Create(K));
+          // Set hand to ExtAI
+          fHands[ fHands.Count-1 ].SetAIType();
+          // Connect the interface
+          fHands[ fHands.Count-1 ].AIExt.Events := ExtAIMaster.AIs[K].Events;
+          break;
+        end;
   end
   else if (fGameState = gsPlaying) then
   begin

@@ -11,7 +11,12 @@ type
     fNetServer: TExtAINetServer;
     fExtAIs: TList<TExtAIInfo>;
 
+    // Callbacks
+    fOnAIConnect: TExtAIStatusEvent;
+    fOnAIConfigured: TExtAIStatusEvent;
+    fOnAIDisconnect: TExtAIStatusEvent;
     procedure ConnectExtAI(aServerClient: TExtAIServerClient);
+    procedure ConfiguredExtAI(aExtAIInfo: TExtAIInfo);
     procedure DisconnectExtAI(aServerClient: TExtAIServerClient);
     procedure ReleaseExtAIs();
     function GetExtAI(aServerClient: TExtAIServerClient): TExtAIInfo;
@@ -19,6 +24,9 @@ type
     constructor Create();
     destructor Destroy; override;
 
+    property OnAIConnect: TExtAIStatusEvent write fOnAIConnect;
+    property OnAIConfigured: TExtAIStatusEvent write fOnAIConfigured;
+    property OnAIDisconnect: TExtAIStatusEvent write fOnAIDisconnect;
     property Net: TExtAINetServer read fNetServer;
     property AIs: TList<TExtAIInfo> read fExtAIs;
 
@@ -61,8 +69,18 @@ begin
   if (ExtAI = nil) then
   begin
     ExtAI := TExtAIInfo.Create(aServerClient);
+    ExtAI.OnAIConfigured := ConfiguredExtAI;
     fExtAIs.Add(ExtAI);
   end;
+  if Assigned(fOnAIConnect) then
+    fOnAIConnect(ExtAI);
+end;
+
+
+procedure TExtAIMaster.ConfiguredExtAI(aExtAIInfo: TExtAIInfo);
+begin
+  if Assigned(fOnAIConfigured) then
+    fOnAIConfigured(aExtAIInfo);
 end;
 
 
@@ -73,6 +91,8 @@ begin
   ExtAI := GetExtAI(aServerClient);
   if (ExtAI <> nil) then
     fExtAIs.Remove(ExtAI);
+  if Assigned(fOnAIDisconnect) then
+    fOnAIDisconnect(ExtAI);
   ExtAI.Free;
 end;
 

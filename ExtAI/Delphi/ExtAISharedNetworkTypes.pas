@@ -43,7 +43,8 @@ type
   {$Z1} // Use 1 Byte to store enumeration
   TExtAIMsgTypeCfgServer = (
     csName                 =   0,
-    csVersion              =   1
+    csVersion              =   1,
+    csClientHandle         =   2
   );
   {$Z1} // Use 1 Byte to store enumeration
   TExtAIMsgTypeCfgGame = (

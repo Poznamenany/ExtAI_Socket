@@ -235,7 +235,7 @@ end;
 procedure TExtAINetServer.SendServerCfg(aHandle: TExtAINetHandleIndex);
 const
   NAME: UnicodeString = 'Testing AI';
-  VERSION: Cardinal = 20190624;
+  VERSION: Cardinal = 20190629;
 var
   M: TKExtAIMsgStream;
 begin
@@ -247,7 +247,10 @@ begin
     // Add name
     M.WriteMsgType(mkServerCfg, Cardinal(csName), SizeOf(Word) + SizeOf(WideChar) * Length(NAME));
     M.WriteW(NAME);
-    //M.Position := 0;
+    // Add client ID
+    M.WriteMsgType(mkServerCfg, Cardinal(csClientHandle), SizeOf(aHandle));
+    M.Write(aHandle, SizeOf(aHandle));
+    // Send message
     ScheduleSendData(aHandle, M.Memory, M.Size, True);
   finally
     M.Free;

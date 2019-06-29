@@ -2,10 +2,13 @@ unit ExtAIInfo;
 interface
 uses
   Classes, Windows, System.SysUtils,
-  Consts, ExtAISharedNetworkTypes, ExtAINetServer, ExtAICommonClasses,
+  KM_Consts, ExtAISharedNetworkTypes, ExtAINetServer, ExtAICommonClasses,
   ExtAIMsgActions, ExtAIMsgEvents, ExtAIMsgStates;
 
 type
+  TExtAIInfo = class;
+  TExtAIStatusEvent = procedure (aServerClient: TExtAIInfo) of object;
+
   // Contain basic informations about ExtAI and communication interface (maybe exists better name...)
   TExtAIInfo = class
   private
@@ -17,10 +20,13 @@ type
     fEvents: TExtAIMsgEvents;
     fStates: TExtAIMsgStates;
     // ExtAI configuration
+    fConfigured: Boolean;
     fAuthor: UnicodeString;
     fName: UnicodeString;
     fDescription: UnicodeString;
     fVersion: Cardinal;
+    // Callbacks
+    fOnAIConfigured: TExtAIStatusEvent;
 
     procedure NewCfg(aData: Pointer; aTypeCfg, aLength: Cardinal);
 
@@ -29,6 +35,8 @@ type
     constructor Create(aServerClient: TExtAIServerClient);
     destructor Destroy; override;
 
+    // Callbacks
+    property OnAIConfigured: TExtAIStatusEvent write fOnAIConfigured;
     // Identifiers
     property HandIdx: TKMHandIndex read fHandIdx write fHandIdx;
     property ServerClient: TExtAIServerClient read fServerClient;
@@ -37,6 +45,7 @@ type
     property Events: TExtAIMsgEvents read fEvents;
     property States: TExtAIMsgStates read fStates;
     // Client cfg
+    property Configured: Boolean read fConfigured;
     property Author: UnicodeString read fAuthor;
     property Name: UnicodeString read fName;
     property Description: UnicodeString read fDescription;
@@ -59,6 +68,7 @@ begin
 
   fHandIdx := -1;
   fServerClient := aServerClient;
+  fConfigured := False;
   fAuthor := '';
   fName := '';
   fDescription := '';
@@ -112,6 +122,11 @@ begin
       end;
       else
         gLog.Log('ExtAIInfo Unknown configuration');
+    end;
+    if (Length(fName) <> 0) AND Assigned(fOnAIConfigured) then
+    begin
+      fConfigured := True;
+      fOnAIConfigured(self);
     end;
   finally
     M.Free;

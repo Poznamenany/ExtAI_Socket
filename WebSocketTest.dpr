@@ -5,7 +5,7 @@ uses
   Form in 'Form.pas' {ExtAI_TestBed},
   Log in 'src\Log.pas',
   Game in 'src\Game.pas',
-  Consts in 'src\Consts.pas',
+  KM_Consts in 'src\KM_Consts.pas',
   ExtAINetServer in 'src\ExtAI\ExtAINetServer.pas',
   ExtAINetworkTypes in 'src\ExtAI\ExtAINetworkTypes.pas',
   ExtAIMaster in 'src\ExtAI\ExtAIMaster.pas',

@@ -107,7 +107,7 @@
         </DCCReference>
         <DCCReference Include="src\Log.pas"/>
         <DCCReference Include="src\Game.pas"/>
-        <DCCReference Include="src\Consts.pas"/>
+        <DCCReference Include="src\KM_Consts.pas"/>
         <DCCReference Include="src\ExtAI\ExtAINetServer.pas"/>
         <DCCReference Include="src\ExtAI\ExtAINetworkTypes.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIMaster.pas"/>
