@@ -24,3 +24,4 @@ src/__history/*.*
 src/__recovery/*.*
 src/ExtAI/__history/*.*
 src/ExtAI/__recovery/*.*
+src/OverbyteV8/*
