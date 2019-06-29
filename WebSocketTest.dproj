@@ -102,7 +102,7 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="Form.pas">
-            <Form>Form1</Form>
+            <Form>ExtAI_TestBed</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="src\Log.pas"/>

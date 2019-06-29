@@ -3,15 +3,18 @@ interface
 uses
   Windows, Classes, Generics.Collections,
   System.Threading, System.Diagnostics, System.SysUtils,
-  ExtAINetClient, ExtAIActions, ExtAIEvents, ExtAIStates;
+  Log, ExtAINetClient, ExtAIActions, ExtAIEvents, ExtAIStates;
 
 type
   // The main thread of ExtAI, communication interface and parent of every ExtAI
   TExtAIBaseDelphi = class(TThread)
   private
     // Thread variables
+    fID: Word;
     fActive: Boolean;
     fClient: TExtAINetClient;
+    fLog: TLog;
+    procedure ClientStatusMessage(const aMsg: String);
   protected
     fActions: TExtAIActions;
     fEvents: TExtAIEvents;
@@ -23,10 +26,13 @@ type
     procedure OnTick(aTick: Cardinal);                 virtual;
     procedure OnPlayerVictory(aHandIndex: SmallInt);   virtual;
     procedure OnPlayerDefeated(aHandIndex: SmallInt);  virtual;
+    // Log
+    procedure Log(aText: String);
   public
-    constructor Create(const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
+    constructor Create(aLog: TLog; aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
     destructor Destroy(); override;
 
+    property ID: Word read fID;
     property Actions: TExtAIActions read fActions;
     property States: TExtAIStates read fStates;
     property Client: TExtAINetClient read fClient;
@@ -35,32 +41,33 @@ type
   end;
 
 implementation
-uses
-  Log;
 
 
 { TExtAIBaseDelphi }
-constructor TExtAIBaseDelphi.Create(const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
+constructor TExtAIBaseDelphi.Create(aLog: TLog; aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
 begin
   inherited Create(False);
   FreeOnTerminate := False;
   Priority := tpLower;
 
   fActive := True;
+  fID := aID;
   fClient := TExtAINetClient.Create(aAuthor, aName, aDescription, aVersion);
+  fLog := aLog;
 
   fActions := TExtAIActions.Create(fClient);
   fEvents := TExtAIEvents.Create();
   fStates := TExtAIStates.Create(fClient);
   fClient.OnNewEvent := fEvents.Msg.ReceiveEvent;
   fClient.OnNewState := fStates.NewState;
+  fClient.OnStatusMessage := ClientStatusMessage;
 
   fEvents.Msg.OnMissionStart := OnMissionStart;
   fEvents.Msg.OnTick := OnTick;
   fEvents.Msg.OnPlayerVictory := OnPlayerVictory;
   fEvents.Msg.OnPlayerDefeated := OnPlayerDefeated;
 
-  gClientLog.Log('Create TExtAIBaseDelphi');
+  Log('Create TExtAIBaseDelphi, ID = ' + IntToStr(fID));
 end;
 
 
@@ -68,7 +75,7 @@ destructor TExtAIBaseDelphi.Destroy();
 begin
   if Client.Connected then
     Client.Disconnect();
-  gClientLog.Log('Destroy TExtAIBaseDelphi');
+  Log('Destroy TExtAIBaseDelphi, ID = ' + IntToStr(fID));
   fClient.Free;
   fActions.Free;
   fEvents.Free;
@@ -79,13 +86,13 @@ end;
 
 procedure TExtAIBaseDelphi.Execute();
 begin
-  gClientLog.Log('Execute: Start');
+  Log('Execute: Start');
   while fActive do
   begin
     fClient.ProcessReceivedMessages();
     Sleep(10);
   end;
-  gClientLog.Log('Execute: End');
+  Log('Execute: End');
 end;
 
 
@@ -93,6 +100,20 @@ procedure TExtAIBaseDelphi.TerminateSimulation();
 begin
   fActive := False;
 end;
+
+
+procedure TExtAIBaseDelphi.ClientStatusMessage(const aMsg: String);
+begin
+  Log(aMsg);
+end;
+
+
+procedure TExtAIBaseDelphi.Log(aText: String);
+begin
+  if Assigned(fLog) then
+    fLog.Log(aText);
+end;
+
 
 // Dummy Events so user does not have to define the methods in child class and can choose just the necessary
 procedure TExtAIBaseDelphi.OnMissionStart(); begin end;

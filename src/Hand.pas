@@ -23,6 +23,7 @@ type
     procedure UpdateState(aTick: Cardinal);
   end;
 
+
 implementation
 uses
   Log;

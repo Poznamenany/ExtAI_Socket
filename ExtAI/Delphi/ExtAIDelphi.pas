@@ -1,7 +1,8 @@
 unit ExtAIDelphi;
 interface
 uses
-  System.SysUtils, ExtAIBaseDelphi;
+  System.SysUtils,
+  Log, ExtAIBaseDelphi;
 
 type
   // Here will be the main algorithm of the ExtAI
@@ -15,24 +16,22 @@ type
     procedure OnTick(aTick: Cardinal); override;
     procedure OnPlayerVictory(aHandIndex: SmallInt); override;
   public
-    constructor Create();
+    constructor Create(aLog: TLog; aID: Word);
     destructor Destroy(); override;
   end;
 
 implementation
-uses
-  Log;
 
 
 { TExtAIDelphi }
-constructor TExtAIDelphi.Create();
+constructor TExtAIDelphi.Create(aLog: TLog; aID: Word);
 const
   AUTHOR: UnicodeString = 'Martin';
   DESCRIPTION: UnicodeString = 'Testing ExtAI with WebSocket';
   NAME: UnicodeString = 'Skynet';
   VERSION: Cardinal = 20190625;
 begin
-  inherited Create(AUTHOR, NAME, DESCRIPTION, VERSION);
+  inherited Create(aLog, aID, AUTHOR, NAME, DESCRIPTION, VERSION);
 
 end;
 
@@ -45,7 +44,7 @@ end;
 
 procedure TExtAIDelphi.OnTick(aTick: Cardinal);
 begin
-  gClientLog.Log('TExtAIDelphi Tick: ' + IntToStr(aTick));
+  Log('TExtAIDelphi Tick: ' + IntToStr(aTick));
   //Actions.Log('This is message from ExtAI');
   //Actions.GroupOrderWalk(11,5,5,22);
   HuntUnit();
@@ -54,7 +53,7 @@ end;
 
 procedure TExtAIDelphi.OnPlayerVictory(aHandIndex: SmallInt);
 begin
-  gClientLog.Log('TExtAIDelphi OnPlayerVicotry');
+  Log('TExtAIDelphi OnPlayerVicotry');
 end;
 
 

@@ -2,7 +2,7 @@ program WebSocketTest;
 
 uses
   Vcl.Forms,
-  Form in 'Form.pas' {Form1},
+  Form in 'Form.pas' {ExtAI_TestBed},
   Log in 'src\Log.pas',
   Game in 'src\Game.pas',
   Consts in 'src\Consts.pas',
@@ -32,6 +32,6 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TExtAI_TestBed, ExtAI_TestBed);
   Application.Run;
 end.
