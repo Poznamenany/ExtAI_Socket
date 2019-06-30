@@ -44,7 +44,7 @@ type
 
 implementation
 uses
-  Log;
+  ExtAILog;
 
 
 { TExtAIInfo }

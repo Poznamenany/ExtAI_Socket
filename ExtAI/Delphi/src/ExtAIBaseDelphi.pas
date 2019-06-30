@@ -3,7 +3,7 @@ interface
 uses
   Windows, Classes, Generics.Collections,
   System.Threading, System.Diagnostics, System.SysUtils,
-  Log, ExtAINetClient, ExtAIActions, ExtAIEvents, ExtAIStates;
+  ExtAILog, ExtAINetClient, ExtAIActions, ExtAIEvents, ExtAIStates;
 
 type
   // The main thread of ExtAI, communication interface and parent of every ExtAI

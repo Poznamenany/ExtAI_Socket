@@ -1,4 +1,4 @@
-unit Log;
+unit ExtAILog;
 interface
 uses
   Classes, SysUtils;

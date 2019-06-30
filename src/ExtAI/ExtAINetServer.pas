@@ -85,8 +85,6 @@ type
 
 
 implementation
-uses
-  Log;
 
 const
   SERVER_VERSION: Cardinal = 20190622;

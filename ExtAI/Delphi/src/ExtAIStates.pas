@@ -40,8 +40,6 @@ type
 
 
 implementation
-uses
-  Log;
 
 
 { TExtAIStates }

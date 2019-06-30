@@ -19,8 +19,6 @@ type
 
 
 implementation
-uses
-  Log;
 
 
 { TExtAIEvents }

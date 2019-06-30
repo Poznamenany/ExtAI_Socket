@@ -36,7 +36,7 @@ type
 
 implementation
 uses
-  Log;
+  ExtAILog;
 
 
 { TExtAIMaster }

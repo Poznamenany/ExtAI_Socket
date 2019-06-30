@@ -47,7 +47,7 @@ type
 
 implementation
 uses
-  Log;
+  ExtAILog;
 
 
 { TExtAIMsgActions }

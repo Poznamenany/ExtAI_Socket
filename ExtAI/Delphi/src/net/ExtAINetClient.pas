@@ -173,6 +173,7 @@ procedure TExtAINetClient.ForcedDisconnect(Sender: TObject);
 begin
   if fConnected then
   begin
+    fConnected := false; // Make sure that we are disconnect before we call the callback
     Status('Forced disconnect');
     if Assigned(fOnForcedDisconnect) then
       fOnForcedDisconnect(Self);

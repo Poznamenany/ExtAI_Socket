@@ -2,7 +2,7 @@ unit ExtAIDelphi;
 interface
 uses
   System.SysUtils,
-  Log, ExtAIBaseDelphi;
+  ExtAILog, ExtAIBaseDelphi;
 
 type
   // Here will be the main algorithm of the ExtAI

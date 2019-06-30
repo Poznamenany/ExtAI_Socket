@@ -55,8 +55,6 @@ type
 
 
 implementation
-uses
-  Log;
 
 
 { TExtAIMsgStates }

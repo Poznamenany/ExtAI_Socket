@@ -40,7 +40,7 @@ type
 
 implementation
 uses
-  Log;
+  ExtAILog;
 
 
 { TKMHandAI }
