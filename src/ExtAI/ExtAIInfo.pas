@@ -2,8 +2,7 @@ unit ExtAIInfo;
 interface
 uses
   Classes, Windows, System.SysUtils,
-  KM_Consts, ExtAISharedNetworkTypes, ExtAINetServer, ExtAICommonClasses,
-  ExtAIMsgActions, ExtAIMsgEvents, ExtAIMsgStates;
+  KM_Consts, ExtAISharedNetworkTypes, ExtAINetServer, ExtAICommonClasses;
 
 type
   TExtAIInfo = class;
@@ -15,10 +14,6 @@ type
     // Identifiers
     fHandIdx: TKMHandIndex;
     fServerClient: TExtAIServerClient;
-    // Actions, Events, States
-    fActions: TExtAIMsgActions;
-    fEvents: TExtAIMsgEvents;
-    fStates: TExtAIMsgStates;
     // ExtAI configuration
     fConfigured: Boolean;
     fAuthor: UnicodeString;
@@ -29,8 +24,6 @@ type
     fOnAIConfigured: TExtAIStatusEvent;
 
     procedure NewCfg(aData: Pointer; aTypeCfg, aLength: Cardinal);
-
-    procedure Log(aLog: UnicodeString);
   public
     constructor Create(aServerClient: TExtAIServerClient);
     destructor Destroy; override;
@@ -40,10 +33,6 @@ type
     // Identifiers
     property HandIdx: TKMHandIndex read fHandIdx write fHandIdx;
     property ServerClient: TExtAIServerClient read fServerClient;
-    // Actions, Events, States
-    property Actions: TExtAIMsgActions read fActions;
-    property Events: TExtAIMsgEvents read fEvents;
-    property States: TExtAIMsgStates read fStates;
     // Client cfg
     property Configured: Boolean read fConfigured;
     property Author: UnicodeString read fAuthor;
@@ -62,9 +51,6 @@ uses
 constructor TExtAIInfo.Create(aServerClient: TExtAIServerClient);
 begin
   inherited Create;
-  fActions := TExtAIMsgActions.Create();
-  fEvents := TExtAIMsgEvents.Create();
-  fStates := TExtAIMsgStates.Create();
 
   fHandIdx := -1;
   fServerClient := aServerClient;
@@ -74,20 +60,13 @@ begin
   fDescription := '';
   fVersion := 0;
   fServerClient.OnCfg := NewCfg;
-
-  fServerClient.OnAction := fActions.ReceiveAction;
-  fServerClient.OnState := fStates.ReceiveState;
-  fEvents.OnSendEvent := fServerClient.AddScheduledMsg;
-
-  fActions.OnLog := Log;
 end;
 
 
 destructor TExtAIInfo.Destroy();
 begin
-  fActions.Free;
-  fEvents.Free;
-  fStates.Free;
+  fServerClient := nil;
+  fOnAIConfigured := nil;
   inherited;
 end;
 
@@ -132,13 +111,6 @@ begin
   finally
     M.Free;
   end;
-end;
-
-
-// Temporary location for logs from actions
-procedure TExtAIInfo.Log(aLog: UnicodeString);
-begin
-  gLog.Log(aLog);
 end;
 
 

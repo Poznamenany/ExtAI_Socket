@@ -2,7 +2,8 @@ unit HandAI_Ext;
 interface
 uses
   Windows, System.SysUtils,
-  KM_Consts, ExtAIMsgEvents;
+  KM_Consts, ExtAINetServer,
+  ExtAIMsgActions, ExtAIMsgEvents, ExtAIMsgStates;
 
 type
   // Main AI class in the hands
@@ -17,12 +18,23 @@ type
   // Special class for ExtAI in the hands
   THandAI_Ext = class(TKMHandAI)
   private
+    // Actions, Events, States
+    fActions: TExtAIMsgActions;
     fEvents: TExtAIMsgEvents;
+    fStates: TExtAIMsgStates;
+    // Client
+    fServerClient: TExtAIServerClient;
+    procedure Log(aLog: UnicodeString);
   public
     constructor Create(aHandIndex: TKMHandIndex);
     destructor Destroy(); override;
 
-    property Events: TExtAIMsgEvents read fEvents write fEvents;
+    // Actions, Events, States
+    property Actions: TExtAIMsgActions read fActions;
+    property Events: TExtAIMsgEvents read fEvents;
+    property States: TExtAIMsgStates read fStates;
+
+    procedure ConnectCallbacks(aServerClient: TExtAIServerClient);
   end;
 
 
@@ -45,16 +57,46 @@ constructor THandAI_Ext.Create(aHandIndex: TKMHandIndex);
 begin
   inherited Create(aHandIndex);
 
-  fEvents := nil;
+  fActions := TExtAIMsgActions.Create();
+  fEvents := TExtAIMsgEvents.Create();
+  fStates := TExtAIMsgStates.Create();
+
+  fServerClient := nil;
+  fActions.OnLog := Log;
+
   gLog.Log('THandAIExt-Create: HandIndex = ' + IntToStr(fHandIndex));
 end;
 
 
 destructor THandAI_Ext.Destroy();
 begin
-  fEvents := nil;
+  fActions.Free;
+  fEvents.Free;
+  fStates.Free;
+  if (fServerClient <> nil) then
+  begin
+    fServerClient.OnAction := nil;
+    fServerClient.OnState := nil;
+  end;
+  fServerClient := nil;
   gLog.Log('THandAIExt-Destroy: HandIndex = ' + IntToStr(fHandIndex));
   inherited;
+end;
+
+
+procedure THandAI_Ext.ConnectCallbacks(aServerClient: TExtAIServerClient);
+begin
+  fServerClient := aServerClient;
+  fServerClient.OnAction := fActions.ReceiveAction;
+  fServerClient.OnState := fStates.ReceiveState;
+  fEvents.OnSendEvent := fServerClient.AddScheduledMsg;
+end;
+
+
+// Temporary location for logs from actions
+procedure THandAI_Ext.Log(aLog: UnicodeString);
+begin
+  gLog.Log(aLog);
 end;
 
 

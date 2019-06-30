@@ -96,7 +96,7 @@ begin
           // Set hand to ExtAI
           fHands[ fHands.Count-1 ].SetAIType();
           // Connect the interface
-          fHands[ fHands.Count-1 ].AIExt.Events := ExtAIMaster.AIs[K].Events;
+          fHands[ fHands.Count-1 ].AIExt.ConnectCallbacks( ExtAIMaster.AIs[K].ServerClient );
           break;
         end;
   end
