@@ -88,12 +88,14 @@ procedure TExtAIMaster.DisconnectExtAI(aServerClient: TExtAIServerClient);
 var
   ExtAI: TExtAIInfo;
 begin
+  //{
   ExtAI := GetExtAI(aServerClient);
   if (ExtAI <> nil) then
     fExtAIs.Remove(ExtAI);
   if Assigned(fOnAIDisconnect) then
     fOnAIDisconnect(ExtAI);
   ExtAI.Free;
+  //}
 end;
 
 

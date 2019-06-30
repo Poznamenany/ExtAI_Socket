@@ -74,10 +74,11 @@ begin
   fDescription := '';
   fVersion := 0;
   fServerClient.OnCfg := NewCfg;
-  fServerClient.OnAction := fActions.ReceiveAction;
-  fServerClient.OnState := fStates.NewState;
 
+  fServerClient.OnAction := fActions.ReceiveAction;
+  fServerClient.OnState := fStates.ReceiveState;
   fEvents.OnSendEvent := fServerClient.AddScheduledMsg;
+
   fActions.OnLog := Log;
 end;
 

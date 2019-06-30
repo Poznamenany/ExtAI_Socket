@@ -359,6 +359,7 @@ begin
     // Create GUI
     tsTab := TTabSheet.Create(pcLogExtAI);
     tsTab.Caption := 'Log AI ' + IntToStr(ID);
+    //tsTab.Caption := AI.Client.ClientName + ' ' + IntToStr(ID);
     tsTab.Name := TAB_NAME + IntToStr(ID);
     tsTab.PageControl := pcLogExtAI;
     mLog := TMemo.Create(tsTab);

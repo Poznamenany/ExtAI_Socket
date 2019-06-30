@@ -76,13 +76,13 @@ type
   );
   {$Z2} // Use 2 Bytes to store enumeration
   TExtAIMsgTypeState = (
-    tsUnitAt               =   0,
-    tsGetGroupCount        =   1,
-    tsGetGroups            =   2,
-    tsUnitIsAlive          =   3,
-    tsGetUnitCount         =   4,
-    tsGetUnits             =   5
+    tsTerrainSize          =   0,
+    tsTerrainPassability   =   1,
+    tsTerrainFertility     =   2,
+    tsPlayerGroups         =   3,
+    tsPlayerUnits          =   4
   );
+
 
 const
   MSG_KIND2TYPE_SIZE: array[TExtAIMsgKind] of Byte = (

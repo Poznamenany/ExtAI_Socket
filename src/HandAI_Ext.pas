@@ -30,6 +30,7 @@ implementation
 uses
   Log;
 
+
 { TKMHandAI }
 constructor TKMHandAI.Create(aHandIndex: TKMHandIndex);
 begin

@@ -48,12 +48,11 @@ begin
   fStream.Write(aData^,aLength);
   fStream.Position := 0;
   case TExtAIMsgTypeState(aStateType) of
-    tsUnitAt           : begin end;
-    tsGetGroupCount    : begin end;
-    tsGetGroups        : begin end;
-    tsUnitIsAlive      : begin end;
-    tsGetUnitCount     : begin end;
-    tsGetUnits         : begin end;
+    tsTerrainSize         : begin end;
+    tsTerrainPassability  : begin end;
+    tsTerrainFertility    : begin end;
+    tsPlayerGroups        : begin end;
+    tsPlayerUnits         : begin end;
     else
     begin
       // The event was not implemented or is invalid

@@ -57,6 +57,10 @@ type
     property OnNewEvent: TNewDataEvent write fOnNewEvent;
     property OnNewState: TNewDataEvent write fOnNewState;
 
+    property Author: UnicodeString read fAuthor;
+    property ClientName: UnicodeString read fName;
+    property Description: UnicodeString read fDescription;
+    property AIVersion: Cardinal read fAIVersion;
 
     procedure ConnectTo(const aAddress: String; const aPort: Word); //Try to connect to server
     procedure Disconnect(); //Disconnect from server
