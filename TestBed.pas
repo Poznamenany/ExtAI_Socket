@@ -170,6 +170,8 @@ procedure TExtAI_TestBed.btnStartServerClick(Sender: TObject);
 begin
   if (fGame.ExtAIMaster.Net.Listening) then
   begin
+    if (fGame.GameState <> gsLobby) then
+      btnServerStartMapClick(Sender);
     fGame.ExtAIMaster.Net.StopListening();
     prgServer.Style := pbstNormal;
     btnStartServer.Caption := 'Start Server';

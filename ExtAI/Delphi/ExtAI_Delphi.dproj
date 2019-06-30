@@ -108,20 +108,21 @@
             <Form>ExtAI</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="src\ExtAIActions.pas"/>
-        <DCCReference Include="src\ExtAIEvents.pas"/>
-        <DCCReference Include="src\ExtAIStates.pas"/>
-        <DCCReference Include="src\ExtAIMsgActions.pas"/>
-        <DCCReference Include="src\ExtAIMsgEvents.pas"/>
-        <DCCReference Include="src\ExtAIMsgStates.pas"/>
+        <DCCReference Include="src\ExtAILog.pas"/>
         <DCCReference Include="src\ExtAIDelphi.pas"/>
         <DCCReference Include="src\ExtAIBaseDelphi.pas"/>
+        <DCCReference Include="src\interface\ExtAIActions.pas"/>
+        <DCCReference Include="src\interface\ExtAIEvents.pas"/>
+        <DCCReference Include="src\interface\ExtAIStates.pas"/>
+        <DCCReference Include="src\interface\ExtAIMsgActions.pas"/>
+        <DCCReference Include="src\interface\ExtAIMsgEvents.pas"/>
+        <DCCReference Include="src\interface\ExtAIMsgStates.pas"/>
+        <DCCReference Include="src\interface\ExtAIStatesTerrain.pas"/>
+        <DCCReference Include="src\interface\ExtAISharedInterface.pas"/>
         <DCCReference Include="src\net\ExtAICommonClasses.pas"/>
         <DCCReference Include="src\net\ExtAINetClient.pas"/>
         <DCCReference Include="src\net\ExtAINetClientOverbyte.pas"/>
         <DCCReference Include="src\net\ExtAISharedNetworkTypes.pas"/>
-        <DCCReference Include="src\net\ExtAISharedInterface.pas"/>
-        <DCCReference Include="src\ExtAILog.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

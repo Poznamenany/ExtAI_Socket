@@ -1,9 +1,9 @@
-unit HandAI_Ext;
+unit KM_HandAI_Ext;
 interface
 uses
   Windows, System.SysUtils,
-  KM_Consts, ExtAINetServer,
-  ExtAIMsgActions, ExtAIMsgEvents, ExtAIMsgStates;
+  KM_Consts, KM_Terrain,
+  ExtAINetServer, ExtAIMsgActions, ExtAIMsgEvents, ExtAIMsgStates;
 
 type
   // Main AI class in the hands
@@ -34,6 +34,7 @@ type
     property Events: TExtAIMsgEvents read fEvents;
     property States: TExtAIMsgStates read fStates;
 
+    procedure UpdateState(aTick: Cardinal);
     procedure ConnectCallbacks(aServerClient: TExtAIServerClient);
   end;
 
@@ -84,11 +85,26 @@ begin
 end;
 
 
+procedure THandAI_Ext.UpdateState(aTick: Cardinal);
+begin
+  if (aTick = FIRST_TICK) then
+  begin
+    Events.MissionStartW();
+    States.TerrainSizeW(gTerrain.MapX, gTerrain.MapY);
+    //States.TerrainPassabilityW(gTerrain.Passability);
+    //States.TerrainFertilityW(gTerrain.Fertility);
+  end;
+
+  Events.TickW(aTick);
+end;
+
+
 procedure THandAI_Ext.ConnectCallbacks(aServerClient: TExtAIServerClient);
 begin
   fServerClient := aServerClient;
   fServerClient.OnAction := fActions.ReceiveAction;
   fServerClient.OnState := fStates.ReceiveState;
+  fStates.OnSendState := fServerClient.AddScheduledMsg;
   fEvents.OnSendEvent := fServerClient.AddScheduledMsg;
 end;
 

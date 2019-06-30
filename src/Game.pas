@@ -3,7 +3,7 @@ interface
 uses
   Windows, Classes, Generics.Collections,
   System.Threading, System.Diagnostics, System.SysUtils,
-  Hand, ExtAIMaster;
+  KM_Hand, KM_Terrain, ExtAIMaster;
 
 const
   SLEEP_EVERY_TICK = 500;
@@ -53,6 +53,7 @@ constructor TGame.Create(aOnUpdateSimStatus: TUpdateSimStatEvent);
 begin
   inherited Create(False);
   gLog.Log('TGame-Create');
+  gTerrain := TKMTerrain.Create();
   FreeOnTerminate := False;
   Priority := tpHigher;
 
@@ -67,8 +68,9 @@ end;
 destructor TGame.Destroy();
 begin
   gLog.Log('TGame-Destroy');
+  gTerrain.Free;
   FreeAndNil(fHands);
-  fExtAIMaster.Free();
+  fExtAIMaster.Free;
   inherited;
 end;
 

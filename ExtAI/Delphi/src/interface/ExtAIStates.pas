@@ -2,20 +2,17 @@ unit ExtAIStates;
 interface
 uses
   Classes, SysUtils,
-  ExtAIMsgStates, ExtAINetClient, ExtAISharedInterface;
+  ExtAIMsgStates, ExtAIStatesTerrain, ExtAINetClient, ExtAISharedInterface;
 
 
 // States of the ExtAI
 type
   TExtAIStates = class
   private
-    fStates: TExtAIMsgStates;
+    fMsg: TExtAIMsgStates;
     fClient: TExtAINetClient;
     // Game variables
-    //fTerrain: TExtAITerrain;
-    //fHands: TExtAIHands;
-    // Triggers
-    //fOnGroupOrderAttackUnit: TGroupOrderAttackUnit;
+    fTerrain: TExtAIStatesTerrain;
     // Send state via client
     procedure SendState(aData: Pointer; aLength: Cardinal);
   public
@@ -23,19 +20,16 @@ type
     destructor Destroy(); override;
 
     // Connect Msg directly with creator of ExtAI so he can type Actions.XY instead of Actions.Msg.XY
-    property Msg: TExtAIMsgStates read fStates;
+    property Msg: TExtAIMsgStates read fMsg;
+    property Terrain: TExtAIStatesTerrain read fTerrain;
 
     // States from perspective of the ExtAI
-    {
     function MapHeight(): Word;
     function MapWidth(): Word;
-    TTerrainSize          = procedure(aX, aY: Word);
-    TTerrainPassability   = procedure(aPassability: array of Boolean);
-    TTerrainFertility     = procedure(aFertility: array of Boolean);
-    TPlayerGroups         = procedure(aHandIndex: SmallInt; aGroups: array of Integer);
-    TPlayerUnits          = procedure(aHandIndex: SmallInt; aUnits: array of Integer);
-    }
-    //property GroupOrderAttackUnit: TGroupOrderAttackUnit read fOnGroupOrderAttackUnit;
+    function TileIsPassable(aHeight,aWidth: Word): boolean;
+    function Passability(): TBoolArr;
+    function TileIsFertile(aHeight,aWidth: Word): boolean;
+    function Fertility(): TBoolArr;
   end;
 
 
@@ -47,18 +41,18 @@ constructor TExtAIStates.Create(aClient: TExtAINetClient);
 begin
   Inherited Create;
   fClient := aClient;
-  fStates := TExtAIMsgStates.Create();
+  fMsg := TExtAIMsgStates.Create();
+  fTerrain := TExtAIStatesTerrain.Create(fMsg);
   // Connect callbacks
-  fStates.OnSendState := SendState;
-  // Connect properties
-  //fOnGroupOrderAttackUnit := fActions.GroupOrderAttackUnitW;
+  fMsg.OnSendState := SendState;
 end;
 
 
 destructor TExtAIStates.Destroy();
 begin
   //fOnGroupOrderAttackUnit := nil;
-  fStates.Free;
+  fMsg.Free;
+  fTerrain.Free;
   fClient := nil;
   Inherited;
 end;
@@ -69,6 +63,49 @@ begin
   Assert(fClient <> nil, 'State cannot be send because client = nil');
   fClient.SendMessage(aData, aLength);
 end;
+
+
+function TExtAIStates.MapHeight(): Word;
+begin
+  Result := Terrain.MapHeight;
+end;
+
+
+function TExtAIStates.MapWidth(): Word;
+begin
+  Result := Terrain.MapWidth;
+end;
+
+
+function TExtAIStates.TileIsPassable(aHeight,aWidth: Word): boolean;
+begin
+  if (aHeight >= 0) AND (aHeight <= Terrain.MapHeight) AND
+     (aWidth  >= 0) AND (aWidth  <= Terrain.MapWidth) AND
+     (Length(Terrain.Passability) > aWidth * aHeight + aWidth) then
+    Result := Terrain.Passability[Terrain.MapWidth * aHeight + aWidth];
+end;
+
+
+function TExtAIStates.Passability(): TBoolArr;
+begin
+  Result := Terrain.Passability;
+end;
+
+
+function TExtAIStates.TileIsFertile(aHeight,aWidth: Word): boolean;
+begin
+  if (aHeight >= 0) AND (aHeight <= Terrain.MapHeight) AND
+     (aWidth  >= 0) AND (aWidth  <= Terrain.MapWidth) AND
+     (Length(Terrain.Fertility) > aWidth * aHeight + aWidth) then
+    Result := Terrain.Fertility[Terrain.MapWidth * aHeight + aWidth];
+end;
+
+
+function TExtAIStates.Fertility(): TBoolArr;
+begin
+  Result := Terrain.Fertility;
+end;
+
 
 
 end.

@@ -1,8 +1,8 @@
-unit Hand;
+unit KM_Hand;
 interface
 uses
   Windows, System.SysUtils,
-  KM_Consts, HandAI_Ext;
+  KM_Consts, KM_HandAI_Ext;
 
 type
   // Game class for Hand. It hides the ExtAI inside of it
@@ -59,10 +59,8 @@ end;
 
 procedure THand.UpdateState(aTick: Cardinal);
 begin
-  if (aTick = FIRST_TICK) then
-    fAIExt.Events.MissionStartW();
-
-  fAIExt.Events.TickW(aTick);
+  if (fAIExt <> nil) then
+    fAIExt.UpdateState(aTick);
 end;
 
 

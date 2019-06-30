@@ -110,12 +110,13 @@
         </DCCReference>
         <DCCReference Include="src\Game.pas"/>
         <DCCReference Include="src\KM_Consts.pas"/>
+        <DCCReference Include="src\KM_Hand.pas"/>
+        <DCCReference Include="src\KM_HandAI_Ext.pas"/>
+        <DCCReference Include="src\KM_Terrain.pas"/>
         <DCCReference Include="src\ExtAI\ExtAINetServer.pas"/>
         <DCCReference Include="src\ExtAI\ExtAINetworkTypes.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIMaster.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIInfo.pas"/>
-        <DCCReference Include="src\Hand.pas"/>
-        <DCCReference Include="src\HandAI_Ext.pas"/>
         <DCCReference Include="src\ExtAI\NetServerOverbyte.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\ExtAILog.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\ExtAIDelphi.pas"/>
@@ -126,6 +127,7 @@
         <DCCReference Include="ExtAI\Delphi\src\interface\ExtAIMsgActions.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\interface\ExtAIMsgEvents.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\interface\ExtAIMsgStates.pas"/>
+        <DCCReference Include="ExtAI\Delphi\src\interface\ExtAIStatesTerrain.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\interface\ExtAISharedInterface.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\net\ExtAINetClient.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\net\ExtAINetClientOverbyte.pas"/>

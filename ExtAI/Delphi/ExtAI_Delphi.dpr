@@ -12,6 +12,7 @@ uses
   ExtAIMsgActions in 'src\interface\ExtAIMsgActions.pas',
   ExtAIMsgEvents in 'src\interface\ExtAIMsgEvents.pas',
   ExtAIMsgStates in 'src\interface\ExtAIMsgStates.pas',
+  ExtAIStatesTerrain in 'src\interface\ExtAIStatesTerrain.pas',
   ExtAISharedInterface in 'src\interface\ExtAISharedInterface.pas',
   ExtAICommonClasses in 'src\net\ExtAICommonClasses.pas',
   ExtAINetClient in 'src\net\ExtAINetClient.pas',

@@ -45,8 +45,8 @@ type
 
     // Pack States
     procedure TerrainSizeW(aX, aY: Word);
-    procedure TerrainPassabilityW(aPassability: array of Boolean);
-    procedure TerrainFertilityW(aFertility: array of Boolean);
+    procedure TerrainPassabilityW(aPassability: TBoolArr);
+    procedure TerrainFertilityW(aFertility: TBoolArr);
     procedure PlayerGroupsW(aHandIndex: SmallInt; aGroups: array of Integer);
     procedure PlayerUnitsW(aHandIndex: SmallInt; aUnits: array of Integer);
 
@@ -88,7 +88,7 @@ procedure TExtAIMsgStates.InitMsg(aTypeState: TExtAIMsgTypeState);
 begin
   // Clear stream and create head with predefined 0 length
   fStream.Clear;
-  fStream.WriteMsgType(mkEvent, Cardinal(aTypeState), TExtAIMsgLengthData(0));
+  fStream.WriteMsgType(mkState, Cardinal(aTypeState), TExtAIMsgLengthData(0));
 end;
 
 
@@ -150,7 +150,7 @@ begin
 end;
 
 
-procedure TExtAIMsgStates.TerrainPassabilityW(aPassability: array of Boolean);
+procedure TExtAIMsgStates.TerrainPassabilityW(aPassability: TBoolArr);
 begin
   InitMsg(tsTerrainPassability);
   fStream.Write(aPassability[0], SizeOf(aPassability[0]) * Length(aPassability));
@@ -158,7 +158,7 @@ begin
 end;
 procedure TExtAIMsgStates.TerrainPassabilityR(aLength: Cardinal);
 var
-  Passability: array of Boolean;
+  Passability: TBoolArr;
 begin
   SetLength(Passability, aLength);
   fStream.Read(Passability[0], SizeOf(Passability[0]) * Length(Passability));
@@ -167,7 +167,7 @@ begin
 end;
 
 
-procedure TExtAIMsgStates.TerrainFertilityW(aFertility: array of Boolean);
+procedure TExtAIMsgStates.TerrainFertilityW(aFertility: TBoolArr);
 begin
   InitMsg(tsTerrainFertility);
   fStream.Write(aFertility[0], SizeOf(aFertility[0]) * Length(aFertility));
@@ -175,7 +175,7 @@ begin
 end;
 procedure TExtAIMsgStates.TerrainFertilityR(aLength: Cardinal);
 var
-  Fertility: array of Boolean;
+  Fertility: TBoolArr;
 begin
   SetLength(Fertility, aLength);
   fStream.Read(Fertility[0], SizeOf(Fertility[0]) * Length(Fertility));
