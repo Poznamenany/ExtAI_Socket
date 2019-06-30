@@ -59,7 +59,7 @@ begin
   fEvents := TExtAIEvents.Create();
   fStates := TExtAIStates.Create(fClient);
   fClient.OnNewEvent := fEvents.Msg.ReceiveEvent;
-  fClient.OnNewState := fStates.NewState;
+  fClient.OnNewState := fStates.Msg.ReceiveState;
   fClient.OnStatusMessage := ClientStatusMessage;
 
   fEvents.Msg.OnMissionStart := OnMissionStart;

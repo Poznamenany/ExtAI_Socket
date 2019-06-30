@@ -55,6 +55,7 @@ begin
   fOnGroupOrderWalk       := nil;
   fOnLog                  := nil;
   fActions.Free;
+  fClient := nil;
   Inherited;
 end;
 
