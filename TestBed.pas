@@ -1,4 +1,4 @@
-unit Form;
+unit TestBed;
 
 interface
 
@@ -116,7 +116,6 @@ type
   end;
 
 const
-  PORT = 1235;
   TAB_NAME = 'tsExtAI';
   CLOSED_LOC = 'Closed';
 var

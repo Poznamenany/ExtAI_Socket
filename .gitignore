@@ -22,6 +22,8 @@ ExtAI/Delphi/__history/*.*
 ExtAI/Delphi/__recovery/*.*
 ExtAI/Delphi/src/__history/*.*
 ExtAI/Delphi/src/__recovery/*.*
+ExtAI/Delphi/src/interface/__history/*.*
+ExtAI/Delphi/src/interface/__recovery/*.*
 ExtAI/Delphi/src/net/__history/*.*
 ExtAI/Delphi/src/net/__recovery/*.*
 ExtAI/Delphi/win32/*

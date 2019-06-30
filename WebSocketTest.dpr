@@ -2,7 +2,7 @@ program WebSocketTest;
 
 uses
   Vcl.Forms,
-  Form in 'Form.pas' {ExtAI_TestBed},
+  TestBed in 'TestBed.pas' {ExtAI_TestBed},
   Game in 'src\Game.pas',
   KM_Consts in 'src\KM_Consts.pas',
   ExtAINetServer in 'src\ExtAI\ExtAINetServer.pas',
@@ -13,19 +13,19 @@ uses
   HandAI_Ext in 'src\HandAI_Ext.pas',
   NetServerOverbyte in 'src\ExtAI\NetServerOverbyte.pas',
   ExtAILog in 'ExtAI\Delphi\src\ExtAILog.pas',
-  ExtAIActions in 'ExtAI\Delphi\src\ExtAIActions.pas',
-  ExtAIEvents in 'ExtAI\Delphi\src\ExtAIEvents.pas',
-  ExtAIStates in 'ExtAI\Delphi\src\ExtAIStates.pas',
-  ExtAIMsgActions in 'ExtAI\Delphi\src\ExtAIMsgActions.pas',
-  ExtAIMsgEvents in 'ExtAI\Delphi\src\ExtAIMsgEvents.pas',
-  ExtAIMsgStates in 'ExtAI\Delphi\src\ExtAIMsgStates.pas',
   ExtAIDelphi in 'ExtAI\Delphi\src\ExtAIDelphi.pas',
   ExtAIBaseDelphi in 'ExtAI\Delphi\src\ExtAIBaseDelphi.pas',
+  ExtAIActions in 'ExtAI\Delphi\src\interface\ExtAIActions.pas',
+  ExtAIEvents in 'ExtAI\Delphi\src\interface\ExtAIEvents.pas',
+  ExtAIStates in 'ExtAI\Delphi\src\interface\ExtAIStates.pas',
+  ExtAIMsgActions in 'ExtAI\Delphi\src\interface\ExtAIMsgActions.pas',
+  ExtAIMsgEvents in 'ExtAI\Delphi\src\interface\ExtAIMsgEvents.pas',
+  ExtAIMsgStates in 'ExtAI\Delphi\src\interface\ExtAIMsgStates.pas',
+  ExtAISharedInterface in 'ExtAI\Delphi\src\interface\ExtAISharedInterface.pas',
   ExtAINetClient in 'ExtAI\Delphi\src\net\ExtAINetClient.pas',
   ExtAINetClientOverbyte in 'ExtAI\Delphi\src\net\ExtAINetClientOverbyte.pas',
   ExtAISharedNetworkTypes in 'ExtAI\Delphi\src\net\ExtAISharedNetworkTypes.pas',
-  ExtAICommonClasses in 'ExtAI\Delphi\src\net\ExtAICommonClasses.pas',
-  ExtAISharedInterface in 'ExtAI\Delphi\src\net\ExtAISharedInterface.pas';
+  ExtAICommonClasses in 'ExtAI\Delphi\src\net\ExtAICommonClasses.pas';
 
 {$R *.res}
 

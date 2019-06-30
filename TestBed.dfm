@@ -405,7 +405,7 @@ object ExtAI_TestBed: TExtAI_TestBed
     Top = 8
     Width = 322
     Height = 521
-    Caption = 'gbExtAIs'
+    Caption = 'ExtAIs'
     TabOrder = 1
     object gbAIControlInterface: TGroupBox
       Left = 3
