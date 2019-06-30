@@ -202,7 +202,6 @@ procedure TExtAI_TestBed.RefreshExtAIs(aAIInfo: TExtAIInfo);
 var
   ItemFound: Boolean;
   K,L,Cnt: Integer;
-  SelectedName, NewName: String;
   NewNames: array of String;
   SelectedNames: array[0..MAX_HANDS_COUNT-1] of String;
 begin
@@ -297,7 +296,7 @@ end;
 
 procedure TExtAI_TestBed.btnAutoFillClick(Sender: TObject);
 var
-  K,L: Integer;
+  K: Integer;
 begin
   for K := Low(fedLoc) to High(fedLoc) do
     if (fcbLoc[K].ItemIndex = 0) then // Loc is closed

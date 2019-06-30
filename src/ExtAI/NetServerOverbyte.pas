@@ -155,7 +155,7 @@ begin
     if (fSocketServer.Client[K].Tag = aHandle) then
     begin
       if (fSocketServer.Client[K].State <> wsClosed) then // Sometimes this occurs just before ClientDisconnect
-        if (fSocketServer.Client[K].Send(aData, aLength) <> aLength) then
+        if (Cardinal(fSocketServer.Client[K].Send(aData, aLength)) <> aLength) then
           fOnError('Overbyte Server: Failed to send packet to client ' + IntToStr(aHandle));
     end;
 end;
