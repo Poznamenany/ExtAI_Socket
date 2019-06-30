@@ -24,7 +24,22 @@ type
     fStates: TExtAIMsgStates;
     // Client
     fServerClient: TExtAIServerClient;
+    // Process actions
+    procedure GroupOrderAttackUnit(aGroupID, aUnitID: Integer);
+    procedure GroupOrderWalk(aGroupID, aX, aY, aDir: Integer);
     procedure Log(aLog: UnicodeString);
+    // Process requests for states
+
+    {
+
+    TGroupOrderAttackUnit = procedure(aGroupID, aUnitID: Integer)                          of object;
+    TGroupOrderWalk       = procedure(aGroupID, aX, aY, aDir: Integer)                     of object;
+    TLog                  = procedure(aLog: string)                                        of object;
+  // Definition of states between ExtAI Client and KP Server
+    TTerrainSize          = procedure(aX, aY: Word)                                        of object;
+    TTerrainPassability   = procedure(aPassability: TBoolArr)                              of object;
+    TTerrainFertility     = procedure(aFertility: TBoolArr)                                of object;
+    }
   public
     constructor Create(aHandIndex: TKMHandIndex);
     destructor Destroy(); override;
@@ -63,6 +78,8 @@ begin
   fStates := TExtAIMsgStates.Create();
 
   fServerClient := nil;
+  fActions.OnGroupOrderAttackUnit := GroupOrderAttackUnit;
+  fActions.OnGroupOrderWalk := GroupOrderWalk;
   fActions.OnLog := Log;
 
   gLog.Log('THandAIExt-Create: HandIndex = ' + IntToStr(fHandIndex));
@@ -91,8 +108,6 @@ begin
   begin
     Events.MissionStartW();
     States.TerrainSizeW(gTerrain.MapX, gTerrain.MapY);
-    //States.TerrainPassabilityW(gTerrain.Passability);
-    //States.TerrainFertilityW(gTerrain.Fertility);
   end;
 
   Events.TickW(aTick);
@@ -109,7 +124,25 @@ begin
 end;
 
 
-// Temporary location for logs from actions
+// Process incoming actions
+
+procedure THandAI_Ext.GroupOrderAttackUnit(aGroupID, aUnitID: Integer);
+begin
+  // Check if the parameters are correct
+  // Process the action
+  gLog.Log('THandAIExt-GroupOrderAttackUnit');
+end;
+
+
+
+procedure THandAI_Ext.GroupOrderWalk(aGroupID, aX, aY, aDir: Integer);
+begin
+  // Check if the parameters are correct
+  // Process the action
+  gLog.Log('THandAIExt-GroupOrderWalk');
+end;
+
+
 procedure THandAI_Ext.Log(aLog: UnicodeString);
 begin
   gLog.Log(aLog);

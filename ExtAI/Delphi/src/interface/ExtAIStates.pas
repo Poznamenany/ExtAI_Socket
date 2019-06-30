@@ -50,7 +50,6 @@ end;
 
 destructor TExtAIStates.Destroy();
 begin
-  //fOnGroupOrderAttackUnit := nil;
   fMsg.Free;
   fTerrain.Free;
   fClient := nil;
@@ -79,8 +78,9 @@ end;
 
 function TExtAIStates.TileIsPassable(aHeight,aWidth: Word): boolean;
 begin
-  if (aHeight >= 0) AND (aHeight <= Terrain.MapHeight) AND
-     (aWidth  >= 0) AND (aWidth  <= Terrain.MapWidth) AND
+  Result := False;
+  if (aHeight > 0) AND (aHeight <= Terrain.MapHeight) AND
+     (aWidth  > 0) AND (aWidth  <= Terrain.MapWidth) AND
      (Length(Terrain.Passability) > aWidth * aHeight + aWidth) then
     Result := Terrain.Passability[Terrain.MapWidth * aHeight + aWidth];
 end;
@@ -94,8 +94,9 @@ end;
 
 function TExtAIStates.TileIsFertile(aHeight,aWidth: Word): boolean;
 begin
-  if (aHeight >= 0) AND (aHeight <= Terrain.MapHeight) AND
-     (aWidth  >= 0) AND (aWidth  <= Terrain.MapWidth) AND
+  Result := False;
+  if (aHeight > 0) AND (aHeight <= Terrain.MapHeight) AND
+     (aWidth  > 0) AND (aWidth  <= Terrain.MapWidth) AND
      (Length(Terrain.Fertility) > aWidth * aHeight + aWidth) then
     Result := Terrain.Fertility[Terrain.MapWidth * aHeight + aWidth];
 end;
