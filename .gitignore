@@ -27,6 +27,9 @@ ExtAI/Delphi/src/interface/__recovery/*.*
 ExtAI/Delphi/src/net/__history/*.*
 ExtAI/Delphi/src/net/__recovery/*.*
 ExtAI/Delphi/win32/*
+ExtAI/Python/.idea/*
+ExtAI/Python/venv/*
+ExtAI/Python/src/__pycache__/*
 src/__history/*.*
 src/__recovery/*.*
 src/ExtAI/__history/*.*
