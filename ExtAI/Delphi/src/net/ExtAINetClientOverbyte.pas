@@ -6,7 +6,7 @@ uses
 
 // TCP client
 type
-  TNotifyDataEvent = procedure(aData:pointer; aLength:cardinal)of object;
+  TNotifyDataEvent = procedure(aData: pointer; aLength: cardinal) of object;
 
   TNetClientOverbyte = class
   private
@@ -139,8 +139,8 @@ procedure TNetClientOverbyte.DataAvailable(Sender: TObject; Error: Word);
 const
   BufferSize = 10240; //10kb
 var
-  P: pointer;
-  L: integer; //L could be -1 when no data is available
+  P: Pointer;
+  L: Integer; //L could be -1 when no data is available
 begin
   if (Error <> 0) then
   begin
@@ -152,9 +152,9 @@ begin
   L := TWSocket(Sender).Receive(P, BufferSize);
 
   if (L > 0) then //if L=0 then exit;
-    fOnRecieveData(P, L);
+    fOnRecieveData(P, Cardinal(L));
 
-  FreeMem(P);
+  //FreeMem(P); // The pointer is used in record and will be freed later
 end;
 
 

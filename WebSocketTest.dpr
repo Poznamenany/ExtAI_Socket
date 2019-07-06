@@ -4,6 +4,7 @@ uses
   Vcl.Forms,
   TestBed in 'TestBed.pas' {ExtAI_TestBed},
   Game in 'src\Game.pas',
+  KM_CommonUtils in 'src\KM_CommonUtils.pas',
   KM_Consts in 'src\KM_Consts.pas',
   KM_Hand in 'src\KM_Hand.pas',
   KM_HandAI_Ext in 'src\KM_HandAI_Ext.pas',

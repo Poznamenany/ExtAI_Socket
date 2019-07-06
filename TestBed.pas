@@ -34,30 +34,30 @@ type
     btnStartServer: TButton;
     btnTerminateAI: TButton;
     btnTerminateExtAIs: TButton;
-    cbLoc0: TComboBox;
-    cbLoc1: TComboBox;
-    cbLoc2: TComboBox;
-    cbLoc3: TComboBox;
-    cbLoc4: TComboBox;
-    cbLoc5: TComboBox;
-    cbLoc6: TComboBox;
-    cbLoc8: TComboBox;
-    cbLoc9: TComboBox;
-    cbLoc7: TComboBox;
+    cbLoc00: TComboBox;
+    cbLoc01: TComboBox;
+    cbLoc02: TComboBox;
+    cbLoc03: TComboBox;
+    cbLoc04: TComboBox;
+    cbLoc05: TComboBox;
+    cbLoc06: TComboBox;
+    cbLoc08: TComboBox;
+    cbLoc09: TComboBox;
+    cbLoc07: TComboBox;
     cbLoc10: TComboBox;
     cbLoc11: TComboBox;
-    edLoc0: TEdit;
-    edLoc1: TEdit;
-    edLoc2: TEdit;
-    edLoc3: TEdit;
-    edLoc4: TEdit;
-    edLoc5: TEdit;
-    edLoc6: TEdit;
-    edLoc7: TEdit;
-    edLoc8: TEdit;
-    edLoc9: TEdit;
-    edLoc10: TEdit;
-    edLoc11: TEdit;
+    edPingLoc00: TEdit;
+    edPingLoc01: TEdit;
+    edPingLoc02: TEdit;
+    edPingLoc03: TEdit;
+    edPingLoc04: TEdit;
+    edPingLoc05: TEdit;
+    edPingLoc06: TEdit;
+    edPingLoc07: TEdit;
+    edPingLoc08: TEdit;
+    edPingLoc09: TEdit;
+    edPingLoc10: TEdit;
+    edPingLoc11: TEdit;
     edServerPort: TEdit;
     gbAIControlInterface: TGroupBox;
     gbExtAIs: TGroupBox;
@@ -66,16 +66,16 @@ type
     gbServer: TGroupBox;
     gbSimulation: TGroupBox;
     chbControlAll: TCheckBox;
-    labLoc0: TLabel;
-    labLoc1: TLabel;
-    labLoc2: TLabel;
-    labLoc3: TLabel;
-    labLoc4: TLabel;
-    labLoc5: TLabel;
-    labLoc6: TLabel;
-    labLoc7: TLabel;
-    labLoc8: TLabel;
-    labLoc9: TLabel;
+    labLoc00: TLabel;
+    labLoc01: TLabel;
+    labLoc02: TLabel;
+    labLoc03: TLabel;
+    labLoc04: TLabel;
+    labLoc05: TLabel;
+    labLoc06: TLabel;
+    labLoc07: TLabel;
+    labLoc08: TLabel;
+    labLoc09: TLabel;
     labLoc10: TLabel;
     labLoc11: TLabel;
     labPortNumber: TLabel;
@@ -100,13 +100,14 @@ type
     fGame: TGame;
     fExtAIAndGUIArr: TExtAIAndGUIArr;
     fcbLoc: array[0..MAX_HANDS_COUNT-1] of TComboBox;
-    fedLoc: array[0..MAX_HANDS_COUNT-1] of TEdit;
+    fedPingLoc: array[0..MAX_HANDS_COUNT-1] of TEdit;
     procedure RefreshExtAIs(aAIInfo: TExtAIInfo);
     procedure ConnectClient(aIdx: Word);
     procedure DisconnectClient(aIdx: Integer);
     procedure RefreshAIGUI(Sender: TObject);
     function GetIdxByID(var aIdx: Integer; aID: Byte): boolean;
     function GetSelectedClient(var aIdx: Integer): boolean;
+    procedure UpdateSimStatus();
   public
     { Public declarations }
     procedure Log(const aText: String);
@@ -132,7 +133,7 @@ procedure TExtAI_TestBed.FormCreate(Sender: TObject);
 begin
   gLog := TLog.Create(Log);
   gLog.Log('Initialization');
-  fGame := TGame.Create(nil);
+  fGame := TGame.Create(UpdateSimStatus);
   fGame.ExtAIMaster.OnAIConfigured := RefreshExtAIs;
   fGame.ExtAIMaster.OnAIDisconnect := RefreshExtAIs;
 
@@ -140,18 +141,18 @@ begin
   fExtAIAndGUIArr.Number := 0;
   InitializeCriticalSection(csCriticalSection);
 
-  fedLoc[0]  := edLoc0;  fcbLoc[0]  := cbLoc0;
-  fedLoc[1]  := edLoc1;  fcbLoc[1]  := cbLoc1;
-  fedLoc[2]  := edLoc2;  fcbLoc[2]  := cbLoc2;
-  fedLoc[3]  := edLoc3;  fcbLoc[3]  := cbLoc3;
-  fedLoc[4]  := edLoc4;  fcbLoc[4]  := cbLoc4;
-  fedLoc[5]  := edLoc5;  fcbLoc[5]  := cbLoc5;
-  fedLoc[6]  := edLoc6;  fcbLoc[6]  := cbLoc6;
-  fedLoc[7]  := edLoc7;  fcbLoc[7]  := cbLoc7;
-  fedLoc[8]  := edLoc8;  fcbLoc[8]  := cbLoc8;
-  fedLoc[9]  := edLoc9;  fcbLoc[9]  := cbLoc9;
-  fedLoc[10] := edLoc10; fcbLoc[10] := cbLoc10;
-  fedLoc[11] := edLoc11; fcbLoc[11] := cbLoc11;
+  fedPingLoc[0]  := edPingLoc00;  fcbLoc[0]  := cbLoc00;
+  fedPingLoc[1]  := edPingLoc01;  fcbLoc[1]  := cbLoc01;
+  fedPingLoc[2]  := edPingLoc02;  fcbLoc[2]  := cbLoc02;
+  fedPingLoc[3]  := edPingLoc03;  fcbLoc[3]  := cbLoc03;
+  fedPingLoc[4]  := edPingLoc04;  fcbLoc[4]  := cbLoc04;
+  fedPingLoc[5]  := edPingLoc05;  fcbLoc[5]  := cbLoc05;
+  fedPingLoc[6]  := edPingLoc06;  fcbLoc[6]  := cbLoc06;
+  fedPingLoc[7]  := edPingLoc07;  fcbLoc[7]  := cbLoc07;
+  fedPingLoc[8]  := edPingLoc08;  fcbLoc[8]  := cbLoc08;
+  fedPingLoc[9]  := edPingLoc09;  fcbLoc[9]  := cbLoc09;
+  fedPingLoc[10] := edPingLoc10;  fcbLoc[10] := cbLoc10;
+  fedPingLoc[11] := edPingLoc11;  fcbLoc[11] := cbLoc11;
   RefreshExtAIs(nil);
 end;
 
@@ -216,7 +217,7 @@ begin
       Cnt := Cnt + 1;
     end;
   // Filter already selected AI players
-  for K := Low(fedLoc) to High(fedLoc) do
+  for K := Low(fcbLoc) to High(fcbLoc) do
   begin
     // Get actual selection
     L := fcbLoc[K].ItemIndex;
@@ -238,7 +239,7 @@ begin
       SelectedNames[K] := '';
   end;
   // Refresh combo boxes
-  for K := Low(fedLoc) to High(fedLoc) do
+  for K := Low(fcbLoc) to High(fcbLoc) do
   begin
     fcbLoc[K].Items.Clear;
     fcbLoc[K].Items.Add(CLOSED_LOC);
@@ -266,7 +267,7 @@ begin
   // Get available AI players
   Cnt := 0;
   SetLength(AIs,MAX_HANDS_COUNT);
-  for K := Low(fedLoc) to High(fedLoc) do
+  for K := Low(fcbLoc) to High(fcbLoc) do
   begin
     // Get actual selection
     AIs[Cnt] := fcbLoc[K].Items[ fcbLoc[K].ItemIndex ];
@@ -299,7 +300,7 @@ procedure TExtAI_TestBed.btnAutoFillClick(Sender: TObject);
 var
   K: Integer;
 begin
-  for K := Low(fedLoc) to High(fedLoc) do
+  for K := Low(fcbLoc) to High(fcbLoc) do
     if (fcbLoc[K].ItemIndex = 0) then // Loc is closed
     begin
       if (fcbLoc[K].Items.Count > 1) then
@@ -567,6 +568,24 @@ begin
     end;
   finally
      LeaveCriticalSection(csCriticalSection);
+  end;
+end;
+
+
+procedure TExtAI_TestBed.UpdateSimStatus();
+var
+  K,L: Integer;
+  AIName: String;
+begin
+  for K := 0 to fGame.ExtAIMaster.AIs.Count-1 do
+  begin
+    AIName := fGame.ExtAIMaster.AIs[K].Name + ' ' + IntToStr(fGame.ExtAIMaster.AIs[K].ServerClient.Handle);
+    for L := Low(fcbLoc) to High(fcbLoc) do
+      if (AIName = fcbLoc[L].Items[ fcbLoc[L].ItemIndex ]) then
+      begin
+        fedPingLoc[L].Text := IntToStr( fGame.ExtAIMaster.AIs[K].ServerClient.NetPing );
+        break;
+      end;
   end;
 end;
 

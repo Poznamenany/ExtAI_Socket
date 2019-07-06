@@ -28,63 +28,63 @@ object ExtAI_TestBed: TExtAI_TestBed
       Height = 314
       Caption = 'Lobby'
       TabOrder = 0
-      object labLoc1: TLabel
+      object labLoc01: TLabel
         Left = 15
         Top = 67
         Width = 10
         Height = 13
         Caption = '1.'
       end
-      object labLoc2: TLabel
+      object labLoc02: TLabel
         Left = 15
         Top = 87
         Width = 10
         Height = 13
         Caption = '2.'
       end
-      object labLoc3: TLabel
+      object labLoc03: TLabel
         Left = 15
         Top = 107
         Width = 10
         Height = 13
         Caption = '3.'
       end
-      object labLoc4: TLabel
+      object labLoc04: TLabel
         Left = 15
         Top = 137
         Width = 10
         Height = 13
         Caption = '4.'
       end
-      object labLoc5: TLabel
+      object labLoc05: TLabel
         Left = 15
         Top = 157
         Width = 10
         Height = 13
         Caption = '5.'
       end
-      object labLoc6: TLabel
+      object labLoc06: TLabel
         Left = 15
         Top = 177
         Width = 10
         Height = 13
         Caption = '6.'
       end
-      object labLoc7: TLabel
+      object labLoc07: TLabel
         Left = 15
         Top = 197
         Width = 10
         Height = 13
         Caption = '7.'
       end
-      object labLoc8: TLabel
+      object labLoc08: TLabel
         Left = 15
         Top = 227
         Width = 10
         Height = 13
         Caption = '8.'
       end
-      object labLoc9: TLabel
+      object labLoc09: TLabel
         Left = 15
         Top = 247
         Width = 10
@@ -105,57 +105,54 @@ object ExtAI_TestBed: TExtAI_TestBed
         Height = 13
         Caption = '11.'
       end
-      object labLoc0: TLabel
+      object labLoc00: TLabel
         Left = 15
         Top = 47
         Width = 10
         Height = 13
         Caption = '0.'
       end
-      object cbLoc0: TComboBox
+      object cbLoc00: TComboBox
         Left = 30
         Top = 44
         Width = 130
         Height = 21
         TabOrder = 0
-        Text = 'cbLoc0'
       end
-      object cbLoc1: TComboBox
+      object cbLoc01: TComboBox
         Left = 30
         Top = 64
         Width = 130
         Height = 21
         TabOrder = 1
-        Text = 'cbLoc1'
       end
-      object cbLoc2: TComboBox
+      object cbLoc02: TComboBox
         Left = 31
         Top = 84
         Width = 130
         Height = 21
         TabOrder = 2
-        Text = 'cbLoc2'
       end
-      object edLoc0: TEdit
+      object edPingLoc00: TEdit
         Left = 166
         Top = 44
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 3
       end
-      object edLoc1: TEdit
+      object edPingLoc01: TEdit
         Left = 166
         Top = 64
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 4
       end
-      object edLoc2: TEdit
+      object edPingLoc02: TEdit
         Left = 166
         Top = 84
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 5
@@ -169,122 +166,115 @@ object ExtAI_TestBed: TExtAI_TestBed
         TabOrder = 6
         OnClick = btnAutoFillClick
       end
-      object cbLoc3: TComboBox
+      object cbLoc03: TComboBox
         Left = 31
         Top = 104
         Width = 130
         Height = 21
         TabOrder = 7
-        Text = 'cbLoc2'
       end
-      object edLoc3: TEdit
+      object edPingLoc03: TEdit
         Left = 166
         Top = 104
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 8
       end
-      object cbLoc4: TComboBox
+      object cbLoc04: TComboBox
         Left = 31
         Top = 134
         Width = 130
         Height = 21
         TabOrder = 9
-        Text = 'cbLoc2'
       end
-      object edLoc4: TEdit
+      object edPingLoc04: TEdit
         Left = 166
         Top = 134
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 10
       end
-      object cbLoc5: TComboBox
+      object cbLoc05: TComboBox
         Left = 31
         Top = 154
         Width = 130
         Height = 21
         TabOrder = 11
-        Text = 'cbLoc2'
       end
-      object edLoc5: TEdit
+      object edPingLoc05: TEdit
         Left = 166
         Top = 154
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 12
       end
-      object cbLoc6: TComboBox
+      object cbLoc06: TComboBox
         Left = 31
         Top = 174
         Width = 130
         Height = 21
         TabOrder = 13
-        Text = 'cbLoc2'
       end
-      object edLoc6: TEdit
+      object edPingLoc06: TEdit
         Left = 166
         Top = 174
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 14
       end
-      object cbLoc8: TComboBox
+      object cbLoc08: TComboBox
         Left = 31
         Top = 224
         Width = 130
         Height = 21
         TabOrder = 15
-        Text = 'cbLoc2'
       end
-      object edLoc8: TEdit
+      object edPingLoc08: TEdit
         Left = 166
         Top = 224
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 16
       end
-      object cbLoc9: TComboBox
+      object cbLoc09: TComboBox
         Left = 31
         Top = 244
         Width = 130
         Height = 21
         TabOrder = 17
-        Text = 'cbLoc2'
       end
-      object edLoc9: TEdit
-        Left = 167
+      object edPingLoc09: TEdit
+        Left = 166
         Top = 244
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 18
       end
-      object edLoc7: TEdit
+      object edPingLoc07: TEdit
         Left = 166
         Top = 194
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 19
       end
-      object cbLoc7: TComboBox
+      object cbLoc07: TComboBox
         Left = 31
         Top = 194
         Width = 130
         Height = 21
         TabOrder = 20
-        Text = 'cbLoc2'
       end
-      object edLoc10: TEdit
-        Left = 167
+      object edPingLoc10: TEdit
+        Left = 166
         Top = 264
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 21
@@ -295,12 +285,11 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 22
-        Text = 'cbLoc2'
       end
-      object edLoc11: TEdit
-        Left = 167
+      object edPingLoc11: TEdit
+        Left = 166
         Top = 284
-        Width = 100
+        Width = 33
         Height = 21
         Enabled = False
         TabOrder = 23
@@ -311,7 +300,6 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 24
-        Text = 'cbLoc2'
       end
     end
     object gbServer: TGroupBox

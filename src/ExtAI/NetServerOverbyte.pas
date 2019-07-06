@@ -142,7 +142,7 @@ begin
   if (L > 0) then // if L=0 then exit;
     fOnDataAvailable(TWSocket(Sender).Tag, P, L);
 
-  FreeMem(P);
+  //FreeMem(P); // Data will be freed in ServerClient
 end;
 
 

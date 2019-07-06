@@ -11,7 +11,7 @@ const
 type
   TSimulationState = (ssCreated, ssInit, ssInProgress, ssTerminated);
   TGameState = (gsLobby,gsPlaying);
-  TUpdateSimStatEvent = procedure of object;
+  TSimStatEvent = procedure of object;
 
   // The main thread of application (= KP, it contain access to ExtAI Interface and also Hands)
   TGame = class(TThread)
@@ -24,11 +24,11 @@ type
 
     // Purely testbed things
     fSimState: TSimulationState;
-    fOnUpdateSimStatus: TUpdateSimStatEvent;
+    fOnUpdateSimStatus: TSimStatEvent;
   protected
     procedure Execute; override;
   public
-    constructor Create(aOnUpdateSimStatus: TUpdateSimStatEvent); reintroduce;
+    constructor Create(aOnUpdateSimStatus: TSimStatEvent); reintroduce;
     destructor Destroy(); override;
 
     // Game properties
@@ -49,7 +49,7 @@ uses
 
 
 { TGame }
-constructor TGame.Create(aOnUpdateSimStatus: TUpdateSimStatEvent);
+constructor TGame.Create(aOnUpdateSimStatus: TSimStatEvent);
 begin
   inherited Create(False);
   gLog.Log('TGame-Create');
@@ -116,7 +116,6 @@ var
 begin
   gLog.Log('TGame-Execute: Start');
   fSimState := ssInProgress;
-
   while (fSimState <> ssTerminated) do
   begin
     // Update ExtAIMaster every tick (update of ExtAI server)

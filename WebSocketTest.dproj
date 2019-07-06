@@ -109,6 +109,7 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="src\Game.pas"/>
+        <DCCReference Include="src\KM_CommonUtils.pas"/>
         <DCCReference Include="src\KM_Consts.pas"/>
         <DCCReference Include="src\KM_Hand.pas"/>
         <DCCReference Include="src\KM_HandAI_Ext.pas"/>

@@ -16,13 +16,18 @@ type
     fClient: TExtAINetClientImplementation;
     fClientID: TExtAINetHandleIndex;
     fConnected: Boolean;
-    // Buffer
+    // Buffers
+    fpStartData: pExtAINewData;
+    fpEndData: pExtAINewData;
     fBuff: TKExtAIMsgStream;
     // ExtAI properties
     fAuthor: UnicodeString;
     fName: UnicodeString;
     fDescription: UnicodeString;
     fAIVersion: Cardinal;
+    // Server properties
+    fServerName: UnicodeString;
+    fServerVersion: Cardinal;
     // Events
     fOnConnectSucceed: TNotifyEvent;
     fOnConnectFailed: TGetStrProc;
@@ -37,12 +42,12 @@ type
     procedure ForcedDisconnect(Sender: TObject);
     procedure RecieveData(aData: Pointer; aLength: Cardinal);
     procedure GameCfg(aData: Pointer; aTypeCfg, aLength: Cardinal);
+    procedure Performance(aData: Pointer);
     procedure Event(aData: Pointer; aTypeEvent, aLength: Cardinal);
     procedure State(aData: Pointer; aTypeState, aLength: Cardinal);
     procedure Status(const S: String);
     procedure ServerCfg(DataType: Cardinal);
     procedure SendExtAICfg();
-
   public
     constructor Create(const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
     destructor Destroy; override;
@@ -64,7 +69,6 @@ type
 
     procedure ConnectTo(const aAddress: String; const aPort: Word); //Try to connect to server
     procedure Disconnect(); //Disconnect from server
-    //procedure SendData(aData: Pointer; aLength: Cardinal);
     procedure SendMessage(aMsg: Pointer; aLengthMsg: TExtAIMsgLengthMsg);
     procedure ProcessReceivedMessages();
   end;
@@ -88,6 +92,10 @@ begin
   fAIVersion := aVersion;
 
   NillEvents();
+  fpStartData := new(pExtAINewData);
+  fpStartData^.Ptr := nil;
+  fpStartData^.Next := nil;
+  fpEndData := fpStartData;
   fConnected := False;
   fClient := TExtAINetClientImplementation.Create();
   fBuff := TKExtAIMsgStream.Create();
@@ -101,6 +109,13 @@ begin
     Disconnect();
   fClient.Free;
   fBuff.Free;
+  repeat
+    fpEndData := fpStartData;
+    fpStartData := fpStartData.Next;
+    if (fpEndData^.Ptr <> nil) then
+      FreeMem(fpEndData^.Ptr, fpEndData^.Length);
+    Dispose(fpEndData);
+  until (fpStartData = nil);
   inherited;
 end;
 
@@ -211,22 +226,21 @@ end;
 
 procedure TExtAINetClient.ServerCfg(DataType: Cardinal);
 var
-  ServerVersion, BackupPosition: Cardinal;
-  Str: UnicodeString;
+  BackupPosition: Cardinal;
 begin
   BackupPosition := fBuff.Position;
   case TExtAIMsgTypeCfgServer(DataType) of
     csName:
     begin
-      fBuff.ReadW(Str);
-      Status('Server name: ' + Str);
+      fBuff.ReadW(fServerName);
+      Status('Server name: ' + fServerName);
     end;
     csVersion:
     begin
-      fBuff.Read(ServerVersion);
-      Status('Server version = ' + IntToStr( ServerVersion ));
+      fBuff.Read(fServerVersion);
+      Status('Server version = ' + IntToStr( fServerVersion ));
       Status('Client version = ' + IntToStr( CLIENT_VERSION ));
-      if (ServerVersion = CLIENT_VERSION) then
+      if (fServerVersion = CLIENT_VERSION) then
         SendExtAICfg();
     end;
     csClientHandle:
@@ -243,6 +257,49 @@ end;
 procedure TExtAINetClient.GameCfg(aData: Pointer; aTypeCfg, aLength: Cardinal);
 begin
   //SendMessage(aData, aLength);
+end;
+
+
+procedure TExtAINetClient.Performance(aData: Pointer);
+var
+  ID: Word;
+  //length: Cardinal;
+  pData: Pointer;
+  Msg: TKExtAIMsgStream;
+  typePerf: TExtAIMsgTypePerformance;
+begin
+  // Check the type of message
+  if (mkPerformance <> TExtAIMsgKind(aData^)) then
+    Exit;
+  // Get type of message
+  pData := Pointer( NativeUInt(aData) + SizeOf(TExtAIMsgKind) );
+  typePerf := TExtAIMsgTypePerformance(pData^);
+  // Get length
+  pData := Pointer( NativeUInt(pData) + SizeOf(TExtAIMsgTypePerformance) );
+  //length := Cardinal( TExtAIMsgLengthData(pData^) );
+  // Get pointer to data
+  pData := Pointer( NativeUInt(pData) + SizeOf(TExtAIMsgLengthData) );
+  // Process message
+  Msg := TKExtAIMsgStream.Create();
+  try
+    case typePerf of
+      // Read ping ID and create response
+      prPing:
+        begin
+          ID := Word( pData^ );
+          Msg.WriteMsgType(mkPerformance, Cardinal(prPong), SizeOf(ID));
+          Msg.Write(ID, SizeOf(ID));
+          SendMessage(Msg.Memory, Msg.Size);
+        end;
+      prPong: begin end;
+      prTick:
+        begin
+
+        end;
+    end;
+  finally
+    Msg.Free;
+  end;
 end;
 
 
@@ -273,6 +330,7 @@ begin
 end;
 
 
+
 // Receive Event
 procedure TExtAINetClient.Event(aData: Pointer; aTypeEvent, aLength: Cardinal);
 begin
@@ -289,10 +347,33 @@ begin
 end;
 
 
+// Merge recieved data into stream
+procedure TExtAINetClient.RecieveData(aData: Pointer; aLength: Cardinal);
+var
+  pNewData: pExtAINewData;
+begin
+  //Status('New message');
+  // Mark pointer to data in new record (Thread safe)
+  New(pNewData);
+  pNewData^.Ptr := nil;
+  pNewData^.Next := nil;
+  fpEndData^.Ptr := aData;
+  fpEndData^.Length := aLength;
+  AtomicExchange(fpEndData^.Next, pNewData);
+  fpEndData := pNewData;
+  // Check if new data are top prio (top prio data have its own message and are processed by NET thread)
+  Performance(  Pointer( NativeUInt(aData) + ExtAI_MSG_HEAD_SIZE )  );
+end;
+
+
+// Process received messages in 2 priorities:
+// The first prio is for direct communication of client and server
+// The second prio is for everything else (game state must remain constant for actual loop of the ExtAI, it is updated later before next loop)
 procedure TExtAINetClient.ProcessReceivedMessages();
 var
   MaxPos, DataType, DataLenIdx: Cardinal;
   pData: Pointer;
+  pOldData: pExtAINewData;
   pCopyFrom, pCopyTo: PChar;
   Recipient: TExtAIMsgRecipient;
   Sender: TExtAIMsgSender;
@@ -300,10 +381,20 @@ var
   LengthMsg: TExtAIMsgLengthMsg;
   LengthData: TExtAIMsgLengthData;
 begin
+  // Merge incoming data into memory stream (Thread safe)
+  while (fpStartData^.Next <> nil) do
+  begin
+    pOldData := fpStartData;
+    AtomicExchange(fpStartData, fpStartData^.Next);
+    fBuff.Write(pOldData^.Ptr^, pOldData^.Length);
+    FreeMem(pOldData^.Ptr, pOldData^.Length);
+    Dispose(pOldData);
+  end;
   // Save size of the buffer
   MaxPos := fBuff.Position;
-  // Try to read new messages
+  // Set actual index
   fBuff.Position := 0;
+  // Try to read new messages
   while (MaxPos - fBuff.Position >= ExtAI_MSG_HEAD_SIZE) do
   begin
     // Read head (move fBuff.Position from first byte of head to first byte of data)
@@ -323,13 +414,14 @@ begin
           pData := Pointer(NativeUInt(fBuff.Memory) + fBuff.Position);
           // Process message
           case Kind of
-            mkServerCfg: ServerCfg(DataType);
-            mkGameCfg:   GameCfg(pData, DataType, LengthData);
-            mkExtAICfg:  begin end;
-            mkAction:    begin end;
-            mkEvent:     Event(pData, DataType, LengthData);
-            mkState:     State(pData, DataType, LengthData);
-            else         begin end;
+            mkServerCfg:   ServerCfg(DataType);
+            mkGameCfg:     GameCfg(pData, DataType, LengthData);
+            mkExtAICfg:    begin end;
+            mkPerformance: begin end;
+            mkAction:      begin end;
+            mkEvent:       Event(pData, DataType, LengthData);
+            mkState:       State(pData, DataType, LengthData);
+            else           begin end;
           end;
           // Move position to next Head or Data
           fBuff.Position := fBuff.Position + LengthData;
@@ -352,15 +444,6 @@ begin
   end;
   // Move position at the end
   fBuff.Position := MaxPos;
-end;
-
-
-// Merge recieved data into stream
-procedure TExtAINetClient.RecieveData(aData: Pointer; aLength: Cardinal);
-begin
-  fBuff.Write(aData^, aLength);
-
-  Status('New message');
 end;
 
 

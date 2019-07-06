@@ -25,12 +25,13 @@ type
   TExtAIMsgLengthData  = Cardinal;
   {$Z1} // Use 1 Byte to store enumeration
   TExtAIMsgKind = (
-    mkServerCfg =  0,
-    mkGameCfg   =  1,
-    mkExtAICfg  =  2,
-    mkAction    =  3,
-    mkEvent     =  4,
-    mkState     =  5
+    mkServerCfg   =  0,
+    mkGameCfg     =  1,
+    mkExtAICfg    =  2,
+    mkPerformance =  3,
+    mkAction      =  4,
+    mkEvent       =  5,
+    mkState       =  6
   );
 
 const
@@ -59,6 +60,12 @@ type
     caName                 =   1,
     caDescription          =   2,
     caVersion              =   3
+  );
+  {$Z1} // Use 1 Byte to store enumeration
+  TExtAIMsgTypePerformance = (
+    prPing                 =   0, // Ping request from server
+    prPong                 =   1, // Poing response of client to Ping request
+    prTick                 =   2  // Duration of Tick
   );
   // Actions, Events, States
   {$Z2} // Use 2 Bytes to store enumeration
@@ -89,6 +96,7 @@ const
     SizeOf(TExtAIMsgTypeCfgServer),
     SizeOf(TExtAIMsgTypeCfgGame),
     SizeOf(TExtAIMsgTypeCfgAI),
+    SizeOf(TExtAIMsgTypePerformance),
     SizeOf(TExtAIMsgTypeAction),
     SizeOf(TExtAIMsgTypeEvent),
     SizeOf(TExtAIMsgTypeState)
@@ -96,6 +104,13 @@ const
 
 type
   TExtAIEventNewMsg = procedure (aData: Pointer; aLength: Cardinal) of object;
+
+  pExtAINewData = ^TExtAINewData;
+  TExtAINewData = record
+    Ptr: Pointer;
+    Length: Cardinal;
+    Next: pExtAINewData;
+  end;
 
 implementation
 

@@ -15,16 +15,27 @@ type
   TExtAIServerClient = class
   private
     fHandle: TExtAINetHandleIndex;
-    //Each client must have their own receive buffer, so partial messages don't get mixed
+    // Each client must have their own receive buffer, so partial messages don't get mixed
+    fpStartData: pExtAINewData;
+    fpEndData: pExtAINewData;
     fBuffer: TKExtAIMsgStream;
     fScheduledMsg: TKExtAIMsgStream;
+    fPerformance: record
+      NetPingIdx,NetPingMsgIdx: Word;
+      TickPingIdx,TickPingMsgIdx: Word;
+      NetPingArr: array [0..ExtAI_MSG_MAX_NET_PING_CNT-1] of Cardinal;
+      TickPingArr: array [0..ExtAI_MSG_MAX_TICK_PING_CNT-1] of Cardinal;
+    end;
     fOnCfg: TNewDataEvent;
     fOnAction: TNewDataEvent;
     fOnState: TNewDataEvent;
     procedure NillEvents();
     procedure Cfg(aData: Pointer; aTypeCfg, aLength: Cardinal);
+    procedure Performance(aData: Pointer);
     procedure Action(aData: Pointer; aTypeAction, aLength: Cardinal);
     procedure State(aData: Pointer; aTypeState, aLength: Cardinal);
+    function GetNetPing(): Cardinal;
+    function GetTickPing(): Cardinal;
   public
     constructor Create(aHandle: TExtAINetHandleIndex);
     destructor Destroy(); override;
@@ -35,6 +46,8 @@ type
     property Handle: TExtAINetHandleIndex read fHandle;
     property Buffer: TKExtAIMsgStream read fBuffer;
     property ScheduledMsg: TKExtAIMsgStream read fScheduledMsg;
+    property NetPing: Cardinal read GetNetPing;
+    property TickPing: Cardinal read GetTickPing;
 
     procedure AddScheduledMsg(aData: Pointer; aLength: Cardinal);
   end;
@@ -46,6 +59,8 @@ type
     fClients: TList<TExtAIServerClient>;
 
     fListening: Boolean;
+    fNetPingLastMsg: Cardinal;
+    fTickPingLastMsg: Cardinal;
 
     fServerName: AnsiString;
     fRoomCount: Integer;
@@ -66,6 +81,9 @@ type
     procedure SendScheduledData(aClient: TExtAIServerClient);
     // Unpack and process input messages
     procedure ProcessReceivedMessages(aClient: TExtAIServerClient);
+    // Ping
+    procedure SendNetPingRequest(aClient: TExtAIServerClient);
+    procedure SendTickPingRequest(aClient: TExtAIServerClient);
   public
     constructor Create();
     destructor Destroy(); override;
@@ -85,6 +103,8 @@ type
 
 
 implementation
+uses
+  KM_CommonUtils;
 
 const
   SERVER_VERSION: Cardinal = 20190622;
@@ -97,6 +117,19 @@ begin
   fHandle := aHandle;
   fBuffer := TKExtAIMsgStream.Create();
   fScheduledMsg := TKExtAIMsgStream.Create();
+  fpStartData := new(pExtAINewData);
+  fpStartData^.Ptr := nil;
+  fpStartData^.Next := nil;
+  fpEndData := fpStartData;
+  with fPerformance do
+  begin
+    NetPingIdx := 0;
+    NetPingMsgIdx := 0;
+    TickPingIdx := 0;
+    TickPingMsgIdx := 0;
+    FillChar(NetPingArr[0], SizeOf(NetPingArr[0]) * Length(NetPingArr), #0);
+    FillChar(TickPingArr[0], SizeOf(TickPingArr[0]) * Length(TickPingArr), #0);
+  end;
   NillEvents();
 end;
 
@@ -106,6 +139,13 @@ begin
   NillEvents();
   fBuffer.Free;
   fScheduledMsg.Free();
+  repeat
+    fpEndData := fpStartData;
+    fpStartData := fpStartData.Next;
+    if (fpEndData^.Ptr <> nil) then
+      FreeMem(fpEndData^.Ptr, fpEndData^.Length);
+    Dispose(fpEndData);
+  until (fpStartData = nil);
   inherited;
 end;
 
@@ -122,6 +162,44 @@ procedure TExtAIServerClient.Cfg(aData: Pointer; aTypeCfg, aLength: Cardinal);
 begin
   if Assigned(fOnCfg) then
     fOnCfg(aData, aTypeCfg, aLength);
+end;
+
+
+procedure TExtAIServerClient.Performance(aData: Pointer);
+var
+  //length: Cardinal;
+  pData: Pointer;
+  typePerf: TExtAIMsgTypePerformance;
+begin
+  // Check the type of message
+  if (mkPerformance <> TExtAIMsgKind(aData^)) then
+    Exit;
+  // Get type of message
+  pData := Pointer( NativeUInt(aData) + SizeOf(TExtAIMsgKind) );
+  typePerf := TExtAIMsgTypePerformance(pData^);
+  // Get length
+  pData := Pointer( NativeUInt(pData) + SizeOf(TExtAIMsgTypePerformance) );
+  //length := Cardinal( TExtAIMsgLengthData(pData^) );
+  // Get pointer to data
+  pData := Pointer( NativeUInt(pData) + SizeOf(TExtAIMsgLengthData) );
+  // Process message
+  with fPerformance do
+    case typePerf of
+      // Read poing ID and save time
+      prPing : begin end;
+      prPong:
+        begin
+          NetPingIdx := Word( pData^ );
+          if (NetPingIdx < Length(NetPingArr)) then
+            NetPingArr[NetPingIdx] := Max(0, TimeGet() - NetPingArr[NetPingIdx] )
+          else
+            NetPingIdx := 0;
+        end;
+      prTick:
+        begin
+
+        end;
+    end;
 end;
 
 
@@ -145,6 +223,20 @@ begin
 end;
 
 
+function TExtAIServerClient.GetNetPing(): Cardinal;
+begin
+  with fPerformance do
+    Result := NetPingArr[NetPingIdx];
+end;
+
+
+function TExtAIServerClient.GetTickPing(): Cardinal;
+begin
+  with fPerformance do
+    Result := TickPingArr[TickPingIdx];
+end;
+
+
 { TExtAINetServer }
 constructor TExtAINetServer.Create();
 begin
@@ -154,6 +246,8 @@ begin
   fServer := TNetServerOverbyte.Create();
   fListening := False;
   fRoomCount := 0;
+  fNetPingLastMsg := 0;
+  fTickPingLastMsg := 0;
   NillEvents();
 end;
 
@@ -256,6 +350,52 @@ begin
 end;
 
 
+procedure TExtAINetServer.SendNetPingRequest(aClient: TExtAIServerClient);
+var
+  M: TKExtAIMsgStream;
+begin
+  M := TKExtAIMsgStream.Create;
+  try
+    with aClient.fPerformance do
+    begin
+      // Save time
+      NetPingMsgIdx := (NetPingMsgIdx + 1) mod ExtAI_MSG_MAX_NET_PING_CNT;
+      NetPingArr[NetPingMsgIdx] := TimeGet();
+      // Add version
+      M.WriteMsgType(mkPerformance, Cardinal(prPing), SizeOf(NetPingMsgIdx));
+      M.Write(NetPingMsgIdx, SizeOf(NetPingMsgIdx));
+    end;
+    // Send message
+    ScheduleSendData(aClient.Handle, M.Memory, M.Size, True);
+  finally
+    M.Free;
+  end;
+end;
+
+
+procedure TExtAINetServer.SendTickPingRequest(aClient: TExtAIServerClient);
+var
+  M: TKExtAIMsgStream;
+begin
+  M := TKExtAIMsgStream.Create;
+  try
+    with aClient.fPerformance do
+    begin
+      // Save time
+      TickPingMsgIdx := (TickPingMsgIdx + 1) mod ExtAI_MSG_MAX_TICK_PING_CNT;
+      TickPingArr[TickPingMsgIdx] := TimeGet();
+      // Add version
+      M.WriteMsgType(mkPerformance, Cardinal(prTick), SizeOf(TickPingMsgIdx));
+      M.Write(TickPingMsgIdx, SizeOf(TickPingMsgIdx));
+    end;
+    // Send message
+    ScheduleSendData(aClient.Handle, M.Memory, M.Size, True);
+  finally
+    M.Free;
+  end;
+end;
+
+
 // Someone has connected
 procedure TExtAINetServer.ClientConnect(aHandle: TExtAINetHandleIndex);
 var
@@ -310,7 +450,7 @@ begin
   if (Client = nil) then
     Exit;
   // If the size of final message is too big, send the actual schedule
-  if (Client.ScheduledMsg.Size + aLength > ExtAI_MSG_MAX_CUMULATIVE_PACKET_SIZE) then
+  if aFlushQueue OR (Client.ScheduledMsg.Size + aLength > ExtAI_MSG_MAX_CUMULATIVE_PACKET_SIZE) then
     SendScheduledData(Client);
 
   Client.AddScheduledMsg(aData, aLength);
@@ -343,11 +483,37 @@ begin
 end;
 
 
+procedure TExtAINetServer.UpdateState();
+var
+  K: Integer;
+begin
+  for K := 0 to fClients.Count - 1 do
+  begin
+    // Process new messages
+    ProcessReceivedMessages(fClients[K]);
+    // Check ping
+    if (GetTimeSince(fNetPingLastMsg) >= ExtAI_MSG_TIME_INTERVAL_NET_PING) then
+      SendNetPingRequest(fClients[K]);
+    //if (GetTimeSince(fTickPingLastMsg) >= ExtAI_MSG_TIME_INTERVAL_TICK_PING) then
+    //  SendTickPingRequest(fClients[K]);
+    // Send outcoming messages
+    SendScheduledData(fClients[K]);
+  end;
+  if (GetTimeSince(fNetPingLastMsg) >= ExtAI_MSG_TIME_INTERVAL_NET_PING) then
+    fNetPingLastMsg := TimeGet();
+  //if (GetTimeSince(fTickPingLastMsg) >= ExtAI_MSG_TIME_INTERVAL_TICK_PING) then
+  //  fTickPingLastMsg := TimeGet();
+end;
+
+
 //Someone has send us something
 procedure TExtAINetServer.DataAvailable(aHandle: TExtAINetHandleIndex; aData: Pointer; aLength: Cardinal);
 var
+  pNewData: pExtAINewData;
   Client: TExtAIServerClient;
 begin
+  //Status('Data available');
+
   Client := GetClientByHandle(aHandle);
   if (Client = nil) then
   begin
@@ -356,28 +522,29 @@ begin
   end;
 
   // Append new data to buffer
-  Client.Buffer.Write(aData^, aLength);
-
-  Status('Data available');
-end;
-
-
-procedure TExtAINetServer.UpdateState();
-var
-  K: Integer;
-begin
-  for K := 0 to fClients.Count - 1 do
+  with Client do
   begin
-    ProcessReceivedMessages(fClients[K]);
-    SendScheduledData(fClients[K]);
+    New(pNewData);
+    pNewData^.Ptr := nil;
+    pNewData^.Next := nil;
+    fpEndData^.Ptr := aData;
+    fpEndData^.Length := aLength;
+    AtomicExchange(fpEndData^.Next, pNewData);
+    fpEndData := pNewData;
   end;
+  // Check if new data are top prio (top prio data have its own message and are processed by NET thread)
+  Client.Performance(  Pointer( NativeUInt(aData) + ExtAI_MSG_HEAD_SIZE )  );
 end;
 
 
+// Process received messages in 2 priorities:
+// The first prio is for direct communication of client and server
+// The second prio is for everything else so KP is master of its time
 procedure TExtAINetServer.ProcessReceivedMessages(aClient: TExtAIServerClient);
 var
   MaxPos, DataType, DataLenIdx: Cardinal;
   pData: Pointer;
+  pOldData: pExtAINewData;
   pCopyFrom, pCopyTo: PChar;
   Recipient: TExtAIMsgRecipient;
   Sender: TExtAIMsgSender;
@@ -386,11 +553,22 @@ var
   LengthData: TExtAIMsgLengthData;
   Buff: TKExtAIMsgStream;
 begin
+  // Merge incoming data into memory stream (Thread safe)
+  with aClient do
+    while (fpStartData^.Next <> nil) do
+    begin
+      pOldData := fpStartData;
+      AtomicExchange(fpStartData, fpStartData^.Next);
+      Buffer.Write(pOldData^.Ptr^, pOldData^.Length);
+      FreeMem(pOldData^.Ptr, pOldData^.Length);
+      Dispose(pOldData);
+    end;
   Buff := aClient.Buffer;
   // Save size of the buffer
   MaxPos := Buff.Position;
-  // Try to read new messages
+  // Set actual index
   Buff.Position := 0;
+  // Try to read new messages
   while (MaxPos - Buff.Position >= ExtAI_MSG_HEAD_SIZE) do
   begin
     // Read head (move Buff.Position from first byte of head to first byte of data)
@@ -410,12 +588,13 @@ begin
           pData := Pointer(NativeUInt(Buff.Memory) + Buff.Position);
           // Process message
           case Kind of
-            mkServerCfg: begin end;
-            mkGameCfg:   begin end;
-            mkExtAICfg:  aClient.Cfg(pData, DataType, LengthData);
-            mkAction:    aClient.Action(pData, DataType, LengthData);
-            mkEvent:     begin end;
-            mkState:     aClient.State(pData, DataType, LengthData);
+            mkServerCfg:   begin end;
+            mkGameCfg:     begin end;
+            mkExtAICfg:    aClient.Cfg(pData, DataType, LengthData);
+            mkPerformance: begin end;
+            mkAction:      aClient.Action(pData, DataType, LengthData);
+            mkEvent:       begin end;
+            mkState:       aClient.State(pData, DataType, LengthData);
           end;
           // Move position to next Head or Data
           Buff.Position := Buff.Position + LengthData;
