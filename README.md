@@ -1,2 +1,2 @@
 # ExtAI_Socket
-API for external AI
+Prototype API for External AI for Knights Province
