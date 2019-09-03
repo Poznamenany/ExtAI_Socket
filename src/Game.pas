@@ -1,8 +1,7 @@
 unit Game;
 interface
 uses
-  Windows, Classes, Generics.Collections,
-  System.SysUtils,
+  Windows, Classes, Generics.Collections, System.SysUtils,
   KM_Hand, KM_Terrain, ExtAIMaster;
 
 const
@@ -10,14 +9,14 @@ const
 
 type
   TSimulationState = (ssCreated, ssInit, ssInProgress, ssTerminated);
-  TGameState = (gsLobby,gsPlaying);
+  TGameState = (gsLobby, gsPlaying);
   TSimStatEvent = procedure of object;
 
   // The main thread of application (= KP, it contain access to ExtAI Interface and also Hands)
   TGame = class(TThread)
   private
     fExtAIMaster: TExtAIMaster;
-    fHands: TObjectList<THand>; // ExtAI hand entry point
+    fHands: TObjectList<TKMHand>; // ExtAI hand entry point
     // Game properties (kind of testbed)
     fGameState: TGameState;
     fTick: Cardinal;
@@ -38,7 +37,8 @@ type
     property GameState: TGameState read fGameState;
     property ExtAIMaster: TExtAIMaster read fExtAIMaster;
     property SimulationState: TSimulationState read fSimState;
-    property Hands: TObjectList<THand> read fHands;
+    property Hands: TObjectList<TKMHand> read fHands;
+
     procedure StartEndGame(AIs: array of String);
     procedure TerminateSimulation();
   end;
@@ -53,7 +53,7 @@ constructor TGame.Create(aOnUpdateSimStatus: TSimStatEvent);
 begin
   inherited Create(False);
   gLog.Log('TGame-Create');
-  gTerrain := TKMTerrain.Create();
+  gTerrain := TKMTerrain.Create;
   FreeOnTerminate := False;
   Priority := tpHigher;
 
@@ -82,30 +82,32 @@ begin
   fTick := 0;
   if not ExtAIMaster.Net.Listening then
     Exit;
+
   // Clean hands before game start / end
   FreeAndNil(fHands);
-  if (fGameState = gsLobby) then
-  begin
-    gLog.Log('TGame-StartMap');
-    fGameState := gsPlaying;
-    // Use all ExtAI in every game for now
-    fHands := TObjectList<THand>.Create();
-    for K := 0 to ExtAIMaster.AIs.Count - 1 do
-      for L := Low(AIs) to High(AIs) do
-        if (AIs[L] = ExtAIMaster.AIs[K].Name) then
-        begin
-          fHands.Add(THand.Create(K));
-          // Set hand to ExtAI
-          fHands[ fHands.Count-1 ].SetAIType();
-          // Connect the interface
-          fHands[ fHands.Count-1 ].AIExt.ConnectCallbacks( ExtAIMaster.AIs[K].ServerClient );
-          break;
-        end;
-  end
-  else if (fGameState = gsPlaying) then
-  begin
-    gLog.Log('TGame-EndMap');
-    fGameState := gsLobby;
+
+  case fGameState of
+    gsLobby:  begin
+                gLog.Log('TGame-StartMap');
+                fGameState := gsPlaying;
+                // Use all ExtAI in every game for now
+                fHands := TObjectList<TKMHand>.Create;
+                for K := 0 to ExtAIMaster.AIs.Count - 1 do
+                  for L := Low(AIs) to High(AIs) do
+                    if (AIs[L] = ExtAIMaster.AIs[K].Name) then
+                    begin
+                      fHands.Add(TKMHand.Create(K));
+                      // Set hand to ExtAI
+                      fHands[fHands.Count-1].SetAIType;
+                      // Connect the interface
+                      fHands[fHands.Count-1].AIExt.ConnectCallbacks(ExtAIMaster.AIs[K].ServerClient);
+                      Break;
+                    end;
+              end;
+    gsPlaying:begin
+                gLog.Log('TGame-EndMap');
+                fGameState := gsLobby;
+              end;
   end;
 end;
 

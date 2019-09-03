@@ -1,7 +1,5 @@
 unit TestBed;
-
 interface
-
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
@@ -109,7 +107,6 @@ type
     function GetSelectedClient(var aIdx: Integer): boolean;
     procedure UpdateSimStatus();
   public
-    { Public declarations }
     procedure Log(const aText: String);
     procedure LogID(const aText: String; const aID: Byte);
 
@@ -485,7 +482,6 @@ begin
 end;
 
 
-
 procedure TExtAI_TestBed.ConnectClient(aIdx: Word);
   // Simple function for detection of actual IP address
   function GetIP(var aIPAddress: String): Boolean;
@@ -594,6 +590,7 @@ procedure TExtAI_TestBed.Log(const aText: String);
 begin
   mServerLog.Lines.Append(aText);
 end;
+
 
 procedure TExtAI_TestBed.LogID(const aText: String; const aID: Byte);
 var

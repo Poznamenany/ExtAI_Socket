@@ -11,15 +11,12 @@ type
   private
     fMapX: Word;
     fMapY: Word;
-    //fTexture: array of array of Word;
   public
     Passability: TBoolArr;
     Fertility: TBoolArr;
 
-    constructor Create();
-    destructor Destroy; override;
+    constructor Create;
 
-    //property Fertility: boolean read fMapY;
     property MapX: Word read fMapX;
     property MapY: Word read fMapY;
   end;
@@ -33,19 +30,14 @@ implementation
 
 
 { TKMTerrain }
-constructor TKMTerrain.Create();
+constructor TKMTerrain.Create;
 begin
   inherited;
+
   fMapX := 128;
   fMapY := 256;
-  SetLength(Passability, MapX*MapY);
-  SetLength(Fertility, MapX*MapY);
-end;
-
-
-destructor TKMTerrain.Destroy;
-begin
-  inherited;
+  SetLength(Passability, fMapX*fMapY);
+  SetLength(Fertility, fMapX*fMapY);
 end;
 
 

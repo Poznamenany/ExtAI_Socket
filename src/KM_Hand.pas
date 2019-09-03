@@ -6,7 +6,7 @@ uses
 
 type
   // Game class for Hand. It hides the ExtAI inside of it
-  THand = class
+  TKMHand = class
   private
     fHandIndex: TKMHandIndex;
     fAIExt: THandAI_Ext;
@@ -29,8 +29,8 @@ uses
   ExtAILog;
 
 
-{ THand }
-constructor THand.Create(aHandIndex: TKMHandIndex);
+{ TKMHand }
+constructor TKMHand.Create(aHandIndex: TKMHandIndex);
 begin
   inherited Create;
 
@@ -42,7 +42,7 @@ begin
 end;
 
 
-destructor THand.Destroy();
+destructor TKMHand.Destroy;
 begin
   FreeAndNil(fAIExt);
   gLog.Log('  THand-Destroy: HandIndex = ' + IntToStr(fHandIndex));
@@ -51,13 +51,13 @@ begin
 end;
 
 
-procedure THand.SetAIType();
+procedure TKMHand.SetAIType;
 begin
   fAIExt := THandAI_Ext.Create(fHandIndex);
 end;
 
 
-procedure THand.UpdateState(aTick: Cardinal);
+procedure TKMHand.UpdateState(aTick: Cardinal);
 begin
   if (fAIExt <> nil) then
     fAIExt.UpdateState(aTick);
