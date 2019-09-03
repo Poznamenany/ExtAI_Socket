@@ -58,7 +58,7 @@
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
         <SanitizedProjectName>WebSocketTest</SanitizedProjectName>
-        <DCC_UnitSearchPath>src\OverbyteV8;src\OverbyteV8\Extras;src\OverbyteV8\Include;src\OverbyteV8\zobj125;src\OverbyteV8\zobj125\win64;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>src\OverbyteV8;src\OverbyteV8\Extras;src\OverbyteV8\Include;src\OverbyteV8\zobj125;src\OverbyteV8\zobj125\win64;..\..\src\3rdparty\Overbyte ICS 8;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1029</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
