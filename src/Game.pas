@@ -2,7 +2,7 @@ unit Game;
 interface
 uses
   Windows, Classes, Generics.Collections,
-  System.Threading, System.Diagnostics, System.SysUtils,
+  System.SysUtils,
   KM_Hand, KM_Terrain, ExtAIMaster;
 
 const
