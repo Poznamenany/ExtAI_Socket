@@ -9,16 +9,16 @@ const
 
 type
   TSimulationState = (ssCreated, ssInit, ssInProgress, ssTerminated);
-  TGameState = (gsLobby, gsPlaying);
+  TKMGameState = (gsLobby, gsPlaying);
   TSimStatEvent = procedure of object;
 
   // The main thread of application (= KP, it contain access to ExtAI Interface and also Hands)
-  TGame = class(TThread)
+  TKMGame = class(TThread)
   private
     fExtAIMaster: TExtAIMaster;
     fHands: TObjectList<TKMHand>; // ExtAI hand entry point
     // Game properties (kind of testbed)
-    fGameState: TGameState;
+    fGameState: TKMGameState;
     fTick: Cardinal;
 
     // Purely testbed things
@@ -34,7 +34,7 @@ type
     property Tick: Cardinal read fTick;
 
     // Game controls
-    property GameState: TGameState read fGameState;
+    property GameState: TKMGameState read fGameState;
     property ExtAIMaster: TExtAIMaster read fExtAIMaster;
     property SimulationState: TSimulationState read fSimState;
     property Hands: TObjectList<TKMHand> read fHands;
@@ -48,11 +48,11 @@ uses
   ExtAILog;
 
 
-{ TGame }
-constructor TGame.Create(aOnUpdateSimStatus: TSimStatEvent);
+{ TKMGame }
+constructor TKMGame.Create(aOnUpdateSimStatus: TSimStatEvent);
 begin
   inherited Create(False);
-  gLog.Log('TGame-Create');
+  gLog.Log('TKMGame-Create');
   gTerrain := TKMTerrain.Create;
   FreeOnTerminate := False;
   Priority := tpHigher;
@@ -65,9 +65,9 @@ begin
 end;
 
 
-destructor TGame.Destroy();
+destructor TKMGame.Destroy();
 begin
-  gLog.Log('TGame-Destroy');
+  gLog.Log('TKMGame-Destroy');
   gTerrain.Free;
   FreeAndNil(fHands);
   fExtAIMaster.Free;
@@ -75,7 +75,7 @@ begin
 end;
 
 
-procedure TGame.StartEndGame(AIs: array of String);
+procedure TKMGame.StartEndGame(AIs: array of String);
 var
   K, L: Integer;
 begin
@@ -88,7 +88,7 @@ begin
 
   case fGameState of
     gsLobby:  begin
-                gLog.Log('TGame-StartMap');
+                gLog.Log('TKMGame-StartMap');
                 fGameState := gsPlaying;
                 // Use all ExtAI in every game for now
                 fHands := TObjectList<TKMHand>.Create;
@@ -105,18 +105,18 @@ begin
                     end;
               end;
     gsPlaying:begin
-                gLog.Log('TGame-EndMap');
+                gLog.Log('TKMGame-EndMap');
                 fGameState := gsLobby;
               end;
   end;
 end;
 
 
-procedure TGame.Execute;
+procedure TKMGame.Execute;
 var
   K: Integer;
 begin
-  gLog.Log('TGame-Execute: Start');
+  gLog.Log('TKMGame-Execute: Start');
   fSimState := ssInProgress;
   while (fSimState <> ssTerminated) do
   begin
@@ -127,7 +127,7 @@ begin
     if (fGameState = gsPlaying) then
     begin
       //fGame.ExtAIMaster.Net.SendString(TestText);
-      gLog.Log('TGame-Execute: Tick = ' + IntToStr(fTick));
+      gLog.Log('TKMGame-Execute: Tick = ' + IntToStr(fTick));
       for K := 0 to fHands.Count - 1 do
         if (fHands[K] <> nil) AND (fHands[K].AIExt <> nil) AND (fHands[K].AIExt.Events <> nil) then
           fHands[K].UpdateState(fTick);
@@ -149,13 +149,13 @@ begin
   fSimState := ssTerminated;
   fTick := 0;
   fOnUpdateSimStatus();
-  gLog.Log('TGame-Execute: End');
+  gLog.Log('TKMGame-Execute: End');
 end;
 
 
-procedure TGame.TerminateSimulation();
+procedure TKMGame.TerminateSimulation();
 begin
-  gLog.Log('TGame-TerminateSimulation');
+  gLog.Log('TKMGame-TerminateSimulation');
   fSimState := ssTerminated;
 end;
 

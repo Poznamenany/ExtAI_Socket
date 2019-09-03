@@ -15,11 +15,13 @@ type
     tsTab: TTabSheet;
     mLog: TMemo;
   end;
+
   TExtAIAndGUIArr = record
     Count: Word;
     Number: Word;
     Arr: array of TExtAIAndGUI;
   end;
+
   TExtAI_TestBed = class(TForm)
     btnAutoFill: TButton;
     btnClientConnect: TButton;
@@ -95,7 +97,7 @@ type
     procedure chbControlAllClick(Sender: TObject);
     procedure btnAutoFillClick(Sender: TObject);
   private
-    fGame: TGame;
+    fGame: TKMGame;
     fExtAIAndGUIArr: TExtAIAndGUIArr;
     fcbLoc: array[0..MAX_HANDS_COUNT-1] of TComboBox;
     fedPingLoc: array[0..MAX_HANDS_COUNT-1] of TEdit;
@@ -130,7 +132,7 @@ procedure TExtAI_TestBed.FormCreate(Sender: TObject);
 begin
   gLog := TLog.Create(Log);
   gLog.Log('Initialization');
-  fGame := TGame.Create(UpdateSimStatus);
+  fGame := TKMGame.Create(UpdateSimStatus);
   fGame.ExtAIMaster.OnAIConfigured := RefreshExtAIs;
   fGame.ExtAIMaster.OnAIDisconnect := RefreshExtAIs;
 
@@ -571,16 +573,16 @@ end;
 procedure TExtAI_TestBed.UpdateSimStatus();
 var
   K,L: Integer;
-  AIName: String;
+  AIName: string;
 begin
   for K := 0 to fGame.ExtAIMaster.AIs.Count-1 do
   begin
     AIName := fGame.ExtAIMaster.AIs[K].Name + ' ' + IntToStr(fGame.ExtAIMaster.AIs[K].ServerClient.Handle);
     for L := Low(fcbLoc) to High(fcbLoc) do
-      if (AIName = fcbLoc[L].Items[ fcbLoc[L].ItemIndex ]) then
+      if AIName = fcbLoc[L].Items[fcbLoc[L].ItemIndex] then
       begin
-        fedPingLoc[L].Text := IntToStr( fGame.ExtAIMaster.AIs[K].ServerClient.NetPing );
-        break;
+        fedPingLoc[L].Text := IntToStr(fGame.ExtAIMaster.AIs[K].ServerClient.NetPing);
+        Break;
       end;
   end;
 end;
