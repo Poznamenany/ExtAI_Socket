@@ -83,6 +83,7 @@ type
     mServerLog: TMemo;
     pcLogExtAI: TPageControl;
     prgServer: TProgressBar;
+    Memo1: TMemo;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnStartServerClick(Sender: TObject);
@@ -97,6 +98,7 @@ type
     procedure pcOnChangeTab(Sender: TObject);
     procedure chbControlAllClick(Sender: TObject);
     procedure btnAutoFillClick(Sender: TObject);
+    procedure Memo1Change(Sender: TObject);
   private
     fGame: TKMGame;
     fExtAIAndGUIArr: TExtAIAndGUIArr;
@@ -171,8 +173,9 @@ procedure TExtAI_TestBed.btnStartServerClick(Sender: TObject);
 begin
   if fGame.ExtAIMaster.Net.Listening then
   begin
-    if (fGame.GameState <> gsLobby) then
+    if fGame.GameState <> gsLobby then
       btnServerStartMapClick(Sender);
+
     fGame.ExtAIMaster.Net.StopListening();
     prgServer.Style := pbstNormal;
     btnStartServer.Caption := 'Start Server';
@@ -304,12 +307,14 @@ var
   K: Integer;
 begin
   for K := Low(fcbLoc) to High(fcbLoc) do
-    if (fcbLoc[K].ItemIndex = 0) then // Loc is closed
+    if fcbLoc[K].ItemIndex = 0 then // Loc is closed
     begin
-      if (fcbLoc[K].Items.Count > 1) then
+      if fcbLoc[K].Items.Count > 1 then
         fcbLoc[K].ItemIndex := 1
       else
-        break;
+        Break;
+
+      //@Martin: Do we need this once per loop or once after the loop will be enough?
       // Refresh AIs
       RefreshExtAIs(nil);
     end;
@@ -353,6 +358,7 @@ begin
   Cnt := fExtAIAndGUIArr.Count;
   if (Length(fExtAIAndGUIArr.Arr) <= Cnt) then
     SetLength(fExtAIAndGUIArr.Arr, Cnt + 12);
+
   // Increase cnt
   Inc(fExtAIAndGUIArr.Count);
   with fExtAIAndGUIArr.Arr[Cnt] do
@@ -375,6 +381,7 @@ begin
     AI.Client.OnConnectSucceed := RefreshAIGUI;
     AI.Client.OnForcedDisconnect := RefreshAIGUI;
   end;
+
   // Try to connect to server
   ConnectClient(Cnt);
 end;
@@ -604,6 +611,16 @@ var
 begin
   if GetIdxByID(Idx, aID) then
     fExtAIAndGUIArr.Arr[Idx].mLog.Lines.Append(aText);
+end;
+
+
+procedure TExtAI_TestBed.Memo1Change(Sender: TObject);
+begin
+  //@Martin: The app needs to be restructured a bit:
+  // 1. Start the server
+  // 2. Configure the AI types in the lobby list
+  // 3. Create AIs
+  // 4. Start the gameplay (map)
 end;
 
 

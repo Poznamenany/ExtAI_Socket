@@ -344,9 +344,9 @@ object ExtAI_TestBed: TExtAI_TestBed
     end
     object mServerLog: TMemo
       Left = 289
-      Top = 15
+      Top = 96
       Width = 221
-      Height = 503
+      Height = 422
       TabOrder = 2
     end
     object gbSimulation: TGroupBox
@@ -386,6 +386,21 @@ object ExtAI_TestBed: TExtAI_TestBed
         TabOrder = 2
         OnClick = btnServerSendEventClick
       end
+    end
+    object Memo1: TMemo
+      Left = 288
+      Top = 16
+      Width = 225
+      Height = 73
+      Enabled = False
+      Lines.Strings = (
+        '1. Start the server'
+        '2. Create new AI '
+        '3. Select the AI in lobby list'
+        '4. Start the map')
+      ReadOnly = True
+      TabOrder = 4
+      OnChange = Memo1Change
     end
   end
   object gbExtAIs: TGroupBox
