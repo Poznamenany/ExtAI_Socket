@@ -16,6 +16,7 @@ type
     mLog: TMemo;
   end;
 
+  //@Martin: wouldn't it be simpler to use TList<TExtAIAndGUI> which already has the Count/Capacity and auto-growth?
   TExtAIAndGUIArr = record
     Count: Word;
     Number: Word;
@@ -168,7 +169,7 @@ end;
 
 procedure TExtAI_TestBed.btnStartServerClick(Sender: TObject);
 begin
-  if (fGame.ExtAIMaster.Net.Listening) then
+  if fGame.ExtAIMaster.Net.Listening then
   begin
     if (fGame.GameState <> gsLobby) then
       btnServerStartMapClick(Sender);
@@ -182,12 +183,13 @@ begin
   else
   begin
     try
-      fGame.ExtAIMaster.Net.StartListening(StrToInt(edServerPort.Text),'Testing server');
+      fGame.ExtAIMaster.Net.StartListening(StrToInt(edServerPort.Text), 'Testing server');
     except
       Log('Invalid port');
       Exit;
     end;
-    if (fGame.ExtAIMaster.Net.Listening) then
+
+    if fGame.ExtAIMaster.Net.Listening then
     begin
       prgServer.Style := pbstMarquee;
       btnStartServer.Caption := 'Stop Server';
@@ -208,13 +210,14 @@ var
 begin
   // Get available AI players
   Cnt := 0;
-  SetLength(NewNames,fGame.ExtAIMaster.AIs.Count);
+  SetLength(NewNames, fGame.ExtAIMaster.AIs.Count);
   for K := 0 to fGame.ExtAIMaster.AIs.Count-1 do
     if fGame.ExtAIMaster.AIs[K].Configured then
     begin
       NewNames[Cnt] := fGame.ExtAIMaster.AIs[K].Name + ' ' + IntToStr(fGame.ExtAIMaster.AIs[K].ServerClient.Handle);
       Cnt := Cnt + 1;
     end;
+
   // Filter already selected AI players
   for K := Low(fcbLoc) to High(fcbLoc) do
   begin
@@ -231,12 +234,13 @@ begin
           ItemFound := True;
           Cnt := Cnt - 1;
           NewNames[L] := NewNames[Cnt];
-          break;
+          Break;
         end;
     // Remove selection
     if not ItemFound then
       SelectedNames[K] := '';
   end;
+
   // Refresh combo boxes
   for K := Low(fcbLoc) to High(fcbLoc) do
   begin
