@@ -17,6 +17,7 @@ type
   end;
 
   //@Martin: wouldn't it be simpler to use TList<TExtAIAndGUI> which already has the Count/Capacity and auto-growth?
+  //@Krom: the Number must be fixed in case that ExtAI lost connection and connects back it can be TList of record if you wish
   TExtAIAndGUIArr = record
     Count: Word;
     Number: Word;
@@ -83,7 +84,7 @@ type
     mServerLog: TMemo;
     pcLogExtAI: TPageControl;
     prgServer: TProgressBar;
-    Memo1: TMemo;
+    mTutorial: TMemo;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnStartServerClick(Sender: TObject);
@@ -98,7 +99,7 @@ type
     procedure pcOnChangeTab(Sender: TObject);
     procedure chbControlAllClick(Sender: TObject);
     procedure btnAutoFillClick(Sender: TObject);
-    procedure Memo1Change(Sender: TObject);
+    procedure mTutorialChange(Sender: TObject);
   private
     fGame: TKMGame;
     fExtAIAndGUIArr: TExtAIAndGUIArr;
@@ -315,6 +316,9 @@ begin
         Break;
 
       //@Martin: Do we need this once per loop or once after the loop will be enough?
+      //@Krom: RefreshExtAIs creates also list of available AIs (they are not selected in lobby list)
+      //       so I can always pick up the first index from available AIs and then refresh the list
+      //       it is not so effecient but we have just 12 locs
       // Refresh AIs
       RefreshExtAIs(nil);
     end;
@@ -614,13 +618,15 @@ begin
 end;
 
 
-procedure TExtAI_TestBed.Memo1Change(Sender: TObject);
+procedure TExtAI_TestBed.mTutorialChange(Sender: TObject);
 begin
   //@Martin: The app needs to be restructured a bit:
   // 1. Start the server
   // 2. Configure the AI types in the lobby list
   // 3. Create AIs
   // 4. Start the gameplay (map)
+  //@Krom: we already discussed it - the game does not know about ExtAI unless it connects to the game
+  //       so points 2 and 3 cannot be swapped
 end;
 
 

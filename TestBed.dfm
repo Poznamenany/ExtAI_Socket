@@ -387,10 +387,10 @@ object ExtAI_TestBed: TExtAI_TestBed
         OnClick = btnServerSendEventClick
       end
     end
-    object Memo1: TMemo
+    object mTutorial: TMemo
       Left = 288
       Top = 16
-      Width = 225
+      Width = 222
       Height = 73
       Enabled = False
       Lines.Strings = (
@@ -400,7 +400,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         '4. Start the map')
       ReadOnly = True
       TabOrder = 4
-      OnChange = Memo1Change
+      OnChange = mTutorialChange
     end
   end
   object gbExtAIs: TGroupBox
