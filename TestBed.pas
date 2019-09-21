@@ -294,12 +294,8 @@ end;
 
 
 procedure TExtAI_TestBed.btnServerSendEventClick(Sender: TObject);
-var
-  K: Integer;
 begin
-  if (fGame.Hands <> nil) then
-    for K := 0 to fGame.Hands.Count - 1 do
-      fGame.Hands[K].AIExt.Events.PlayerVictoryW(0);
+  fGame.SendEvent;
 end;
 
 

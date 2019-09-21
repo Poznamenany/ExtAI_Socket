@@ -37,10 +37,11 @@ type
     property GameState: TKMGameState read fGameState;
     property ExtAIMaster: TExtAIMaster read fExtAIMaster;
     property SimulationState: TSimulationState read fSimState;
-    property Hands: TObjectList<TKMHand> read fHands;
 
     procedure StartEndGame(AIs: array of String);
     procedure TerminateSimulation();
+
+    procedure SendEvent;
   end;
 
 implementation
@@ -52,6 +53,7 @@ uses
 constructor TKMGame.Create(aOnUpdateSimStatus: TSimStatEvent);
 begin
   inherited Create(False);
+
   gLog.Log('TKMGame-Create');
   gTerrain := TKMTerrain.Create;
   FreeOnTerminate := False;
@@ -71,6 +73,7 @@ begin
   gTerrain.Free;
   FreeAndNil(fHands);
   fExtAIMaster.Free;
+
   inherited;
 end;
 
@@ -80,7 +83,7 @@ var
   K, L: Integer;
 begin
   fTick := 0;
-  if not ExtAIMaster.Net.Listening then
+  if not fExtAIMaster.Net.Listening then
     Exit;
 
   // Clean hands before game start / end
@@ -92,15 +95,15 @@ begin
                 fGameState := gsPlaying;
                 // Use all ExtAI in every game for now
                 fHands := TObjectList<TKMHand>.Create;
-                for K := 0 to ExtAIMaster.AIs.Count - 1 do
+                for K := 0 to fExtAIMaster.AIs.Count - 1 do
                   for L := Low(AIs) to High(AIs) do
-                    if (AIs[L] = ExtAIMaster.AIs[K].Name) then
+                    if (AIs[L] = fExtAIMaster.AIs[K].Name) then
                     begin
                       fHands.Add(TKMHand.Create(K));
                       // Set hand to ExtAI
                       fHands[fHands.Count-1].SetAIType;
                       // Connect the interface
-                      fHands[fHands.Count-1].AIExt.ConnectCallbacks(ExtAIMaster.AIs[K].ServerClient);
+                      fHands[fHands.Count-1].AIExt.ConnectCallbacks(fExtAIMaster.AIs[K].ServerClient);
                       Break;
                     end;
               end;
@@ -157,6 +160,16 @@ procedure TKMGame.TerminateSimulation();
 begin
   gLog.Log('TKMGame-TerminateSimulation');
   fSimState := ssTerminated;
+end;
+
+
+procedure TKMGame.SendEvent;
+var
+  K: Integer;
+begin
+  if (fHands <> nil) then
+    for K := 0 to fHands.Count - 1 do
+      fHands[K].AIExt.Events.PlayerVictoryW(0);
 end;
 
 
