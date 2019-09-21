@@ -1,7 +1,7 @@
-unit Game;
+unit KM_Game;
 interface
 uses
-  Windows, Classes, Generics.Collections, System.SysUtils,
+  Classes, Generics.Collections, System.SysUtils,
   KM_Hand, KM_Terrain, ExtAIMaster;
 
 const
@@ -167,7 +167,7 @@ procedure TKMGame.SendEvent;
 var
   K: Integer;
 begin
-  if (fHands <> nil) then
+  if fHands <> nil then
     for K := 0 to fHands.Count - 1 do
       fHands[K].AIExt.Events.PlayerVictoryW(0);
 end;

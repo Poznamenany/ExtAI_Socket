@@ -1,14 +1,15 @@
 program WebSocketTest;
-
 uses
   Vcl.Forms,
   TestBed in 'TestBed.pas' {ExtAI_TestBed},
-  Game in 'src\Game.pas',
+
+  KM_Game in 'src\KM_Game.pas',
   KM_CommonUtils in 'src\KM_CommonUtils.pas',
   KM_Consts in 'src\KM_Consts.pas',
   KM_Hand in 'src\KM_Hand.pas',
   KM_HandAI_Ext in 'src\KM_HandAI_Ext.pas',
   KM_Terrain in 'src\KM_Terrain.pas',
+
   ExtAINetServer in 'src\ExtAI\ExtAINetServer.pas',
   ExtAINetworkTypes in 'src\ExtAI\ExtAINetworkTypes.pas',
   ExtAIMaster in 'src\ExtAI\ExtAIMaster.pas',

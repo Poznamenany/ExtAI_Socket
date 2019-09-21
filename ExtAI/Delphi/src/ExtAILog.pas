@@ -21,8 +21,8 @@ type
     procedure Log(const aText: string; aArgs: array of const); overload;
   end;
 
- var
-   gLog: TLog;
+var
+  gLog: TLog;
 
 implementation
 
@@ -31,6 +31,7 @@ implementation
 constructor TLog.Create(aOnLog: TLogEvent);
 begin
   inherited Create;
+
   fID := 0;
   fOnLog := aOnLog;
   fOnIDLog := nil;
@@ -40,6 +41,7 @@ end;
 constructor TLog.Create(aOnLogID: TLogIDEvent; aID: Byte);
 begin
   inherited Create;
+
   fID := aID;
   fOnLog := nil;
   fOnIDLog := aOnLogID;
@@ -57,23 +59,22 @@ end;
 
 procedure TLog.Log(const aText: string);
 begin
-  if (Self <> nil) then
-  begin
-    if Assigned(fOnLog) then
-      TThread.Synchronize(nil,
-        procedure
-        begin
-          fOnLog(aText);
-        end
-      )
-    else if Assigned(fOnIDLog) then
-      TThread.Synchronize(nil,
-        procedure
-        begin
-          fOnIDLog(aText, fID);
-        end
-      );
-  end;
+  if Self = nil then Exit;
+
+  if Assigned(fOnLog) then
+    TThread.Synchronize(nil,
+      procedure
+      begin
+        fOnLog(aText);
+      end
+    )
+  else if Assigned(fOnIDLog) then
+    TThread.Synchronize(nil,
+      procedure
+      begin
+        fOnIDLog(aText, fID);
+      end
+    );
 end;
 
 

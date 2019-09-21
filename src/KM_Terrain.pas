@@ -1,7 +1,7 @@
 unit KM_Terrain;
 interface
 uses
-  Windows, System.SysUtils,
+  System.SysUtils,
   ExtAISharedInterface;
 
 

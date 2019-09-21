@@ -3,7 +3,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  Game, ExtAIDelphi, ExtAILog, KM_Consts, ExtAINetServer, ExtAIInfo,
+  KM_Game, ExtAIDelphi, ExtAILog, KM_Consts, ExtAINetServer, ExtAIInfo,
   // Detection of IP address
   Winsock, Vcl.ComCtrls;
 
