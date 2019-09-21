@@ -27,7 +27,7 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(aOnUpdateSimStatus: TSimStatEvent); reintroduce;
+    constructor Create(aOnUpdateSimStatus: TSimStatEvent);
     destructor Destroy(); override;
 
     // Game properties

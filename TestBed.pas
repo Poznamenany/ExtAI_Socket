@@ -3,7 +3,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  KM_Game, ExtAIDelphi, ExtAILog, KM_Consts, ExtAINetServer, ExtAIInfo,
+  KM_Game, ExtAIDelphi, ExtAILog, KM_Consts, ExtAIInfo,
   // Detection of IP address
   Winsock, Vcl.ComCtrls;
 
@@ -11,13 +11,14 @@ type
   TExtAIAndGUI = record
     ID: Word;
     AI: TExtAIDelphi;
-    Log: TLog;
+    Log: TLog; //@Martin: Why do we need separate logs for ExtAIs created by the host app/Game?
     tsTab: TTabSheet;
     mLog: TMemo;
   end;
 
   //@Martin: wouldn't it be simpler to use TList<TExtAIAndGUI> which already has the Count/Capacity and auto-growth?
   //@Krom: the Number must be fixed in case that ExtAI lost connection and connects back it can be TList of record if you wish
+  //@Martin: Please comment on the purpose of these fields and see if you can give them more meaningful names. Atm I'm puzzled as to what they mean and do
   TExtAIAndGUIArr = record
     Count: Word;
     Number: Word;
@@ -315,6 +316,11 @@ begin
       //@Krom: RefreshExtAIs creates also list of available AIs (they are not selected in lobby list)
       //       so I can always pick up the first index from available AIs and then refresh the list
       //       it is not so effecient but we have just 12 locs
+      //@Martin: Please look into restructuring this:
+      // Game should init the ExtAIMaster.
+      // ExtAIMaster should scan for available ExtAIs and provide a list to select from.
+      // TestBed should set up a lobby by reading from that list.
+
       // Refresh AIs
       RefreshExtAIs(nil);
     end;
@@ -377,7 +383,7 @@ begin
     mLog.Align := alClient;
     // Create new ExtAI
     Log := TLog.Create(LogID, ID);
-    AI := TExtAIDelphi.Create( Log, ID );
+    AI := TExtAIDelphi.Create(Log, ID);
     AI.Client.OnConnectSucceed := RefreshAIGUI;
     AI.Client.OnForcedDisconnect := RefreshAIGUI;
   end;
@@ -405,6 +411,7 @@ begin
 end;
 
 
+//@Martin: What is the purpose of this method? I'd think it should be inside the Game.GameEnd or alike
 procedure TExtAI_TestBed.btnTerminateExtAIsClick(Sender: TObject);
 var
   K: Integer;
@@ -623,6 +630,7 @@ begin
   // 4. Start the gameplay (map)
   //@Krom: we already discussed it - the game does not know about ExtAI unless it connects to the game
   //       so points 2 and 3 cannot be swapped
+  //@Martin: Okay, so we add step 1b inbetween 1 and 2, where ExtAI scans and makes up a list of available ExtAIs
 end;
 
 
