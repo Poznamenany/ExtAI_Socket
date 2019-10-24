@@ -137,8 +137,7 @@ begin
   for K := 0 to fExtAIs.Count-1 do
     if AIs[K].Configured then
     begin
-      // This is the name of ExtAI in the lobby (for now)
-      Result[Cnt] := AIs[K].Name + ' ' + IntToStr(AIs[K].ServerClient.Handle);
+      Result[Cnt] := AIs[K].Name;
       Cnt := Cnt + 1;
     end;
   SetLength(Result, Cnt);

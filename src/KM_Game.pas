@@ -8,6 +8,7 @@ const
   SLEEP_EVERY_TICK = 500;
 
 type
+  // Debug types for GUI (Simulation status etc.)
   TSimulationState = (ssCreated, ssInit, ssInProgress, ssTerminated);
   TKMGameState = (gsLobby, gsPlaying);
   TSimStatEvent = procedure of object;
@@ -44,6 +45,7 @@ type
     procedure SendEvent;
   end;
 
+
 implementation
 uses
   ExtAILog;
@@ -55,7 +57,6 @@ begin
   inherited Create(False);
 
   gLog.Log('TKMGame-Create');
-  gTerrain := TKMTerrain.Create;
   FreeOnTerminate := False;
   Priority := tpHigher;
 
@@ -64,6 +65,7 @@ begin
   fOnUpdateSimStatus := aOnUpdateSimStatus;
   fExtAIMaster := TExtAIMaster.Create();
   fHands := nil;
+  gTerrain := TKMTerrain.Create;
 end;
 
 
@@ -78,43 +80,54 @@ begin
 end;
 
 
+// Start or end the simulation
 procedure TKMGame.StartEndGame(AIs: array of String);
 var
   K, L: Integer;
 begin
   fTick := 0;
   if not fExtAIMaster.Net.Listening then
+  begin
+    gLog.Log('TKMGame-Server is not running');
     Exit;
+  end
+  else if (Length(AIs) = 0) then
+  begin
+    gLog.Log('TKMGame-no AI is selected');
+  end;
 
   // Clean hands before game start / end
   FreeAndNil(fHands);
 
   case fGameState of
-    gsLobby:  begin
-                gLog.Log('TKMGame-StartMap');
-                fGameState := gsPlaying;
-                // Use all ExtAI in every game for now
-                fHands := TObjectList<TKMHand>.Create;
-                for K := 0 to fExtAIMaster.AIs.Count - 1 do
-                  for L := Low(AIs) to High(AIs) do
-                    if (AIs[L] = fExtAIMaster.AIs[K].Name) then
-                    begin
-                      fHands.Add(TKMHand.Create(K));
-                      // Set hand to ExtAI
-                      fHands[fHands.Count-1].SetAIType;
-                      // Connect the interface
-                      fHands[fHands.Count-1].AIExt.ConnectCallbacks(fExtAIMaster.AIs[K].ServerClient);
-                      Break;
-                    end;
-              end;
-    gsPlaying:begin
-                gLog.Log('TKMGame-EndMap');
-                fGameState := gsLobby;
-              end;
+    gsLobby:
+      begin
+        gLog.Log('TKMGame-StartMap');
+        fGameState := gsPlaying;
+        // Use all ExtAI in every game for now
+        fHands := TObjectList<TKMHand>.Create;
+        for K := 0 to fExtAIMaster.AIs.Count - 1 do
+          for L := Low(AIs) to High(AIs) do
+            if (AIs[L] = fExtAIMaster.AIs[K].Name) then
+            begin
+              fHands.Add(TKMHand.Create(K));
+              // Set hand to ExtAI
+              fHands[fHands.Count-1].SetAIType;
+              // Connect the interface
+              fHands[fHands.Count-1].AIExt.ConnectCallbacks(fExtAIMaster.AIs[K].ServerClient);
+              Break;
+            end;
+      end;
+    gsPlaying:
+      begin
+        gLog.Log('TKMGame-EndMap');
+        fGameState := gsLobby;
+      end;
   end;
 end;
 
 
+// Here is the game loop (loop of the executable)
 procedure TKMGame.Execute;
 var
   K: Integer;
@@ -126,7 +139,7 @@ begin
     // Update ExtAIMaster every tick (update of ExtAI server)
     fExtAIMaster.UpdateState();
 
-    // Check if game is played (we moved from lobby to map)
+    // Update map loop (ticks during game)
     if (fGameState = gsPlaying) then
     begin
       //fGame.ExtAIMaster.Net.SendString(TestText);
@@ -135,6 +148,9 @@ begin
         if (fHands[K] <> nil) AND (fHands[K].AIExt <> nil) AND (fHands[K].AIExt.Events <> nil) then
           fHands[K].UpdateState(fTick);
       Inc(fTick);
+
+      // Do something else (update map logic, units, houses, etc.)
+      // ...
     end;
 
     // Log status
@@ -145,7 +161,7 @@ begin
           fOnUpdateSimStatus;
       end);
 
-    // Do something else (update game logic)
+    // Do something else (update game logic, GUI, etc.)
     Sleep(SLEEP_EVERY_TICK);
   end;
 
@@ -156,6 +172,7 @@ begin
 end;
 
 
+// Terminate simulation
 procedure TKMGame.TerminateSimulation();
 begin
   gLog.Log('TKMGame-TerminateSimulation');
@@ -163,13 +180,15 @@ begin
 end;
 
 
+// Debug method for sending event
 procedure TKMGame.SendEvent;
 var
   K: Integer;
 begin
   if fHands <> nil then
     for K := 0 to fHands.Count - 1 do
-      fHands[K].AIExt.Events.PlayerVictoryW(0);
+      if (fHands[K].AIExt <> nil) AND (fHands[K].AIExt.Events <> nil) then
+        fHands[K].AIExt.Events.PlayerVictoryW(0);
 end;
 
 

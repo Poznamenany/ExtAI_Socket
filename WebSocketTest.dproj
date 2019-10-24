@@ -109,6 +109,7 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="src\KM_Game.pas"/>
+        <DCCReference Include="src\KM_CommonTypes.pas"/>
         <DCCReference Include="src\KM_CommonUtils.pas"/>
         <DCCReference Include="src\KM_Consts.pas"/>
         <DCCReference Include="src\KM_Hand.pas"/>
@@ -134,10 +135,6 @@
         <DCCReference Include="ExtAI\Delphi\src\net\ExtAINetClientOverbyte.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\net\ExtAISharedNetworkTypes.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\net\ExtAICommonClasses.pas"/>
-        <DCCReference Include="src\KP_Form.pas">
-            <Form>Form1</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

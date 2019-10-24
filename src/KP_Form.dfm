@@ -362,6 +362,7 @@ object Game_form: TGame_form
       Caption = 'Start Map'
       Enabled = False
       TabOrder = 0
+      OnClick = btnServerStartMapClick
     end
     object btnSendEvent: TButton
       Left = 3
@@ -371,6 +372,7 @@ object Game_form: TGame_form
       Caption = 'Send Event'
       Enabled = False
       TabOrder = 1
+      OnClick = btnSendEventClick
     end
     object btnSendState: TButton
       Left = 3

@@ -118,6 +118,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 0
+        OnChange = cbOnChange
       end
       object cbLoc01: TComboBox
         Left = 30
@@ -125,6 +126,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 1
+        OnChange = cbOnChange
       end
       object cbLoc02: TComboBox
         Left = 31
@@ -132,6 +134,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 2
+        OnChange = cbOnChange
       end
       object edPingLoc00: TEdit
         Left = 166
@@ -172,6 +175,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 7
+        OnChange = cbOnChange
       end
       object edPingLoc03: TEdit
         Left = 166
@@ -187,6 +191,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 9
+        OnChange = cbOnChange
       end
       object edPingLoc04: TEdit
         Left = 166
@@ -202,6 +207,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 11
+        OnChange = cbOnChange
       end
       object edPingLoc05: TEdit
         Left = 166
@@ -217,6 +223,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 13
+        OnChange = cbOnChange
       end
       object edPingLoc06: TEdit
         Left = 166
@@ -232,6 +239,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 15
+        OnChange = cbOnChange
       end
       object edPingLoc08: TEdit
         Left = 166
@@ -247,6 +255,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 17
+        OnChange = cbOnChange
       end
       object edPingLoc09: TEdit
         Left = 166
@@ -270,6 +279,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 20
+        OnChange = cbOnChange
       end
       object edPingLoc10: TEdit
         Left = 166
@@ -285,6 +295,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 22
+        OnChange = cbOnChange
       end
       object edPingLoc11: TEdit
         Left = 166
@@ -300,6 +311,7 @@ object ExtAI_TestBed: TExtAI_TestBed
         Width = 130
         Height = 21
         TabOrder = 24
+        OnChange = cbOnChange
       end
     end
     object gbServer: TGroupBox

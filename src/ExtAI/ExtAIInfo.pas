@@ -23,6 +23,7 @@ type
     // Callbacks
     fOnAIConfigured: TExtAIStatusEvent;
 
+    function GetName(): String;
     procedure NewCfg(aData: Pointer; aTypeCfg, aLength: Cardinal);
   public
     constructor Create(aServerClient: TExtAIServerClient);
@@ -36,7 +37,7 @@ type
     // Client cfg
     property Configured: Boolean read fConfigured;
     property Author: UnicodeString read fAuthor;
-    property Name: UnicodeString read fName;
+    property Name: UnicodeString read GetName;
     property Description: UnicodeString read fDescription;
     property Version: Cardinal read fVersion;
   end;
@@ -68,6 +69,12 @@ begin
   fServerClient := nil;
   fOnAIConfigured := nil;
   inherited;
+end;
+
+
+function TExtAIInfo.GetName(): String;
+begin
+  Result := format('%s %d',[fName,fServerClient.Handle]);
 end;
 
 

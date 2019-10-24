@@ -10,6 +10,7 @@ uses
   Winsock;
 
 type
+  // GUI of the game (server, lobby, basic interface)
   TGame_form = class(TForm)
     btnAutoFill: TButton;
     btnSendEvent: TButton;
@@ -56,17 +57,17 @@ type
     gbLobby: TGroupBox;
     gbServer: TGroupBox;
     gbSimulation: TGroupBox;
+    labPortNumber: TLabel;
     mTutorial: TMemo;
     mServerLog: TMemo;
-    labPortNumber: TLabel;
     prgServer: TProgressBar;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnStartServerClick(Sender: TObject);
-    procedure btnServerSendEventClick(Sender: TObject);
     procedure btnServerStartMapClick(Sender: TObject);
     procedure btnAutoFillClick(Sender: TObject);
     procedure cbOnChange(Sender: TObject);
+    procedure btnSendEventClick(Sender: TObject);
   private
     // Game class
     fGame: TKMGame;
@@ -80,7 +81,6 @@ type
   end;
 
 const
-  TAB_NAME = 'tsExtAI';
   CLOSED_LOC = 'Closed';
 
 var
@@ -160,7 +160,7 @@ begin
       prgServer.Style := pbstMarquee;
       btnStartServer.Caption := 'Stop Server';
       btnServerStartMap.Enabled := True;
-      //btnSendEvent.Enabled := True;
+      btnSendEvent.Enabled := True;
       //btnSendState.Enabled := True;
     end;
   end;
@@ -198,7 +198,7 @@ begin
     // Try to find selection in list of new names
     ItemFound := False;
     for L := 0 to Cnt - 1 do
-      if (AvailableAIs[L] = SelectedAIs[K]) then
+      if (AnsiCompareText(AvailableAIs[L],SelectedAIs[K]) = 0) then
       begin
         // Confirm selection and remove AI from list of possible names
         ItemFound := True;
@@ -211,7 +211,7 @@ begin
       SelectedAIs[K] := '';
   end;
 
-  // Refresh combo boxes
+  // Refresh combo boxes [Closed, ActualSelection, PossibleSelection1, PossibleSelection2, ...]
   for K := Low(fcbLoc) to High(fcbLoc) do
   begin
     fcbLoc[K].Items.Clear;
@@ -232,15 +232,10 @@ var
   K: Integer;
 begin
   for K := Low(fcbLoc) to High(fcbLoc) do
-    if fcbLoc[K].ItemIndex = 0 then // Loc is closed
+    if (fcbLoc[K].ItemIndex = 0) AND (fcbLoc[K].Items.Count > 1) then // Loc is closed and we have available ExtAI
     begin
-      if fcbLoc[K].Items.Count > 1 then
-        fcbLoc[K].ItemIndex := 1
-      else
-        Break;
-
-      // Refresh GUI
-      RefreshComboBoxes(nil);
+      fcbLoc[K].ItemIndex := 1;
+      RefreshComboBoxes(nil); // Refresh GUI
     end;
 end;
 
@@ -252,18 +247,19 @@ end;
 // Start the map (simulation of the game)
 procedure TGame_form.btnServerStartMapClick(Sender: TObject);
 var
-  K: Integer;
+  K, Cnt: Integer;
   AIs: TStringArray;
 begin
   // Get AI players in the lobby
   SetLength(AIs,MAX_HANDS_COUNT);
+  Cnt := 0;
   for K := Low(fcbLoc) to High(fcbLoc) do
   begin
     // Get actual selection
-    AIs[K] := fcbLoc[K].Items[ fcbLoc[K].ItemIndex ];
-    if (Length(AIs[K]) > 0) AND (AIs[K] = CLOSED_LOC) then
-      AIs[K] := ''; // Closed loc
+    AIs[Cnt] := fcbLoc[K].Items[ fcbLoc[K].ItemIndex ];
+    Cnt := Cnt + Byte((Length(AIs[Cnt]) > 0) AND (AnsiCompareText(AIs[Cnt],CLOSED_LOC) <> 0));
   end;
+  SetLength(AIs,Cnt);
   // Start / stop the simulation with specific AI players
   fGame.StartEndGame(AIs);
   if (fGame.GameState = gsLobby) then
@@ -274,7 +270,7 @@ end;
 
 
 // Test event
-procedure TGame_form.btnServerSendEventClick(Sender: TObject);
+procedure TGame_form.btnSendEventClick(Sender: TObject);
 begin
   fGame.SendEvent;
 end;

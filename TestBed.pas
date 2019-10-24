@@ -3,7 +3,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  KM_Game, ExtAIDelphi, ExtAILog, KM_Consts, ExtAIInfo,
+  KM_Game, KM_CommonTypes, ExtAIDelphi, ExtAILog, KM_Consts, ExtAIInfo,
   // Detection of IP address
   Winsock, Vcl.ComCtrls;
 
@@ -105,12 +105,13 @@ type
     procedure chbControlAllClick(Sender: TObject);
     procedure btnAutoFillClick(Sender: TObject);
     procedure mTutorialChange(Sender: TObject);
+    procedure cbOnChange(Sender: TObject);
   private
     fGame: TKMGame;
     fExtAIAndGUIArr: TExtAIAndGUIArr;
     fcbLoc: array[0..MAX_HANDS_COUNT-1] of TComboBox;
     fedPingLoc: array[0..MAX_HANDS_COUNT-1] of TEdit;
-    procedure RefreshExtAIs(aAIInfo: TExtAIInfo);
+    procedure RefreshComboBoxes(aServerClient: TExtAIInfo);
     procedure ConnectClient(aIdx: Word);
     procedure DisconnectClient(aIdx: Integer);
     procedure RefreshAIGUI(Sender: TObject);
@@ -142,8 +143,8 @@ begin
   gLog := TLog.Create(Log);
   gLog.Log('Initialization');
   fGame := TKMGame.Create(UpdateSimStatus);
-  fGame.ExtAIMaster.OnAIConfigured := RefreshExtAIs;
-  fGame.ExtAIMaster.OnAIDisconnect := RefreshExtAIs;
+  fGame.ExtAIMaster.OnAIConfigured := RefreshComboBoxes;
+  fGame.ExtAIMaster.OnAIDisconnect := RefreshComboBoxes;
 
   fExtAIAndGUIArr.Count := 0;
   fExtAIAndGUIArr.ID := 0;
@@ -161,7 +162,7 @@ begin
   fedPingLoc[9]  := edPingLoc09;  fcbLoc[9]  := cbLoc09;
   fedPingLoc[10] := edPingLoc10;  fcbLoc[10] := cbLoc10;
   fedPingLoc[11] := edPingLoc11;  fcbLoc[11] := cbLoc11;
-  RefreshExtAIs(nil);
+  RefreshComboBoxes(nil);
 end;
 
 
@@ -203,64 +204,65 @@ begin
       prgServer.Style := pbstMarquee;
       btnStartServer.Caption := 'Stop Server';
       btnServerStartMap.Enabled := True;
-      //btnSendEvent.Enabled := True;
+      btnSendEvent.Enabled := True;
       //btnSendState.Enabled := True;
     end;
   end;
 end;
 
 
-procedure TExtAI_TestBed.RefreshExtAIs(aAIInfo: TExtAIInfo);
+// Generic callback for combo boxes
+procedure TExtAI_TestBed.cbOnChange(Sender: TObject);
+begin
+  RefreshComboBoxes(nil);
+end;
+
+
+
+// Refresh list of available ExtAIs in the combo boxes so player can select just 1 instance of the AI for 1 slot
+procedure TExtAI_TestBed.RefreshComboBoxes(aServerClient: TExtAIInfo);
 var
   ItemFound: Boolean;
   K,L,Cnt: Integer;
-  NewNames: array of String;
-  SelectedNames: array[0..MAX_HANDS_COUNT-1] of String;
+  AvailableAIs: TStringArray;
+  SelectedAIs: array[0..MAX_HANDS_COUNT-1] of String;
 begin
   // Get available AI players
-  Cnt := 0;
-  SetLength(NewNames, fGame.ExtAIMaster.AIs.Count);
-  for K := 0 to fGame.ExtAIMaster.AIs.Count-1 do
-    if fGame.ExtAIMaster.AIs[K].Configured then
-    begin
-      NewNames[Cnt] := fGame.ExtAIMaster.AIs[K].Name + ' ' + IntToStr(fGame.ExtAIMaster.AIs[K].ServerClient.Handle);
-      Cnt := Cnt + 1;
-    end;
+  AvailableAIs := fGame.ExtAIMaster.GetExtAILobbyNames();
 
   // Filter already selected AI players
+  Cnt := Length(AvailableAIs);
   for K := Low(fcbLoc) to High(fcbLoc) do
   begin
-    // Get actual selection
-    L := fcbLoc[K].ItemIndex;
-    SelectedNames[K] := fcbLoc[K].Items[L];
+    // Get actual selection (String, name of the ExtAI)
+    SelectedAIs[K] := fcbLoc[K].Items[ fcbLoc[K].ItemIndex ];
     // Try to find selection in list of new names
     ItemFound := False;
-    if (Length(SelectedNames[K]) > 0) then
-      for L := 0 to Cnt - 1 do
-        if (NewNames[L] = SelectedNames[K]) then
-        begin
-          // Confirm selection and remove AI from list of possible names
-          ItemFound := True;
-          Cnt := Cnt - 1;
-          NewNames[L] := NewNames[Cnt];
-          Break;
-        end;
+    for L := 0 to Cnt - 1 do
+      if (AnsiCompareText(AvailableAIs[L],SelectedAIs[K]) = 0) then
+      begin
+        // Confirm selection and remove AI from list of possible names
+        ItemFound := True;
+        Cnt := Cnt - 1;
+        AvailableAIs[L] := AvailableAIs[Cnt];
+        Break;
+      end;
     // Remove selection
     if not ItemFound then
-      SelectedNames[K] := '';
+      SelectedAIs[K] := '';
   end;
 
-  // Refresh combo boxes
+  // Refresh combo boxes [Closed, ActualSelection, PossibleSelection1, PossibleSelection2, ...]
   for K := Low(fcbLoc) to High(fcbLoc) do
   begin
     fcbLoc[K].Items.Clear;
     fcbLoc[K].Items.Add(CLOSED_LOC);
     // Closed by default, first index if there is existing already selected AI
-    if (Length(SelectedNames[K]) > 0) then
-      fcbLoc[K].Items.Add(SelectedNames[K]);
+    if (Length(SelectedAIs[K]) > 0) then
+      fcbLoc[K].Items.Add(SelectedAIs[K]);
     fcbLoc[K].ItemIndex := fcbLoc[K].Items.Count - 1;
     for L := 0 to Cnt - 1 do
-      fcbLoc[K].Items.Add(NewNames[L]);
+      fcbLoc[K].Items.Add(AvailableAIs[L]);
   end;
 end;
 
@@ -274,22 +276,19 @@ end;
 procedure TExtAI_TestBed.btnServerStartMapClick(Sender: TObject);
 var
   K, Cnt: Integer;
-  AIs: array of String;
+  AIs: TStringArray;
 begin
-  // Get available AI players
-  Cnt := 0;
+  // Get AI players in the lobby
   SetLength(AIs,MAX_HANDS_COUNT);
+  Cnt := 0;
   for K := Low(fcbLoc) to High(fcbLoc) do
   begin
     // Get actual selection
     AIs[Cnt] := fcbLoc[K].Items[ fcbLoc[K].ItemIndex ];
-    if (Length(AIs[Cnt]) > 0) AND (AIs[Cnt] <> CLOSED_LOC) then
-    begin
-      AIs[Cnt] := AIs[Cnt].SubString(0, Pos(' ',AIs[Cnt]) - 1);
-      Cnt := Cnt + 1;
-    end;
+    Cnt := Cnt + Byte((Length(AIs[Cnt]) > 0) AND (AnsiCompareText(AIs[Cnt],CLOSED_LOC) <> 0));
   end;
   SetLength(AIs,Cnt);
+  // Start / stop the simulation with specific AI players
   fGame.StartEndGame(AIs);
   if (fGame.GameState = gsLobby) then
     btnServerStartMap.Caption := 'Start Map'
@@ -309,24 +308,10 @@ var
   K: Integer;
 begin
   for K := Low(fcbLoc) to High(fcbLoc) do
-    if fcbLoc[K].ItemIndex = 0 then // Loc is closed
+    if (fcbLoc[K].ItemIndex = 0) AND (fcbLoc[K].Items.Count > 1) then // Loc is closed and we have available ExtAI
     begin
-      if fcbLoc[K].Items.Count > 1 then
-        fcbLoc[K].ItemIndex := 1
-      else
-        Break;
-
-      //@Martin: Do we need this once per loop or once after the loop will be enough?
-      //@Krom: RefreshExtAIs creates also list of available AIs (they are not selected in lobby list)
-      //       so I can always pick up the first index from available AIs and then refresh the list
-      //       it is not so effecient but we have just 12 locs
-      //@Martin: Please look into restructuring this:
-      // Game should init the ExtAIMaster.
-      // ExtAIMaster should scan for available ExtAIs and provide a list to select from.
-      // TestBed should set up a lobby by reading from that list.
-
-      // Refresh AIs
-      RefreshExtAIs(nil);
+      fcbLoc[K].ItemIndex := 1;
+      RefreshComboBoxes(nil); // Refresh GUI
     end;
 end;
 
@@ -595,17 +580,17 @@ end;
 procedure TExtAI_TestBed.UpdateSimStatus();
 var
   K,L: Integer;
-  AIName: string;
+  AvailableAIs: TStringArray;
 begin
-  for K := 0 to fGame.ExtAIMaster.AIs.Count-1 do
+  // Get available AI players
+  AvailableAIs := fGame.ExtAIMaster.GetExtAILobbyNames();
+  // Update ping
+  for K := Low(fcbLoc) to High(fcbLoc) do
   begin
-    AIName := fGame.ExtAIMaster.AIs[K].Name + ' ' + IntToStr(fGame.ExtAIMaster.AIs[K].ServerClient.Handle);
-    for L := Low(fcbLoc) to High(fcbLoc) do
-      if AIName = fcbLoc[L].Items[fcbLoc[L].ItemIndex] then
-      begin
-        fedPingLoc[L].Text := IntToStr(fGame.ExtAIMaster.AIs[K].ServerClient.NetPing);
-        Break;
-      end;
+    fedPingLoc[K].Text := '0';
+    for L := Low(AvailableAIs) to High(AvailableAIs) do
+      if AvailableAIs[L] = fcbLoc[K].Items[ fcbLoc[K].ItemIndex ] then
+        fedPingLoc[K].Text := IntToStr(fGame.ExtAIMaster.AIs[L].ServerClient.NetPing);
   end;
 end;
 

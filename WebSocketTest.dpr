@@ -3,6 +3,7 @@ uses
   Vcl.Forms,
   TestBed in 'TestBed.pas' {ExtAI_TestBed},
   KM_Game in 'src\KM_Game.pas',
+  KM_CommonTypes in 'src\KM_CommonTypes.pas',
   KM_CommonUtils in 'src\KM_CommonUtils.pas',
   KM_Consts in 'src\KM_Consts.pas',
   KM_Hand in 'src\KM_Hand.pas',
@@ -27,8 +28,7 @@ uses
   ExtAINetClient in 'ExtAI\Delphi\src\net\ExtAINetClient.pas',
   ExtAINetClientOverbyte in 'ExtAI\Delphi\src\net\ExtAINetClientOverbyte.pas',
   ExtAISharedNetworkTypes in 'ExtAI\Delphi\src\net\ExtAISharedNetworkTypes.pas',
-  ExtAICommonClasses in 'ExtAI\Delphi\src\net\ExtAICommonClasses.pas',
-  KP_Form in 'src\KP_Form.pas' {Form1};
+  ExtAICommonClasses in 'ExtAI\Delphi\src\net\ExtAICommonClasses.pas';
 
 {$R *.res}
 
@@ -36,6 +36,5 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TExtAI_TestBed, ExtAI_TestBed);
-  Application.CreateForm(TForm1, Form1);
   Application.Run;
 end.

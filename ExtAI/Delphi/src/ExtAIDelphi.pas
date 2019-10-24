@@ -6,7 +6,7 @@ uses
 
 type
   // Here will be the main algorithm of the ExtAI
-  // It works similar to dynamics scripts (it reacts to Events with Actions and States)
+  // It works just like dynamic scripts (it reacts to Events with Actions and States)
   TExtAIDelphi = class(TExtAIBaseDelphi)
   private
     // Game variables and methods
@@ -55,7 +55,7 @@ end;
 
 procedure TExtAIDelphi.OnPlayerVictory(aHandIndex: SmallInt);
 begin
-  Log('TExtAIDelphi OnPlayerVicotry');
+  Log('TExtAIDelphi OnPlayerVictory');
 end;
 
 
