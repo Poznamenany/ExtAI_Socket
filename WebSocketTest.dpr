@@ -2,14 +2,12 @@ program WebSocketTest;
 uses
   Vcl.Forms,
   TestBed in 'TestBed.pas' {ExtAI_TestBed},
-
   KM_Game in 'src\KM_Game.pas',
   KM_CommonUtils in 'src\KM_CommonUtils.pas',
   KM_Consts in 'src\KM_Consts.pas',
   KM_Hand in 'src\KM_Hand.pas',
   KM_HandAI_Ext in 'src\KM_HandAI_Ext.pas',
   KM_Terrain in 'src\KM_Terrain.pas',
-
   ExtAINetServer in 'src\ExtAI\ExtAINetServer.pas',
   ExtAINetworkTypes in 'src\ExtAI\ExtAINetworkTypes.pas',
   ExtAIMaster in 'src\ExtAI\ExtAIMaster.pas',
@@ -29,7 +27,8 @@ uses
   ExtAINetClient in 'ExtAI\Delphi\src\net\ExtAINetClient.pas',
   ExtAINetClientOverbyte in 'ExtAI\Delphi\src\net\ExtAINetClientOverbyte.pas',
   ExtAISharedNetworkTypes in 'ExtAI\Delphi\src\net\ExtAISharedNetworkTypes.pas',
-  ExtAICommonClasses in 'ExtAI\Delphi\src\net\ExtAICommonClasses.pas';
+  ExtAICommonClasses in 'ExtAI\Delphi\src\net\ExtAICommonClasses.pas',
+  KP_Form in 'src\KP_Form.pas' {Form1};
 
 {$R *.res}
 
@@ -37,5 +36,6 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TExtAI_TestBed, ExtAI_TestBed);
+  Application.CreateForm(TForm1, Form1);
   Application.Run;
 end.

@@ -1,9 +1,9 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{3F287C7B-9DF9-46A6-80E3-5C8933AB044C}</ProjectGuid>
+        <ProjectGuid>{B2546FF0-8729-4A74-A0A3-6E8080E41BD6}</ProjectGuid>
         <ProjectVersion>18.5</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
-        <MainSource>WebSocketTest.dpr</MainSource>
+        <MainSource>Game.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -57,8 +57,8 @@
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
-        <SanitizedProjectName>WebSocketTest</SanitizedProjectName>
-        <DCC_UnitSearchPath>src\OverbyteV8;src\OverbyteV8\Extras;src\OverbyteV8\Include;src\OverbyteV8\zobj125;src\OverbyteV8\zobj125\win64;..\..\src\3rdparty\Overbyte ICS 8;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <SanitizedProjectName>Game</SanitizedProjectName>
+        <DCC_UnitSearchPath>src\OverbyteV8;src\OverbyteV8\Extras;src\OverbyteV8\Include;src\OverbyteV8\zobj125;src\OverbyteV8\zobj125\win64;..\..\..\..\src\3rdparty\Overbyte ICS 8;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1029</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
@@ -87,6 +87,7 @@
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
+        <DCC_UnitSearchPath>OverbyteV8;OverbyteV8\Extras;OverbyteV8\Include;OverbyteV8\zobj125;OverbyteV8\zobj125\win64;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -97,46 +98,40 @@
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="TestBed.pas">
-            <Form>ExtAI_TestBed</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="src\KM_Game.pas"/>
-        <DCCReference Include="src\KM_CommonUtils.pas"/>
-        <DCCReference Include="src\KM_Consts.pas"/>
-        <DCCReference Include="src\KM_Hand.pas"/>
-        <DCCReference Include="src\KM_HandAI_Ext.pas"/>
-        <DCCReference Include="src\KM_Terrain.pas"/>
-        <DCCReference Include="src\ExtAI\ExtAINetServer.pas"/>
-        <DCCReference Include="src\ExtAI\ExtAINetworkTypes.pas"/>
-        <DCCReference Include="src\ExtAI\ExtAIMaster.pas"/>
-        <DCCReference Include="src\ExtAI\ExtAIInfo.pas"/>
-        <DCCReference Include="src\ExtAI\NetServerOverbyte.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\ExtAILog.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\ExtAIDelphi.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\ExtAIBaseDelphi.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\interface\ExtAIActions.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\interface\ExtAIEvents.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\interface\ExtAIStates.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\interface\ExtAIMsgActions.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\interface\ExtAIMsgEvents.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\interface\ExtAIMsgStates.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\interface\ExtAIStatesTerrain.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\interface\ExtAISharedInterface.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\net\ExtAINetClient.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\net\ExtAINetClientOverbyte.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\net\ExtAISharedNetworkTypes.pas"/>
-        <DCCReference Include="ExtAI\Delphi\src\net\ExtAICommonClasses.pas"/>
-        <DCCReference Include="src\KP_Form.pas">
-            <Form>Form1</Form>
-            <FormType>dfm</FormType>
+        <DCCReference Include="KM_Game.pas"/>
+        <DCCReference Include="KM_CommonUtils.pas"/>
+        <DCCReference Include="KM_CommonTypes.pas"/>
+        <DCCReference Include="KM_Consts.pas"/>
+        <DCCReference Include="KM_Hand.pas"/>
+        <DCCReference Include="KM_HandAI_Ext.pas"/>
+        <DCCReference Include="KM_Terrain.pas"/>
+        <DCCReference Include="ExtAI\ExtAINetServer.pas"/>
+        <DCCReference Include="ExtAI\ExtAINetworkTypes.pas"/>
+        <DCCReference Include="ExtAI\ExtAIMaster.pas"/>
+        <DCCReference Include="ExtAI\ExtAIInfo.pas"/>
+        <DCCReference Include="ExtAI\NetServerOverbyte.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\ExtAILog.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\ExtAIDelphi.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\ExtAIBaseDelphi.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\interface\ExtAIActions.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\interface\ExtAIEvents.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\interface\ExtAIStates.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\interface\ExtAIMsgActions.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\interface\ExtAIMsgEvents.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\interface\ExtAIMsgStates.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\interface\ExtAIStatesTerrain.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\interface\ExtAISharedInterface.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\net\ExtAINetClient.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\net\ExtAINetClientOverbyte.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\net\ExtAISharedNetworkTypes.pas"/>
+        <DCCReference Include="..\ExtAI\Delphi\src\net\ExtAICommonClasses.pas"/>
+        <DCCReference Include="KP_Form.pas">
+            <Form>Game_form</Form>
         </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
@@ -156,7 +151,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">WebSocketTest.dpr</Source>
+                    <Source Name="MainSource">Game.dpr</Source>
                 </Source>
                 <Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k260.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
@@ -164,9 +159,9 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="3">
-                <DeployFile LocalName="Win32\Debug\WebSocketTest.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="Win32\Debug\Game.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>WebSocketTest.exe</RemoteName>
+                        <RemoteName>Game.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

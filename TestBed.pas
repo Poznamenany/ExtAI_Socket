@@ -11,7 +11,11 @@ type
   TExtAIAndGUI = record
     ID: Word;
     AI: TExtAIDelphi;
-    Log: TLog; //@Martin: Why do we need separate logs for ExtAIs created by the host app/Game?
+    Log: TLog;
+    //@Martin: Why do we need separate logs for ExtAIs created by the host app/Game?
+    //@Krom: The logs are not created by Game but by GUI of the ExtAI. They are used
+    //       for logging connection and problems with client. For communication with
+    //       the game you can use Actions.Log()
     tsTab: TTabSheet;
     mLog: TMemo;
   end;
@@ -20,8 +24,8 @@ type
   //@Krom: the Number must be fixed in case that ExtAI lost connection and connects back it can be TList of record if you wish
   //@Martin: Please comment on the purpose of these fields and see if you can give them more meaningful names. Atm I'm puzzled as to what they mean and do
   TExtAIAndGUIArr = record
-    Count: Word;
-    Number: Word;
+    Count: Word; // Count of elements in Arr
+    ID: Word; // ID of ExtAI (imagine if we start game with 3 AIs and we lose connection with AI 2)
     Arr: array of TExtAIAndGUI;
   end;
 
@@ -142,7 +146,7 @@ begin
   fGame.ExtAIMaster.OnAIDisconnect := RefreshExtAIs;
 
   fExtAIAndGUIArr.Count := 0;
-  fExtAIAndGUIArr.Number := 0;
+  fExtAIAndGUIArr.ID := 0;
   InitializeCriticalSection(csCriticalSection);
 
   fedPingLoc[0]  := edPingLoc00;  fcbLoc[0]  := cbLoc00;
@@ -369,9 +373,9 @@ begin
   Inc(fExtAIAndGUIArr.Count);
   with fExtAIAndGUIArr.Arr[Cnt] do
   begin
-    ID := fExtAIAndGUIArr.Number;
+    ID := fExtAIAndGUIArr.ID;
     // Increase number
-    Inc(fExtAIAndGUIArr.Number);
+    Inc(fExtAIAndGUIArr.ID);
     // Create GUI
     tsTab := TTabSheet.Create(pcLogExtAI);
     tsTab.Caption := 'Log AI ' + IntToStr(ID);
@@ -428,7 +432,7 @@ begin
       Arr[K].tsTab.Free; // Free tab and all GUI stuff in it
     end;
     Count := 0;
-    Number := 0;
+    ID := 0;
   end;
 end;
 

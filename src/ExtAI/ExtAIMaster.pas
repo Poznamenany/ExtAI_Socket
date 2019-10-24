@@ -2,7 +2,7 @@ unit ExtAIMaster;
 interface
 uses
   Classes, Windows, System.SysUtils, Generics.Collections,
-  ExtAINetServer, ExtAIInfo;
+  ExtAINetServer, ExtAIInfo, KM_CommonTypes;
 
 type
   // Manages external AI (list of available AIs and communication)
@@ -31,6 +31,7 @@ type
     property AIs: TList<TExtAIInfo> read fExtAIs;
 
     procedure UpdateState();
+    function GetExtAILobbyNames(): TStringArray;
   end;
 
 
@@ -126,4 +127,22 @@ begin
     fNetServer.UpdateState();
 end;
 
+
+function TExtAIMaster.GetExtAILobbyNames(): TStringArray;
+var
+  K, Cnt: Integer;
+begin
+  Cnt := 0;
+  SetLength(Result, fExtAIs.Count);
+  for K := 0 to fExtAIs.Count-1 do
+    if AIs[K].Configured then
+    begin
+      // This is the name of ExtAI in the lobby (for now)
+      Result[Cnt] := AIs[K].Name + ' ' + IntToStr(AIs[K].ServerClient.Handle);
+      Cnt := Cnt + 1;
+    end;
+  SetLength(Result, Cnt);
+end;
+
 end.
+
