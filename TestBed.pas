@@ -128,6 +128,7 @@ type
 const
   TAB_NAME = 'tsExtAI';
   CLOSED_LOC = 'Closed';
+  USE_LOCALHOST_IP = True;
 var
   ExtAI_TestBed: TExtAI_TestBed;
   csCriticalSection: TRTLCriticalSection;
@@ -147,7 +148,7 @@ begin
   fGame.ExtAIMaster.OnAIDisconnect := RefreshComboBoxes;
 
   fExtAIAndGUIArr.Count := 0;
-  fExtAIAndGUIArr.ID := 0;
+  fExtAIAndGUIArr.ID := 1;
   InitializeCriticalSection(csCriticalSection);
 
   fedPingLoc[0]  := edPingLoc00;  fcbLoc[0]  := cbLoc00;
@@ -224,11 +225,12 @@ procedure TExtAI_TestBed.RefreshComboBoxes(aServerClient: TExtAIInfo);
 var
   ItemFound: Boolean;
   K,L,Cnt: Integer;
-  AvailableAIs: TStringArray;
+  AvailableAIs, AvailableDLLs: TStringArray;
   SelectedAIs: array[0..MAX_HANDS_COUNT-1] of String;
 begin
-  // Get available AI players
-  AvailableAIs := fGame.ExtAIMaster.GetExtAILobbyNames();
+  // Get available ExtAIs and DLLs
+  AvailableAIs := fGame.ExtAIMaster.GetExtAIClientNames();
+  AvailableDLLs := fGame.ExtAIMaster.GetExtAIDLLNames();
 
   // Filter already selected AI players
   Cnt := Length(AvailableAIs);
@@ -247,6 +249,9 @@ begin
         AvailableAIs[L] := AvailableAIs[Cnt];
         Break;
       end;
+    for L := Low(AvailableDLLs) to High(AvailableDLLs) do
+      if (AnsiCompareText(AvailableDLLs[L],SelectedAIs[K]) = 0) then
+        ItemFound := True;
     // Remove selection
     if not ItemFound then
       SelectedAIs[K] := '';
@@ -263,6 +268,9 @@ begin
     fcbLoc[K].ItemIndex := fcbLoc[K].Items.Count - 1;
     for L := 0 to Cnt - 1 do
       fcbLoc[K].Items.Add(AvailableAIs[L]);
+    for L := Low(AvailableDLLs) to High(AvailableDLLs) do
+      if (AnsiCompareText(AvailableDLLs[L],SelectedAIs[K]) <> 0) then
+        fcbLoc[K].Items.Add(AvailableDLLs[L]);
   end;
 end;
 
@@ -278,22 +286,35 @@ var
   K, Cnt: Integer;
   AIs: TStringArray;
 begin
-  // Get AI players in the lobby
-  SetLength(AIs,MAX_HANDS_COUNT);
-  Cnt := 0;
-  for K := Low(fcbLoc) to High(fcbLoc) do
-  begin
-    // Get actual selection
-    AIs[Cnt] := fcbLoc[K].Items[ fcbLoc[K].ItemIndex ];
-    Cnt := Cnt + Byte((Length(AIs[Cnt]) > 0) AND (AnsiCompareText(AIs[Cnt],CLOSED_LOC) <> 0));
-  end;
-  SetLength(AIs,Cnt);
-  // Start / stop the simulation with specific AI players
-  fGame.StartEndGame(AIs);
+  btnServerStartMap.Enabled := True;
   if (fGame.GameState = gsLobby) then
-    btnServerStartMap.Caption := 'Start Map'
-  else
+  begin
+    // Get AI players in the lobby
+    SetLength(AIs,MAX_HANDS_COUNT);
+    Cnt := 0;
+    for K := Low(fcbLoc) to High(fcbLoc) do
+    begin
+      // Get actual selection
+      AIs[Cnt] := fcbLoc[K].Items[ fcbLoc[K].ItemIndex ];
+      Cnt := Cnt + Byte((Length(AIs[Cnt]) > 0) AND (AnsiCompareText(AIs[Cnt],CLOSED_LOC) <> 0));
+    end;
+    SetLength(AIs,Cnt);
+    // Start / stop the simulation with specific AI players
+    fGame.InitGame(AIs);
+    //btnServerStartMap.Caption := 'Loading...';
+    //btnServerStartMap.Enabled := False;
     btnServerStartMap.Caption := 'Stop Map';
+    btnServerStartMap.Enabled := True;
+  end
+  else if (fGame.GameState = gsPlaying) then
+  begin
+    btnServerStartMap.Caption := 'Stop Map';
+    fGame.EndGame();
+  end
+  else
+  begin
+    btnServerStartMap.Caption := 'Start Map';
+  end
 end;
 
 
@@ -321,7 +342,7 @@ var
   Conn: Boolean;
   K, Idx: Integer;
 begin
-  // Send commant to all ExtAIs
+  // Send command to all ExtAIs
   if chbControlAll.Checked then
   begin
     Conn := True;
@@ -384,17 +405,17 @@ end;
 
 procedure TExtAI_TestBed.btnTerminateExtAIClick(Sender: TObject);
 var
-  ID: Integer;
+  Idx: Integer;
 begin
-  if GetSelectedClient(ID) then
+  if GetSelectedClient(Idx) then
     with fExtAIAndGUIArr do
     begin
-      Arr[ID].AI.TerminateSimulation();
+      Arr[Idx].AI.TerminateSimulation();
       Sleep(100); // Give some time to shut down the clients
-      Arr[ID].AI.Free;
-      Arr[ID].Log.Free;
-      Arr[ID].tsTab.Free; // Free tab and all GUI stuff in it
-      Arr[ID] := Arr[Count-1];
+      Arr[Idx].AI.Free;
+      Arr[Idx].Log.Free;
+      Arr[Idx].tsTab.Free; // Free tab and all GUI stuff in it
+      Arr[Idx] := Arr[Count-1];
       Count := Count - 1;
     end;
 end;
@@ -417,7 +438,7 @@ begin
       Arr[K].tsTab.Free; // Free tab and all GUI stuff in it
     end;
     Count := 0;
-    ID := 0;
+    //ID := 0;
   end;
 end;
 
@@ -430,7 +451,7 @@ end;
 
 procedure TExtAI_TestBed.btnClientSendActionClick(Sender: TObject);
 var
-  K,ID: Integer;
+  K,Idx: Integer;
 begin
   if chbControlAll.Checked then
   begin
@@ -438,8 +459,8 @@ begin
       with fExtAIAndGUIArr.Arr[K].AI do
         Actions.Log('This is debug message (Action.Log) from ExtAI ID = ' + IntToStr(ID));
   end
-  else if GetSelectedClient(ID) then
-    with fExtAIAndGUIArr.Arr[ID].AI do
+  else if GetSelectedClient(Idx) then
+    with fExtAIAndGUIArr.Arr[Idx].AI do
     begin
       Actions.Log('This is debug message (Action.Log) from ExtAI ID = ' + IntToStr(ID));
       //Actions.GroupOrderWalk(1,2,3,4);
@@ -479,7 +500,7 @@ begin
   begin
     tsTab := pcLogExtAI.ActivePage;
     TabID := tsTab.Name;
-    TabID :=  Copy(TabID, 1 + Length(TAB_NAME), Length(TabID) - Length(TAB_NAME));
+    TabID := Copy(TabID, 1 + Length(TAB_NAME), Length(TabID) - Length(TAB_NAME));
     try
       ID := StrToInt(TabID);
       if GetIdxByID(aIdx, ID) then
@@ -525,7 +546,9 @@ begin
     Log('Invalid port');
     Exit;
   end;
-  if GetIP(IP) then
+  if USE_LOCALHOST_IP then
+      fExtAIAndGUIArr.Arr[aIdx].AI.Client.ConnectTo('127.0.0.1', Port)
+  else if GetIP(IP) then
       fExtAIAndGUIArr.Arr[aIdx].AI.Client.ConnectTo(IP, Port);
 end;
 
@@ -533,8 +556,8 @@ end;
 procedure TExtAI_TestBed.DisconnectClient(aIdx: Integer);
 begin
   with fExtAIAndGUIArr.Arr[aIdx].AI.Client do
-  if Connected then
-    Disconnect;
+    if Connected then
+      Disconnect;
   btnClientConnect.Caption := 'Connect client';
   btnClientSendAction.Enabled := False;
   btnClientSendState.Enabled := False;
@@ -583,13 +606,13 @@ var
   AvailableAIs: TStringArray;
 begin
   // Get available AI players
-  AvailableAIs := fGame.ExtAIMaster.GetExtAILobbyNames();
+  AvailableAIs := fGame.ExtAIMaster.GetExtAIClientNames();
   // Update ping
   for K := Low(fcbLoc) to High(fcbLoc) do
   begin
     fedPingLoc[K].Text := '0';
     for L := Low(AvailableAIs) to High(AvailableAIs) do
-      if AvailableAIs[L] = fcbLoc[K].Items[ fcbLoc[K].ItemIndex ] then
+      if (AnsiCompareText(AvailableAIs[L], fcbLoc[K].Items[ fcbLoc[K].ItemIndex ]) = 0) then
         fedPingLoc[K].Text := IntToStr(fGame.ExtAIMaster.AIs[L].ServerClient.NetPing);
   end;
 end;

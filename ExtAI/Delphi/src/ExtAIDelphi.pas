@@ -16,7 +16,7 @@ type
     procedure OnTick(aTick: Cardinal); override;
     procedure OnPlayerVictory(aHandIndex: SmallInt); override;
   public
-    constructor Create(aLog: TLog; aID: Word);
+    constructor Create(aLog: TLog = nil; aID: Word = 0);
     destructor Destroy(); override;
   end;
 
@@ -24,7 +24,7 @@ implementation
 
 
 { TExtAIDelphi }
-constructor TExtAIDelphi.Create(aLog: TLog; aID: Word);
+constructor TExtAIDelphi.Create(aLog: TLog = nil; aID: Word = 0);
 const
   AUTHOR: UnicodeString = 'Martin';
   DESCRIPTION: UnicodeString = 'Testing ExtAI with WebSocket';

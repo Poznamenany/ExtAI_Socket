@@ -104,10 +104,6 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="TestBed.pas">
-            <Form>ExtAI_TestBed</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="src\KM_Game.pas"/>
         <DCCReference Include="src\KM_CommonTypes.pas"/>
         <DCCReference Include="src\KM_CommonUtils.pas"/>
@@ -119,6 +115,8 @@
         <DCCReference Include="src\ExtAI\ExtAINetworkTypes.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIMaster.pas"/>
         <DCCReference Include="src\ExtAI\ExtAIInfo.pas"/>
+        <DCCReference Include="src\ExtAI\ExtAI_DLL.pas"/>
+        <DCCReference Include="src\ExtAI\ExtAI_DLLs.pas"/>
         <DCCReference Include="src\ExtAI\NetServerOverbyte.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\ExtAILog.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\ExtAIDelphi.pas"/>
@@ -135,6 +133,9 @@
         <DCCReference Include="ExtAI\Delphi\src\net\ExtAINetClientOverbyte.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\net\ExtAISharedNetworkTypes.pas"/>
         <DCCReference Include="ExtAI\Delphi\src\net\ExtAICommonClasses.pas"/>
+        <DCCReference Include="TestBed.pas">
+            <Form>ExtAI_TestBed</Form>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

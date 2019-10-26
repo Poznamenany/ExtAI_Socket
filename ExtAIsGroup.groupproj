@@ -1,0 +1,72 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{1B427EC5-32F1-49BB-A941-13A1333845FB}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="ExtAI\Delphi\ExtAI_Delphi_dll.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="ExtAI\Delphi\ExtAI_Delphi_exe.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="WebSocketTest.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="src\Game.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="ExtAI_Delphi_dll">
+        <MSBuild Projects="ExtAI\Delphi\ExtAI_Delphi_dll.dproj"/>
+    </Target>
+    <Target Name="ExtAI_Delphi_dll:Clean">
+        <MSBuild Projects="ExtAI\Delphi\ExtAI_Delphi_dll.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ExtAI_Delphi_dll:Make">
+        <MSBuild Projects="ExtAI\Delphi\ExtAI_Delphi_dll.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ExtAI_Delphi_exe">
+        <MSBuild Projects="ExtAI\Delphi\ExtAI_Delphi_exe.dproj"/>
+    </Target>
+    <Target Name="ExtAI_Delphi_exe:Clean">
+        <MSBuild Projects="ExtAI\Delphi\ExtAI_Delphi_exe.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ExtAI_Delphi_exe:Make">
+        <MSBuild Projects="ExtAI\Delphi\ExtAI_Delphi_exe.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="WebSocketTest">
+        <MSBuild Projects="WebSocketTest.dproj"/>
+    </Target>
+    <Target Name="WebSocketTest:Clean">
+        <MSBuild Projects="WebSocketTest.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="WebSocketTest:Make">
+        <MSBuild Projects="WebSocketTest.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Game">
+        <MSBuild Projects="src\Game.dproj"/>
+    </Target>
+    <Target Name="Game:Clean">
+        <MSBuild Projects="src\Game.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Game:Make">
+        <MSBuild Projects="src\Game.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="ExtAI_Delphi_dll;ExtAI_Delphi_exe;WebSocketTest;Game"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="ExtAI_Delphi_dll:Clean;ExtAI_Delphi_exe:Clean;WebSocketTest:Clean;Game:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="ExtAI_Delphi_dll:Make;ExtAI_Delphi_exe:Make;WebSocketTest:Make;Game:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

@@ -24,6 +24,12 @@ type
     TPlayerDefeatedEvent  = procedure(aHandIndex: SmallInt)                                of object;
     TPlayerVictoryEvent   = procedure(aHandIndex: SmallInt)                                of object;
 
+  // DLL interface
+  TDLLpConfig = record
+    Author, Description, ExtAIName: PWideChar;
+    AuthorLen, DescriptionLen, ExtAINameLen, Version: Cardinal;
+  end;
+  
 implementation
 
 

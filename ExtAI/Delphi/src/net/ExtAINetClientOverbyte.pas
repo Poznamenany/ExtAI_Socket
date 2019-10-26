@@ -114,7 +114,7 @@ end;
 procedure TNetClientOverbyte.Connected(Sender: TObject; Error: Word);
 begin
   if Error <> 0 then
-    fOnConnectFailed('Error: '+WSocketErrorDesc(Error)+' (#' + IntToStr(Error)+')')
+    fOnConnectFailed(Format('Error: %s (#%d)',[WSocketErrorDesc(Error), Error]))
   else
   begin
     fOnConnectSucceed(Self);
@@ -129,7 +129,7 @@ procedure TNetClientOverbyte.Disconnected(Sender: TObject; Error: Word);
 begin
   //Do not exit on error, because when a disconnect error occurs, the client has still disconnected
   if (Error <> 0) then
-    fOnError('Client: Disconnection error: '+WSocketErrorDesc(Error)+' (#' + IntToStr(Error)+')');
+    fOnError(Format('Client: Disconnection error: %s (#%d)',[WSocketErrorDesc(Error), Error]));
 
   fOnSessionDisconnected(Self);
 end;
@@ -144,7 +144,7 @@ var
 begin
   if (Error <> 0) then
   begin
-    fOnError('DataAvailable. Error '+WSocketErrorDesc(Error)+' (#' + IntToStr(Error)+')');
+    fOnError(Format('DataAvailable. Error %s (#%d)',[WSocketErrorDesc(Error), Error]));
     exit;
   end;
 

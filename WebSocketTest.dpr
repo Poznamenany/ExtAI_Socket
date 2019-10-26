@@ -1,7 +1,6 @@
 program WebSocketTest;
 uses
   Vcl.Forms,
-  TestBed in 'TestBed.pas' {ExtAI_TestBed},
   KM_Game in 'src\KM_Game.pas',
   KM_CommonTypes in 'src\KM_CommonTypes.pas',
   KM_CommonUtils in 'src\KM_CommonUtils.pas',
@@ -13,6 +12,8 @@ uses
   ExtAINetworkTypes in 'src\ExtAI\ExtAINetworkTypes.pas',
   ExtAIMaster in 'src\ExtAI\ExtAIMaster.pas',
   ExtAIInfo in 'src\ExtAI\ExtAIInfo.pas',
+  ExtAI_DLL in 'src\ExtAI\ExtAI_DLL.pas',
+  ExtAI_DLLs in 'src\ExtAI\ExtAI_DLLs.pas',
   NetServerOverbyte in 'src\ExtAI\NetServerOverbyte.pas',
   ExtAILog in 'ExtAI\Delphi\src\ExtAILog.pas',
   ExtAIDelphi in 'ExtAI\Delphi\src\ExtAIDelphi.pas',
@@ -28,7 +29,8 @@ uses
   ExtAINetClient in 'ExtAI\Delphi\src\net\ExtAINetClient.pas',
   ExtAINetClientOverbyte in 'ExtAI\Delphi\src\net\ExtAINetClientOverbyte.pas',
   ExtAISharedNetworkTypes in 'ExtAI\Delphi\src\net\ExtAISharedNetworkTypes.pas',
-  ExtAICommonClasses in 'ExtAI\Delphi\src\net\ExtAICommonClasses.pas';
+  ExtAICommonClasses in 'ExtAI\Delphi\src\net\ExtAICommonClasses.pas',
+  TestBed in 'TestBed.pas' {ExtAI_TestBed};
 
 {$R *.res}
 

@@ -1,10 +1,9 @@
 program Game;
-
 uses
   Vcl.Forms,
   KM_Game in 'KM_Game.pas',
-  KM_CommonUtils in 'KM_CommonUtils.pas',
   KM_CommonTypes in 'KM_CommonTypes.pas',
+  KM_CommonUtils in 'KM_CommonUtils.pas',
   KM_Consts in 'KM_Consts.pas',
   KM_Hand in 'KM_Hand.pas',
   KM_HandAI_Ext in 'KM_HandAI_Ext.pas',
@@ -13,6 +12,8 @@ uses
   ExtAINetworkTypes in 'ExtAI\ExtAINetworkTypes.pas',
   ExtAIMaster in 'ExtAI\ExtAIMaster.pas',
   ExtAIInfo in 'ExtAI\ExtAIInfo.pas',
+  ExtAI_DLL in 'ExtAI\ExtAI_DLL.pas',
+  ExtAI_DLLs in 'ExtAI\ExtAI_DLLs.pas',
   NetServerOverbyte in 'ExtAI\NetServerOverbyte.pas',
   ExtAILog in '..\ExtAI\Delphi\src\ExtAILog.pas',
   //ExtAIDelphi in '..\ExtAI\Delphi\src\ExtAIDelphi.pas',

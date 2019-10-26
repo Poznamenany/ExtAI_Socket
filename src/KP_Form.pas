@@ -183,11 +183,12 @@ procedure TGame_form.RefreshComboBoxes(aServerClient: TExtAIInfo);
 var
   ItemFound: Boolean;
   K,L,Cnt: Integer;
-  AvailableAIs: TStringArray;
+  AvailableAIs, AvailableDLLs: TStringArray;
   SelectedAIs: array[0..MAX_HANDS_COUNT-1] of String;
 begin
-  // Get available AI players
-  AvailableAIs := fGame.ExtAIMaster.GetExtAILobbyNames();
+  // Get available ExtAIs and DLLs
+  AvailableAIs := fGame.ExtAIMaster.GetExtAIClientNames();
+  AvailableDLLs := fGame.ExtAIMaster.GetExtAIDLLNames();
 
   // Filter already selected AI players
   Cnt := Length(AvailableAIs);
@@ -206,6 +207,9 @@ begin
         AvailableAIs[L] := AvailableAIs[Cnt];
         Break;
       end;
+    for L := Low(AvailableDLLs) to High(AvailableDLLs) do
+      if (AnsiCompareText(AvailableDLLs[L],SelectedAIs[K]) = 0) then
+        ItemFound := True;
     // Remove selection
     if not ItemFound then
       SelectedAIs[K] := '';
@@ -222,6 +226,9 @@ begin
     fcbLoc[K].ItemIndex := fcbLoc[K].Items.Count - 1;
     for L := 0 to Cnt - 1 do
       fcbLoc[K].Items.Add(AvailableAIs[L]);
+    for L := Low(AvailableDLLs) to High(AvailableDLLs) do
+      if (AnsiCompareText(AvailableDLLs[L],SelectedAIs[K]) <> 0) then
+        fcbLoc[K].Items.Add(AvailableDLLs[L]);
   end;
 end;
 
@@ -250,22 +257,35 @@ var
   K, Cnt: Integer;
   AIs: TStringArray;
 begin
-  // Get AI players in the lobby
-  SetLength(AIs,MAX_HANDS_COUNT);
-  Cnt := 0;
-  for K := Low(fcbLoc) to High(fcbLoc) do
-  begin
-    // Get actual selection
-    AIs[Cnt] := fcbLoc[K].Items[ fcbLoc[K].ItemIndex ];
-    Cnt := Cnt + Byte((Length(AIs[Cnt]) > 0) AND (AnsiCompareText(AIs[Cnt],CLOSED_LOC) <> 0));
-  end;
-  SetLength(AIs,Cnt);
-  // Start / stop the simulation with specific AI players
-  fGame.StartEndGame(AIs);
+  btnServerStartMap.Enabled := True;
   if (fGame.GameState = gsLobby) then
-    btnServerStartMap.Caption := 'Start Map'
-  else
+  begin
+    // Get AI players in the lobby
+    SetLength(AIs,MAX_HANDS_COUNT);
+    Cnt := 0;
+    for K := Low(fcbLoc) to High(fcbLoc) do
+    begin
+      // Get actual selection
+      AIs[Cnt] := fcbLoc[K].Items[ fcbLoc[K].ItemIndex ];
+      Cnt := Cnt + Byte((Length(AIs[Cnt]) > 0) AND (AnsiCompareText(AIs[Cnt],CLOSED_LOC) <> 0));
+    end;
+    SetLength(AIs,Cnt);
+    // Start / stop the simulation with specific AI players
+    fGame.InitGame(AIs);
+    //btnServerStartMap.Caption := 'Loading...';
+    //btnServerStartMap.Enabled := False;
     btnServerStartMap.Caption := 'Stop Map';
+    btnServerStartMap.Enabled := True;
+  end
+  else if (fGame.GameState = gsPlaying) then
+  begin
+    btnServerStartMap.Caption := 'Stop Map';
+    fGame.EndGame();
+  end
+  else
+  begin
+    btnServerStartMap.Caption := 'Start Map';
+  end
 end;
 
 
@@ -283,13 +303,13 @@ var
   AvailableAIs: TStringArray;
 begin
   // Get available AI players
-  AvailableAIs := fGame.ExtAIMaster.GetExtAILobbyNames();
+  AvailableAIs := fGame.ExtAIMaster.GetExtAIClientNames();
   // Update ping
   for K := Low(fcbLoc) to High(fcbLoc) do
   begin
     fedPingLoc[K].Text := '0';
     for L := Low(AvailableAIs) to High(AvailableAIs) do
-      if AvailableAIs[L] = fcbLoc[K].Items[ fcbLoc[K].ItemIndex ] then
+      if (AnsiCompareText(AvailableAIs[L], fcbLoc[K].Items[ fcbLoc[K].ItemIndex ]) = 0) then
         fedPingLoc[K].Text := IntToStr(fGame.ExtAIMaster.AIs[L].ServerClient.NetPing);
   end;
 end;

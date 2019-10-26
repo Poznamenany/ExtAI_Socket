@@ -29,7 +29,7 @@ type
     // Log
     procedure Log(aText: String);
   public
-    constructor Create(aLog: TLog; aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
+    constructor Create(aLog: TLog; const aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
     destructor Destroy(); override;
 
     property ID: Word read fID;
@@ -44,7 +44,7 @@ implementation
 
 
 { TExtAIBaseDelphi }
-constructor TExtAIBaseDelphi.Create(aLog: TLog; aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
+constructor TExtAIBaseDelphi.Create(aLog: TLog; const aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
 begin
   inherited Create(False);
   FreeOnTerminate := False;
@@ -52,7 +52,7 @@ begin
 
   fActive := True;
   fID := aID;
-  fClient := TExtAINetClient.Create(aAuthor, aName, aDescription, aVersion);
+  fClient := TExtAINetClient.Create(aID, aAuthor, aName, aDescription, aVersion);
   fLog := aLog;
 
   fActions := TExtAIActions.Create(fClient);

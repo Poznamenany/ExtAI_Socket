@@ -21,6 +21,7 @@ type
     fpEndData: pExtAINewData;
     fBuff: TKExtAIMsgStream;
     // ExtAI properties
+    fID: Word;
     fAuthor: UnicodeString;
     fName: UnicodeString;
     fDescription: UnicodeString;
@@ -49,7 +50,7 @@ type
     procedure ServerCfg(DataType: Cardinal);
     procedure SendExtAICfg();
   public
-    constructor Create(const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
+    constructor Create(const aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
     destructor Destroy; override;
 
     property Client: TExtAINetClientImplementation read fClient;
@@ -62,12 +63,13 @@ type
     property OnNewEvent: TNewDataEvent write fOnNewEvent;
     property OnNewState: TNewDataEvent write fOnNewState;
 
+    property ID: Word read fID;
     property Author: UnicodeString read fAuthor;
     property ClientName: UnicodeString read fName;
     property Description: UnicodeString read fDescription;
     property AIVersion: Cardinal read fAIVersion;
 
-    procedure ConnectTo(const aAddress: String; const aPort: Word); //Try to connect to server
+    procedure ConnectTo(const aAddress: String; const aPort: Word); // Try to connect to server
     procedure Disconnect(); //Disconnect from server
     procedure SendMessage(aMsg: Pointer; aLengthMsg: TExtAIMsgLengthMsg);
     procedure ProcessReceivedMessages();
@@ -78,14 +80,15 @@ implementation
 
 
 const
-  CLIENT_VERSION: Cardinal = 20190629;
+  CLIENT_VERSION: Cardinal = 20191026;
 
 
 { TExtAINetClient }
-constructor TExtAINetClient.Create(const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
+constructor TExtAINetClient.Create(const aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
 begin
   inherited Create;
 
+  fID := aID;
   fAuthor := aAuthor;
   fName := aName;
   fDescription := aDescription;
@@ -133,14 +136,14 @@ end;
 
 procedure TExtAINetClient.Error(const S: String);
 begin
-  Status('NetClient Error: ' + S);
+  Status(Format('NetClient Error: %s',[S]));
 end;
 
 
 procedure TExtAINetClient.Status(const S: String);
 begin
   if Assigned(fOnStatusMessage) then
-    fOnStatusMessage('NetClient: ' + S);
+    fOnStatusMessage(Format('NetClient: %s',[S]));
 end;
 
 
@@ -153,7 +156,7 @@ begin
   fClient.OnSessionDisconnected := ForcedDisconnect;
   fClient.OnRecieveData := RecieveData;
   fClient.ConnectTo(aAddress, aPort);
-  Status('Connecting to: ' + aAddress + '; Port: ' + IntToStr(aPort));
+  Status(Format('Connecting to: %s; Port: %d', [aAddress,aPort]));
 end;
 
 
@@ -162,7 +165,7 @@ begin
   fConnected := True;
   if Assigned(fOnConnectSucceed) then
     fOnConnectSucceed(Self);
-  Status('Connect succeed - IP: ' + Client.MyIPString());
+  Status(Format('Connect succeed - IP: %s', [Client.MyIPString()]));
 end;
 
 
@@ -171,7 +174,7 @@ begin
   fConnected := False;
   if Assigned(fOnConnectFailed) then
     fOnConnectFailed(S);
-  Status('Connection failed. ' + S);
+  Status(Format('Connection failed: %s', [S]));
 end;
 
 
@@ -226,6 +229,7 @@ end;
 
 procedure TExtAINetClient.ServerCfg(DataType: Cardinal);
 var
+  pomID: Word;
   BackupPosition: Cardinal;
 begin
   BackupPosition := fBuff.Position;
@@ -233,20 +237,26 @@ begin
     csName:
     begin
       fBuff.ReadW(fServerName);
-      Status('Server name: ' + fServerName);
+      Status(Format('Server name: %s', [fServerName]));
     end;
     csVersion:
     begin
       fBuff.Read(fServerVersion);
-      Status('Server version = ' + IntToStr( fServerVersion ));
-      Status('Client version = ' + IntToStr( CLIENT_VERSION ));
+      Status(Format('Versions: server = %d, client = %d', [fServerVersion, CLIENT_VERSION]));
       if (fServerVersion = CLIENT_VERSION) then
         SendExtAICfg();
     end;
     csClientHandle:
     begin
       fBuff.Read(fClientID, SizeOf(fClientID));
-      Status('Client handle: ' + IntToStr(fClientID));
+      Status(Format('Client handle: %d', [fClientID]));
+    end;
+    csExtAIID:
+    begin
+      fBuff.Read(pomID, SizeOf(pomID));
+      if (fID = 0) then
+        fID := pomID;
+      Status(Format('Client ID: %d', [fID]));
     end;
     else Status('Unknown server cfg message');
   end;
@@ -310,6 +320,9 @@ var
 begin
   M := TKExtAIMsgStream.Create;
   try
+    // Add ID (ID is decided by game or DLL, it is equal to zero if it is unknown)
+    M.WriteMsgType(mkExtAICfg, Cardinal(caID), SizeOf(fID));
+    M.Write(fID);
     // Add author
     M.WriteMsgType(mkExtAICfg, Cardinal(caAuthor), SizeOf(Word) + SizeOf(WideChar) * Length(fAuthor));
     M.WriteW(fAuthor);

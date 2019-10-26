@@ -2,7 +2,7 @@ unit KM_Game;
 interface
 uses
   Classes, Generics.Collections, System.SysUtils,
-  KM_Hand, KM_Terrain, ExtAIMaster;
+  KM_Hand, KM_Terrain, KM_CommonTypes, ExtAIMaster;
 
 const
   SLEEP_EVERY_TICK = 500;
@@ -10,7 +10,7 @@ const
 type
   // Debug types for GUI (Simulation status etc.)
   TSimulationState = (ssCreated, ssInit, ssInProgress, ssTerminated);
-  TKMGameState = (gsLobby, gsPlaying);
+  TKMGameState = (gsLobby, gsLoading, gsPlaying);
   TSimStatEvent = procedure of object;
 
   // The main thread of application (= KP, it contain access to ExtAI Interface and also Hands)
@@ -21,10 +21,14 @@ type
     // Game properties (kind of testbed)
     fGameState: TKMGameState;
     fTick: Cardinal;
+    fExtAIsID: TKMWordArray;
 
     // Purely testbed things
     fSimState: TSimulationState;
     fOnUpdateSimStatus: TSimStatEvent;
+
+    function CheckGameConditions(): Boolean;
+    procedure LoadGame();
   protected
     procedure Execute; override;
   public
@@ -39,7 +43,8 @@ type
     property ExtAIMaster: TExtAIMaster read fExtAIMaster;
     property SimulationState: TSimulationState read fSimState;
 
-    procedure StartEndGame(AIs: array of String);
+    procedure InitGame(aNamesExtAI: TStringArray);
+    procedure EndGame();
     procedure TerminateSimulation();
 
     procedure SendEvent;
@@ -63,9 +68,9 @@ begin
   fGameState := gsLobby;
   fSimState := ssInProgress;
   fOnUpdateSimStatus := aOnUpdateSimStatus;
-  fExtAIMaster := TExtAIMaster.Create();
+  fExtAIMaster := TExtAIMaster.Create(['ExtAI\','..\..\..\ExtAI\','..\..\..\ExtAI\Delphi\Win32','..\..\ExtAI\Delphi\Win32']);
   fHands := nil;
-  gTerrain := TKMTerrain.Create;
+  gTerrain := TKMTerrain.Create();
 end;
 
 
@@ -80,50 +85,102 @@ begin
 end;
 
 
-// Start or end the simulation
-procedure TKMGame.StartEndGame(AIs: array of String);
-var
-  K, L: Integer;
+// Test conditions for game with ExtAI
+function TKMGame.CheckGameConditions(): Boolean;
 begin
-  fTick := 0;
+  // Check if server work
   if not fExtAIMaster.Net.Listening then
   begin
-    gLog.Log('TKMGame-Server is not running');
-    Exit;
+    gLog.Log('TKMGame-Server is NOT running');
+    Exit(False);
   end
-  else if (Length(AIs) = 0) then
+  // Check selection of players in lobby
+  else if (Length(fExtAIsID) <= 0) then
   begin
-    gLog.Log('TKMGame-no AI is selected');
+    gLog.Log('TKMGame- AI is NOT selected');
+    Exit(False);
+  end;
+  Result := True;
+end;
+
+
+// Init game, declare and connect AI players in DLLs
+procedure TKMGame.InitGame(aNamesExtAI: TStringArray);
+var
+  ClientExists: Boolean;
+  K,L: Integer;
+begin
+  SetLength(fExtAIsID, Length(aNamesExtAI));
+  if not CheckGameConditions() then
+    Exit;
+  // Find DLL players in lobby and call DLL to initialize new ExtAIs
+  for K := Low(aNamesExtAI) to High(aNamesExtAI) do
+  begin
+    ClientExists := False;
+    for L := 0 to fExtAIMaster.AIs.Count - 1 do
+      if (AnsiCompareText(aNamesExtAI[K],fExtAIMaster.AIs[L].Name) = 0) then
+      begin
+        ClientExists := True;
+        fExtAIsID[K] := fExtAIMaster.AIs[L].ID;
+        break;
+      end;
+    if not ClientExists then
+      for L := 0 to fExtAIMaster.DLLs.Count - 1 do
+        if (AnsiCompareText(aNamesExtAI[K],fExtAIMaster.DLLs[L].Name) = 0) then
+          fExtAIsID[K] := fExtAIMaster.ConnectNewExtAI(L);
+  end;
+  // Update game state (loading screen)
+  fGameState := gsLoading;
+end;
+
+
+// Start the simulation
+procedure TKMGame.LoadGame();
+var
+  AIDetected: Boolean;
+  K, L: Integer;
+begin
+  if not CheckGameConditions() then
+    Exit;
+
+  for K := Low(fExtAIsID) to High(fExtAIsID) do
+  begin
+    AIDetected := False;
+    for L := 0 to fExtAIMaster.AIs.Count - 1 do
+      if (fExtAIsID[K] = fExtAIMaster.AIs[L].ID) then
+        AIDetected := fExtAIMaster.AIs[L].ReadyForGame;
+    if not AIDetected then
+      Exit;
   end;
 
-  // Clean hands before game start / end
+  // Clean vars before game start
   FreeAndNil(fHands);
+  fTick := 0;
 
-  case fGameState of
-    gsLobby:
+  // Start the game
+  gLog.Log('TKMGame-StartMap');
+  fGameState := gsPlaying;
+  fHands := TObjectList<TKMHand>.Create;
+
+  for K := 0 to fExtAIMaster.AIs.Count - 1 do
+    for L := Low(fExtAIsID) to High(fExtAIsID) do
+      if (fExtAIsID[L] = fExtAIMaster.AIs[K].ID) then
       begin
-        gLog.Log('TKMGame-StartMap');
-        fGameState := gsPlaying;
-        // Use all ExtAI in every game for now
-        fHands := TObjectList<TKMHand>.Create;
-        for K := 0 to fExtAIMaster.AIs.Count - 1 do
-          for L := Low(AIs) to High(AIs) do
-            if (AIs[L] = fExtAIMaster.AIs[K].Name) then
-            begin
-              fHands.Add(TKMHand.Create(K));
-              // Set hand to ExtAI
-              fHands[fHands.Count-1].SetAIType;
-              // Connect the interface
-              fHands[fHands.Count-1].AIExt.ConnectCallbacks(fExtAIMaster.AIs[K].ServerClient);
-              Break;
-            end;
+        fHands.Add(TKMHand.Create(K));
+        // Set hand to ExtAI
+        fHands[fHands.Count-1].SetAIType;
+        // Connect the interface
+        fHands[fHands.Count-1].AIExt.ConnectCallbacks(fExtAIMaster.AIs[K].ServerClient);
+        Break;
       end;
-    gsPlaying:
-      begin
-        gLog.Log('TKMGame-EndMap');
-        fGameState := gsLobby;
-      end;
-  end;
+end;
+
+
+procedure TKMGame.EndGame();
+begin
+  gLog.Log('TKMGame-EndMap');
+  fGameState := gsLobby;
+  FreeAndNil(fHands);
 end;
 
 
@@ -139,8 +196,11 @@ begin
     // Update ExtAIMaster every tick (update of ExtAI server)
     fExtAIMaster.UpdateState();
 
+    // Try to start game when loading is finished (ExtAIs are connected)
+    if (fGameState = gsLoading) then
+       LoadGame()
     // Update map loop (ticks during game)
-    if (fGameState = gsPlaying) then
+    else if (fGameState = gsPlaying) then
     begin
       //fGame.ExtAIMaster.Net.SendString(TestText);
       gLog.Log('TKMGame-Execute: Tick = ' + IntToStr(fTick));

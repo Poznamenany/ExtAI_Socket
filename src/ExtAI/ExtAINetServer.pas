@@ -11,6 +11,7 @@ type
   TNewMsgEvent = procedure (aData: Pointer; aLength: Cardinal) of object;
   TNewDataEvent = procedure (aData: Pointer; aDataType, aLength: Cardinal) of object;
   TServerClientEvent = procedure (aServerClient: TExtAIServerClient) of object;
+  TClientNewIDEvent = procedure (aServerClient: TExtAIServerClient; aID: Word) of object;
 
   TExtAIServerClient = class
   private
@@ -67,6 +68,7 @@ type
 
     fOnStatusMessage: TGetStrProc;
     fOnClientConnect: TServerClientEvent;
+    fOnClientNewID: TClientNewIDEvent;
     fOnClientDisconnect: TServerClientEvent;
     procedure Status(const S: string);
     procedure SendServerCfg(aHandle: TExtAINetHandleIndex);
@@ -90,9 +92,11 @@ type
 
     property OnStatusMessage: TGetStrProc write fOnStatusMessage;
     property OnClientConnect: TServerClientEvent write fOnClientConnect;
+    property OnClientNewID: TClientNewIDEvent write fOnClientNewID;
     property OnClientDisconnect: TServerClientEvent write fOnClientDisconnect;
-    property Listening: boolean read fListening;
+    property Listening: Boolean read fListening;
     property Clients: TList<TExtAIServerClient> read fClients;
+    property Server: TNetServerOverbyte read fServer;
 
     procedure StartListening(aPort: Word; const aServerName: AnsiString);
     procedure StopListening();
@@ -271,6 +275,7 @@ procedure TExtAINetServer.NillEvents();
 begin
   fOnStatusMessage := nil;
   fOnClientConnect := nil;
+  fOnClientNewID := nil;
   fOnClientDisconnect := nil;
 end;
 
@@ -327,7 +332,7 @@ end;
 procedure TExtAINetServer.SendServerCfg(aHandle: TExtAINetHandleIndex);
 const
   NAME: UnicodeString = 'Testing AI';
-  VERSION: Cardinal = 20190629;
+  VERSION: Cardinal = 20191026;
 var
   M: TKExtAIMsgStream;
 begin
@@ -341,6 +346,9 @@ begin
     M.WriteW(NAME);
     // Add client ID
     M.WriteMsgType(mkServerCfg, Cardinal(csClientHandle), SizeOf(aHandle));
+    M.Write(aHandle, SizeOf(aHandle));
+    // Add ExtAI ID
+    M.WriteMsgType(mkServerCfg, Cardinal(csExtAIID), SizeOf(aHandle));
     M.Write(aHandle, SizeOf(aHandle));
     // Send message
     ScheduleSendData(aHandle, M.Memory, M.Size, True);
@@ -590,7 +598,13 @@ begin
           case Kind of
             mkServerCfg:   begin end;
             mkGameCfg:     begin end;
-            mkExtAICfg:    aClient.Cfg(pData, DataType, LengthData);
+            mkExtAICfg:
+            begin
+              // Check if ID was received / changed
+              if (TExtAIMsgTypeCfgAI(DataType) = caID) AND Assigned(fOnClientNewID) then
+                fOnClientNewID(aClient, Word(pData^));
+              aClient.Cfg(pData, DataType, LengthData);
+            end;
             mkPerformance: begin end;
             mkAction:      aClient.Action(pData, DataType, LengthData);
             mkEvent:       begin end;

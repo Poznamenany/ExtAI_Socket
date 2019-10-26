@@ -45,7 +45,8 @@ type
   TExtAIMsgTypeCfgServer = (
     csName                 =   0,
     csVersion              =   1,
-    csClientHandle         =   2
+    csClientHandle         =   2,
+    csExtAIID              =   3
   );
   {$Z1} // Use 1 Byte to store enumeration
   TExtAIMsgTypeCfgGame = (
@@ -56,15 +57,16 @@ type
   );
   {$Z1} // Use 1 Byte to store enumeration
   TExtAIMsgTypeCfgAI = (
-    caAuthor               =   0,
-    caName                 =   1,
-    caDescription          =   2,
-    caVersion              =   3
+    caID                   =   0,
+    caAuthor               =   1,
+    caName                 =   2,
+    caDescription          =   3,
+    caVersion              =   4
   );
   {$Z1} // Use 1 Byte to store enumeration
   TExtAIMsgTypePerformance = (
     prPing                 =   0, // Ping request from server
-    prPong                 =   1, // Poing response of client to Ping request
+    prPong                 =   1, // Pong response of client to Ping request
     prTick                 =   2  // Duration of Tick
   );
   // Actions, Events, States

@@ -1,4 +1,4 @@
-program ExtAI_Delphi;
+program ExtAI_Delphi_exe;
 
 uses
   Vcl.Forms,

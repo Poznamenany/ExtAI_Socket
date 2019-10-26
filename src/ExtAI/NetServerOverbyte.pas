@@ -30,6 +30,7 @@ type
     property OnClientConnect: THandleEvent write fOnClientConnect;
     property OnClientDisconnect: THandleEvent write fOnClientDisconnect;
     property OnDataAvailable: TNotifyDataEvent write fOnDataAvailable;
+    property Socket: TWSocketServer read fSocketServer;
 
     procedure StartListening(aPort: Word);
     procedure StopListening;
@@ -68,7 +69,7 @@ begin
   fSocketServer := TWSocketServer.Create(nil);
   fSocketServer.ComponentOptions := [wsoTcpNoDelay]; // Send packets ASAP (disables Nagle's algorithm)
   fSocketServer.Proto  := 'tcp';
-  fSocketServer.Addr   := '0.0.0.0'; // Listen to whole range ... and in future restrict to local adress
+  fSocketServer.Addr   := '127.0.0.1'; // Listen to local adress
   fSocketServer.Port   := IntToStr(aPort);
   fSocketServer.Banner := '';
   fSocketServer.OnClientConnect := ClientConnect;

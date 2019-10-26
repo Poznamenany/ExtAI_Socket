@@ -95,7 +95,8 @@ begin
   begin
     try
       Port := edPort.Text;
-      fExtAI.Client.ConnectTo(IP, StrToInt(Port));
+      //fExtAI.Client.ConnectTo(IP, StrToInt(Port));
+      fExtAI.Client.ConnectTo('127.0.0.1', StrToInt(Port));
     except
       Log('Invalid port number');
     end;

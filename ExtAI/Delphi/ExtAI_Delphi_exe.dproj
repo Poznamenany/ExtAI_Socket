@@ -3,7 +3,7 @@
         <ProjectGuid>{FCD66D08-54B1-4F94-BD8E-06F044292030}</ProjectGuid>
         <ProjectVersion>18.5</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
-        <MainSource>ExtAI_Delphi.dpr</MainSource>
+        <MainSource>ExtAI_Delphi_exe.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -57,7 +57,7 @@
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
-        <SanitizedProjectName>ExtAI_Delphi</SanitizedProjectName>
+        <SanitizedProjectName>ExtAI_Delphi_exe</SanitizedProjectName>
         <DCC_UnitSearchPath>..\..\src\OverbyteV8;..\..\src\OverbyteV8\Extras;..\..\src\OverbyteV8\Include;..\..\src\OverbyteV8\zobj125;..\..\src\OverbyteV8\zobj125\win64;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_Locale>1029</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
@@ -141,7 +141,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">ExtAI_Delphi.dpr</Source>
+                    <Source Name="MainSource">ExtAI_Delphi_exe.dpr</Source>
                 </Source>
                 <Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k260.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
@@ -149,9 +149,9 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="3">
-                <DeployFile LocalName="Win32\Debug\ExtAI_Delphi.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="Win32\Debug\ExtAI_Delphi_exe.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>ExtAI_Delphi.exe</RemoteName>
+                        <RemoteName>ExtAI_Delphi_exe.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
