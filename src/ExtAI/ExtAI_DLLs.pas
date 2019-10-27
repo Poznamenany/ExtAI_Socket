@@ -51,7 +51,7 @@ begin
         for fileDLL in TDirectory.GetFiles(subFolder) do
           if ExtractFileExt(fileDLL) = '.dll' then
           begin
-            gLog.Log('TExtAIDLLs: New DLL - ' + fileDLL);
+            gLog.Log('TExtAIDLLs: New DLL - %s', [fileDLL]);
             Add(TExtAI_DLL.Create(fileDLL));
           end;
 end;

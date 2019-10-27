@@ -9,7 +9,7 @@ type
   TExtAIMaster = class
   private
     fNetServer: TExtAINetServer;
-    fExtAIs: TList<TExtAIInfo>;
+    fExtAIs: TObjectList<TExtAIInfo>;
     fDLLs: TExtAIDLLs;
     fIDCounter: Word;
 
@@ -20,7 +20,6 @@ type
     procedure ConnectExtAIWithID(aServerClient: TExtAIServerClient; aID: Word);
     procedure DisconnectClient(aServerClient: TExtAIServerClient);
     function CreateNewExtAI(aID: Word; aServerClient: TExtAIServerClient): TExtAIInfo;
-    procedure ReleaseExtAIs();
     procedure ConfiguredExtAI(aExtAIInfo: TExtAIInfo);
     function GetExtAI(aID: Word): TExtAIInfo; overload;
     function GetExtAI(aServerClient: TExtAIServerClient): TExtAIInfo; overload;
@@ -32,7 +31,7 @@ type
     property OnAIConfigured: TExtAIStatusEvent write fOnAIConfigured;
     property OnAIDisconnect: TExtAIStatusEvent write fOnAIDisconnect;
     property Net: TExtAINetServer read fNetServer;
-    property AIs: TList<TExtAIInfo> read fExtAIs;
+    property AIs: TObjectList<TExtAIInfo> read fExtAIs;
     property DLLs: TExtAIDLLs read fDLLs;
 
     procedure UpdateState();
@@ -55,7 +54,7 @@ constructor TExtAIMaster.Create(aDLLPaths: TArray<string>);
 begin
   fIDCounter := 0;
   fNetServer := TExtAINetServer.Create();
-  fExtAIs := TList<TExtAIInfo>.Create();
+  fExtAIs := TObjectList<TExtAIInfo>.Create();
   fDLLs := TExtAIDLLs.Create(aDLLPaths);
   fNetServer.OnStatusMessage := gLog.Log;
   fNetServer.OnClientConnect := nil; // Ignore incoming client till the moment when we receive config
@@ -68,8 +67,7 @@ destructor TExtAIMaster.Destroy();
 begin
   fDLLs.Free();
   fNetServer.Free();
-  ReleaseExtAIs();
-  FreeAndNil(fExtAIs);
+  fExtAIs.Free();
   inherited;
 end;
 
@@ -139,16 +137,6 @@ begin
   Result := TExtAIInfo.Create(aID, aServerClient);
   Result.OnAIConfigured := ConfiguredExtAI;
   fExtAIs.Add(Result);
-end;
-
-
-procedure TExtAIMaster.ReleaseExtAIs();
-var
-  K: Integer;
-begin
-  for K := 0 to fExtAIs.Count-1 do
-    fExtAIs[K].Free;
-  fExtAIs.Clear;
 end;
 
 

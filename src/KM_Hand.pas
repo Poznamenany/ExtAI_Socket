@@ -38,14 +38,14 @@ begin
 
   fAIExt := nil;
 
-  gLog.Log('  THand-Create: HandIndex = ' + IntToStr(fHandIndex));
+  gLog.Log('THand-Create: HandIndex = %d', [fHandIndex]);
 end;
 
 
 destructor TKMHand.Destroy;
 begin
   FreeAndNil(fAIExt);
-  gLog.Log('  THand-Destroy: HandIndex = ' + IntToStr(fHandIndex));
+  gLog.Log('THand-Destroy: HandIndex = %d', [fHandIndex]);
 
   inherited;
 end;

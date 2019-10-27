@@ -78,7 +78,7 @@ destructor TKMGame.Destroy();
 begin
   gLog.Log('TKMGame-Destroy');
   gTerrain.Free;
-  FreeAndNil(fHands);
+  fHands.Free;
   fExtAIMaster.Free;
 
   inherited;
@@ -97,7 +97,7 @@ begin
   // Check selection of players in lobby
   else if (Length(fExtAIsID) <= 0) then
   begin
-    gLog.Log('TKMGame- AI is NOT selected');
+    gLog.Log('TKMGame-AI is NOT selected');
     Exit(False);
   end;
   Result := True;
@@ -110,6 +110,7 @@ var
   ClientExists: Boolean;
   K,L: Integer;
 begin
+  gLog.Log('TKMGame-InitGame');
   SetLength(fExtAIsID, Length(aNamesExtAI));
   if not CheckGameConditions() then
     Exit;
@@ -154,14 +155,14 @@ begin
   end;
 
   // Clean vars before game start
-  FreeAndNil(fHands);
   fTick := 0;
-
-  // Start the game
-  gLog.Log('TKMGame-StartMap');
-  fGameState := gsPlaying;
+  FreeAndNil(fHands);
   fHands := TObjectList<TKMHand>.Create;
 
+  // Start the game
+  fGameState := gsPlaying;
+
+  gLog.Log('TKMGame-LoadGame');
   for K := 0 to fExtAIMaster.AIs.Count - 1 do
     for L := Low(fExtAIsID) to High(fExtAIsID) do
       if (fExtAIsID[L] = fExtAIMaster.AIs[K].ID) then
@@ -173,14 +174,21 @@ begin
         fHands[fHands.Count-1].AIExt.ConnectCallbacks(fExtAIMaster.AIs[K].ServerClient);
         Break;
       end;
+  gLog.Log('TKMGame-StartMap');
 end;
 
 
 procedure TKMGame.EndGame();
+var
+  K: Integer;
 begin
-  gLog.Log('TKMGame-EndMap');
   fGameState := gsLobby;
   FreeAndNil(fHands);
+  // Free AI created from DLL
+  for K := fExtAIMaster.AIs.Count - 1 downto 0 do
+    if fExtAIMaster.AIs[K].SourceIsDLL then
+      fExtAIMaster.AIs.Delete(K);
+  gLog.Log('TKMGame-EndMap');
 end;
 
 
@@ -203,7 +211,7 @@ begin
     else if (fGameState = gsPlaying) then
     begin
       //fGame.ExtAIMaster.Net.SendString(TestText);
-      gLog.Log('TKMGame-Execute: Tick = ' + IntToStr(fTick));
+      gLog.Log('TKMGame-Execute: Tick = %d', [fTick]);
       for K := 0 to fHands.Count - 1 do
         if (fHands[K] <> nil) AND (fHands[K].AIExt <> nil) AND (fHands[K].AIExt.Events <> nil) then
           fHands[K].UpdateState(fTick);

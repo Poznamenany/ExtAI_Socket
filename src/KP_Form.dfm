@@ -125,20 +125,22 @@ object Game_form: TGame_form
         Caption = '0.'
       end
       object cbLoc00: TComboBox
-        Left = 30
+        Left = 31
         Top = 44
         Width = 130
         Height = 21
         TabOrder = 0
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object cbLoc01: TComboBox
-        Left = 30
+        Left = 31
         Top = 64
         Width = 130
         Height = 21
         TabOrder = 1
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object cbLoc02: TComboBox
         Left = 31
@@ -147,6 +149,7 @@ object Game_form: TGame_form
         Height = 21
         TabOrder = 2
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object edPingLoc00: TEdit
         Left = 166
@@ -188,6 +191,7 @@ object Game_form: TGame_form
         Height = 21
         TabOrder = 7
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object edPingLoc03: TEdit
         Left = 166
@@ -204,6 +208,7 @@ object Game_form: TGame_form
         Height = 21
         TabOrder = 9
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object edPingLoc04: TEdit
         Left = 166
@@ -220,6 +225,7 @@ object Game_form: TGame_form
         Height = 21
         TabOrder = 11
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object edPingLoc05: TEdit
         Left = 166
@@ -236,6 +242,7 @@ object Game_form: TGame_form
         Height = 21
         TabOrder = 13
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object edPingLoc06: TEdit
         Left = 166
@@ -252,6 +259,7 @@ object Game_form: TGame_form
         Height = 21
         TabOrder = 15
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object edPingLoc08: TEdit
         Left = 166
@@ -268,6 +276,7 @@ object Game_form: TGame_form
         Height = 21
         TabOrder = 17
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object edPingLoc09: TEdit
         Left = 166
@@ -292,6 +301,7 @@ object Game_form: TGame_form
         Height = 21
         TabOrder = 20
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object edPingLoc10: TEdit
         Left = 166
@@ -302,12 +312,13 @@ object Game_form: TGame_form
         TabOrder = 21
       end
       object cbLoc10: TComboBox
-        Left = 32
+        Left = 31
         Top = 264
         Width = 130
         Height = 21
         TabOrder = 22
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object edPingLoc11: TEdit
         Left = 166
@@ -318,12 +329,13 @@ object Game_form: TGame_form
         TabOrder = 23
       end
       object cbLoc11: TComboBox
-        Left = 32
+        Left = 31
         Top = 284
         Width = 130
         Height = 21
         TabOrder = 24
         OnChange = cbOnChange
+        OnDropDown = cbOnChange
       end
       object stExtAIName: TStaticText
         Left = 32
@@ -461,9 +473,7 @@ object Game_form: TGame_form
         ItemHeight = 13
         Items.Strings = (
           'ExtAI\'
-          '..\..\..\ExtAI\'
-          '..\..\..\ExtAI\Delphi\Win32'
-          '..\..\ExtAI\Delphi\Win32')
+          '..\ExtAI\')
         TabOrder = 1
       end
       object stPathsDLL: TStaticText

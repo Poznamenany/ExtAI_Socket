@@ -57,7 +57,7 @@ type
   TExtAINetServer = class
   private
     fServer: TNetServerOverbyte;
-    fClients: TList<TExtAIServerClient>;
+    fClients: TObjectList<TExtAIServerClient>;
 
     fListening: Boolean;
     fNetPingLastMsg: Cardinal;
@@ -95,7 +95,7 @@ type
     property OnClientNewID: TClientNewIDEvent write fOnClientNewID;
     property OnClientDisconnect: TServerClientEvent write fOnClientDisconnect;
     property Listening: Boolean read fListening;
-    property Clients: TList<TExtAIServerClient> read fClients;
+    property Clients: TObjectList<TExtAIServerClient> read fClients;
     property Server: TNetServerOverbyte read fServer;
 
     procedure StartListening(aPort: Word; const aServerName: AnsiString);
@@ -246,7 +246,7 @@ constructor TExtAINetServer.Create();
 begin
   inherited Create;
 
-  fClients := TList<TExtAIServerClient>.Create();
+  fClients := TObjectList<TExtAIServerClient>.Create();
   fServer := TNetServerOverbyte.Create();
   fListening := False;
   fRoomCount := 0;
@@ -257,15 +257,11 @@ end;
 
 
 destructor TExtAINetServer.Destroy();
-var
-  K: Integer;
 begin
   NillEvents();
   StopListening;
-  for K := 0 to fClients.Count-1 do
-    fClients[K].Free;
+  fClients.Free; // Clients are freed in TObjectList
   fServer.Free;
-  fClients.Free;
 
   inherited;
 end;

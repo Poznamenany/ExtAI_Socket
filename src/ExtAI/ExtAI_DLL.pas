@@ -51,13 +51,13 @@ uses
 constructor TExtAI_DLL.Create(aDLLPath: String);
 begin
   LinkDLL(aDLLPath);
-  gLog.Log('TExtAI_DLL-Create');
+  gLog.Log('TExtAI_DLL-Create: DLLPath = %s', [aDLLPath]);
 end;
 
 
 destructor TExtAI_DLL.Destroy;
 begin
-  gLog.Log('TExtAI_DLL-Destroy: ExtAI name = ' + fDLLConfig.ExtAIName);
+  gLog.Log('TExtAI_DLL-Destroy: ExtAI name = %s', [fDLLConfig.ExtAIName]);
 
   if Assigned(fDLLProc_Terminate) then
     fDLLProc_Terminate();
@@ -86,7 +86,7 @@ begin
     fLibHandle := SafeLoadLibrary(aDLLPath, $FFFF);
     if fLibHandle = 0 then
     begin
-      gLog.Log('TExtAI_DLL-LinkDLL: library was NOT loaded, error: ', [GetLastError]);
+      gLog.Log('TExtAI_DLL-LinkDLL: library was NOT loaded, error: %d', [GetLastError]);
       Exit;
     end;
 
@@ -94,7 +94,7 @@ begin
     Err := GetLastError();
     if Err <> 0 then
     begin
-      gLog.Log('TExtAI_DLL-LinkDLL: ERROR in the DLL file detected = ', [Err]);
+      gLog.Log('TExtAI_DLL-LinkDLL: ERROR in the DLL file detected = %d', [Err]);
       Exit;
     end;
 
@@ -142,7 +142,7 @@ end;
 function TExtAI_DLL.ConnectNewExtAI(aID, aPort: Word; aIP: UnicodeString): Boolean;
 begin
   Result := fDLLProc_CreateNewExtAI(aID) AND fDLLProc_ConnectExtAI(aID, aPort, Addr(aIP[1]), Length(aIP));
-  gLog.Log('TExtAI_DLL-CreateNewExtAI: ID = ' + IntToStr(aID));
+  gLog.Log('TExtAI_DLL-CreateNewExtAI: ID = %d', [aID]);
 end;
 
 

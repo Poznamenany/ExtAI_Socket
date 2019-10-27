@@ -67,7 +67,7 @@ begin
   fEvents.Msg.OnPlayerVictory := OnPlayerVictory;
   fEvents.Msg.OnPlayerDefeated := OnPlayerDefeated;
 
-  Log('Create TExtAIBaseDelphi, ID = ' + IntToStr(fID));
+  Log(Format('TExtAIBaseDelphi-Create ID = %d', [fID]));
 end;
 
 
@@ -75,7 +75,7 @@ destructor TExtAIBaseDelphi.Destroy();
 begin
   if Client.Connected then
     Client.Disconnect();
-  Log('Destroy TExtAIBaseDelphi, ID = ' + IntToStr(fID));
+  Log(Format('TExtAIBaseDelphi-Destroy ID = %d', [fID]));
   fClient.Free;
   fActions.Free;
   fEvents.Free;

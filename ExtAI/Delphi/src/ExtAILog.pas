@@ -18,7 +18,7 @@ type
     constructor Create(aOnLogID: TLogIDEvent; aID: Byte); overload;
     destructor Destroy(); override;
     procedure Log(const aText: string); overload;
-    procedure Log(const aText: string; aArgs: array of const); overload;
+    procedure Log(const aText: string; const aArgs: array of const); overload;
   end;
 
 var
@@ -78,7 +78,7 @@ begin
 end;
 
 
-procedure TLog.Log(const aText: string; aArgs: array of const);
+procedure TLog.Log(const aText: string; const aArgs: array of const);
 begin
   Log(Format(aText, aArgs));
 end;

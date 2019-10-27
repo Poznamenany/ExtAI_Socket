@@ -44,7 +44,7 @@ end;
 
 procedure TExtAIDelphi.OnTick(aTick: Cardinal);
 begin
-  Log('TExtAIDelphi Tick: ' + IntToStr(aTick));
+  Log(Format('TExtAIDelphi Tick: %d', [aTick]));
   //Actions.Log('This is message from ExtAI');
   //Actions.GroupOrderWalk(11,5,5,22);
   if (aTick = 1) AND (States.MapWidth > 0) then

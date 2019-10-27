@@ -82,7 +82,7 @@ begin
   fActions.OnGroupOrderWalk := GroupOrderWalk;
   fActions.OnLog := Log;
 
-  gLog.Log('THandAIExt-Create: HandIndex = ' + IntToStr(fHandIndex));
+  gLog.Log('THandAIExt-Create: HandIndex = %d', [fHandIndex]);
 end;
 
 
@@ -97,7 +97,7 @@ begin
     fServerClient.OnState := nil;
   end;
   fServerClient := nil;
-  gLog.Log('THandAIExt-Destroy: HandIndex = ' + IntToStr(fHandIndex));
+  gLog.Log('THandAIExt-Destroy: HandIndex = %d', [fHandIndex]);
   inherited;
 end;
 

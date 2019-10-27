@@ -15,6 +15,7 @@ type
     fID: Word; // The main identifier of the ExtAI (hands are not available or the client disconnects and connects)
     fHandIdx: TKMHandIndex; // Game identifier (after hands are created)
     fServerClient: TExtAIServerClient; // Websocket identifier (when connection is established)
+    fSourceIsDLL: Boolean; // ExtAI is called from DLL
     // ExtAI configuration
     fAuthor: UnicodeString;
     fName: UnicodeString;
@@ -34,6 +35,7 @@ type
     property ID: Word read fID;
     property HandIdx: TKMHandIndex read fHandIdx write fHandIdx;
     property ServerClient: TExtAIServerClient read fServerClient write ChangeServerClient;
+    property SourceIsDLL: Boolean read fSourceIsDLL;
     // Client cfg
     property Author: UnicodeString read fAuthor;
     property Name: UnicodeString read GetName;
@@ -52,6 +54,9 @@ uses
 
 
 { TExtAIInfo }
+// Constructor have 2 options:
+// 1. AI is created in DLL => TExtAIInfo is created before client is connected and synchronization is required
+// 2. AI is compiled to exe => TExtAIInfo after connection of the ExtAI so TExtAIServerClient is already created
 constructor TExtAIInfo.Create(aID: Word = 0; aServerClient: TExtAIServerClient = nil);
 begin
   inherited Create;
@@ -63,13 +68,16 @@ begin
   fName := '';
   fDescription := '';
   fVersion := 0;
+  fSourceIsDLL := aServerClient = nil;
   ChangeServerClient(aServerClient);
+  gLog.Log('ExtAIInfo-Create, ID = %d', [ID]);
 end;
 
 
 destructor TExtAIInfo.Destroy();
 begin
   fServerClient := nil;
+  gLog.Log('ExtAIInfo-Destroy, ID = %d', [ID]);
   inherited;
 end;
 
@@ -77,9 +85,9 @@ end;
 function TExtAIInfo.GetName(): String;
 begin
   if (fServerClient = nil) then
-    Result := format('%s',[fName])
+    Result := Format('%s',[fName])
   else
-    Result := format('%s %d',[fName,fServerClient.Handle]);
+    Result := Format('%s %d',[fName,fServerClient.Handle]);
 end;
 
 
@@ -105,27 +113,27 @@ begin
       caID:
       begin
         M.Read(fID);
-        gLog.Log('ExtAIInfo ID: ' + IntToStr(fID));
+        gLog.Log('ExtAIInfo ID: %d',[fID]);
       end;
       caAuthor:
       begin
         M.ReadW(fAuthor);
-        gLog.Log('ExtAIInfo author: ' + fAuthor);
+        gLog.Log('ExtAIInfo author: %s',[fAuthor]);
       end;
       caName:
       begin
         M.ReadW(fName);
-        gLog.Log('ExtAIInfo name: ' + fName);
+        gLog.Log('ExtAIInfo name: %s',[fName]);
       end;
       caDescription:
       begin
         M.ReadW(fDescription);
-        gLog.Log('ExtAIInfo description: ' + fDescription);
+        gLog.Log('ExtAIInfo description: %s',[fDescription]);
       end;
       caVersion:
       begin
         M.Read(fVersion);
-        gLog.Log('ExtAIInfo version = ' + IntToStr(fVersion));
+        gLog.Log('ExtAIInfo version = %d',[fVersion]);
       end;
       else
         gLog.Log('ExtAIInfo Unknown configuration');
@@ -133,6 +141,7 @@ begin
   finally
     M.Free;
   end;
+  // If config was fullfilled in this step, then use callback
   if not CfgFull AND ReadyForGame() AND Assigned(fOnAIConfigured) then
     fOnAIConfigured(self);
 end;

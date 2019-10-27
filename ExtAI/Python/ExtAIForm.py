@@ -43,11 +43,12 @@ class ExtAIFrame(tk.Frame):
     def log(self, text):
         self.txtLog.config(state=tk.NORMAL)
         self.txtLog.insert(tk.END, str(datetime.datetime.now().time()) + ": " + text + "\n")
+        self.txtLog.see(tk.END)
         self.txtLog.config(state=tk.DISABLED)
 
 
 if __name__ == "__main__":
     root = tk.Tk()
     ExtAIFrame(root).pack(side="top", fill="both", expand=True)
-    root.geometry("500x500")
+    root.geometry("700x400")
     root.mainloop()

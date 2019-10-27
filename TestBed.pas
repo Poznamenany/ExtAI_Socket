@@ -119,7 +119,7 @@ type
     fcbLoc: array[0..MAX_HANDS_COUNT-1] of TComboBox;
     fedPingLoc: array[0..MAX_HANDS_COUNT-1] of TEdit;
     procedure RefreshDLLs();
-    procedure RefreshComboBoxes(aServerClient: TExtAIInfo);
+    procedure RefreshComboBoxes(aServerClient: TExtAIInfo = nil);
     procedure ConnectClient(aIdx: Word);
     procedure DisconnectClient(aIdx: Integer);
     procedure RefreshAIGUI(Sender: TObject);
@@ -177,6 +177,7 @@ end;
 
 procedure TExtAI_TestBed.FormDestroy(Sender: TObject);
 begin
+  gLog.Log('TExtAI_TestBed-Destroy');
   fGame.TerminateSimulation();
   btnTerminateExtAIsClick(nil);
   Sleep(100);
@@ -231,7 +232,7 @@ begin
   // Refresh DLLs
   fGame.ExtAIMaster.DLLs.RefreshList(Paths);
   // Update GUI
-  RefreshComboBoxes(nil);
+  RefreshComboBoxes();
   lbDLLs.Clear;
   for K := 0 to fGame.ExtAIMaster.DLLs.Count - 1 do
     lbDLLs.Items.Add(fGame.ExtAIMaster.DLLs[K].Name);
@@ -284,7 +285,7 @@ end;
 // Generic callback for combo boxes
 procedure TExtAI_TestBed.cbOnChange(Sender: TObject);
 begin
-  RefreshComboBoxes(nil);
+  RefreshComboBoxes();
 end;
 
 
@@ -358,7 +359,7 @@ begin
     if (fcbLoc[K].ItemIndex = 0) AND (fcbLoc[K].Items.Count > 1) then // Loc is closed and we have available ExtAI
     begin
       fcbLoc[K].ItemIndex := 1;
-      RefreshComboBoxes(nil); // Refresh GUI
+      RefreshComboBoxes(); // Refresh GUI
     end;
 end;
 
@@ -711,11 +712,11 @@ procedure TExtAI_TestBed.Log(const aText: String);
 begin
   with reLog.SelAttributes do
   begin
-    if ContainsText(aText, 'Create'         ) then Color := clGreen;
-    if ContainsText(aText, 'Destroy'        ) then Color := clRed;
-    if ContainsText(aText, 'Server Status'  ) then Color := clPurple;
-    if ContainsText(aText, 'ExtAIInfo'      ) then Color := clMedGray;
-    if ContainsText(aText, 'TKMGame-Execute') then Color := clNavy;
+    if      ContainsText(aText, 'Create'         ) then Color := clGreen
+    else if ContainsText(aText, 'Destroy'        ) then Color := clRed
+    else if ContainsText(aText, 'Server Status'  ) then Color := clPurple
+    else if ContainsText(aText, 'ExtAIInfo'      ) then Color := clMedGray
+    else if ContainsText(aText, 'TKMGame-Execute') then Color := clNavy;
   end;
 
   reLog.Lines.Add(aText);
