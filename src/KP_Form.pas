@@ -5,18 +5,53 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls,
+  FileCtrl, StrUtils,
   KM_Game, KM_CommonTypes, KM_Consts, ExtAILog, ExtAIInfo,
   // Detection of IP address
   Winsock;
 
 type
+  //@Krom: This is the main class with GUI for KP, it contains just all necessary functions and connections
   // GUI of the game (server, lobby, basic interface)
   TGame_form = class(TForm)
+    btnAddPath: TButton;
     btnAutoFill: TButton;
+    btnRemove: TButton;
     btnSendEvent: TButton;
     btnSendState: TButton;
     btnServerStartMap: TButton;
     btnStartServer: TButton;
+    cbLoc00: TComboBox;
+    cbLoc01: TComboBox;
+    cbLoc02: TComboBox;
+    cbLoc03: TComboBox;
+    cbLoc04: TComboBox;
+    cbLoc05: TComboBox;
+    cbLoc06: TComboBox;
+    cbLoc07: TComboBox;
+    cbLoc08: TComboBox;
+    cbLoc09: TComboBox;
+    cbLoc10: TComboBox;
+    cbLoc11: TComboBox;
+    edPingLoc00: TEdit;
+    edPingLoc01: TEdit;
+    edPingLoc02: TEdit;
+    edPingLoc03: TEdit;
+    edPingLoc04: TEdit;
+    edPingLoc05: TEdit;
+    edPingLoc06: TEdit;
+    edPingLoc07: TEdit;
+    edPingLoc08: TEdit;
+    edPingLoc09: TEdit;
+    edPingLoc10: TEdit;
+    edPingLoc11: TEdit;
+    edServerPort: TEdit;
+    gbDLLs: TGroupBox;
+    gbKP: TGroupBox;
+    gbLobby: TGroupBox;
+    gbServer: TGroupBox;
+    gbSimulation: TGroupBox;
+    labLoc00: TLabel;
     labLoc01: TLabel;
     labLoc02: TLabel;
     labLoc03: TLabel;
@@ -28,39 +63,16 @@ type
     labLoc09: TLabel;
     labLoc10: TLabel;
     labLoc11: TLabel;
-    labLoc00: TLabel;
-    cbLoc00: TComboBox;
-    cbLoc01: TComboBox;
-    cbLoc02: TComboBox;
-    cbLoc03: TComboBox;
-    cbLoc04: TComboBox;
-    cbLoc05: TComboBox;
-    cbLoc06: TComboBox;
-    cbLoc08: TComboBox;
-    cbLoc09: TComboBox;
-    cbLoc07: TComboBox;
-    cbLoc10: TComboBox;
-    cbLoc11: TComboBox;
-    edPingLoc00: TEdit;
-    edPingLoc01: TEdit;
-    edPingLoc02: TEdit;
-    edPingLoc03: TEdit;
-    edPingLoc04: TEdit;
-    edPingLoc05: TEdit;
-    edPingLoc06: TEdit;
-    edPingLoc08: TEdit;
-    edPingLoc09: TEdit;
-    edPingLoc07: TEdit;
-    edPingLoc10: TEdit;
-    edPingLoc11: TEdit;
-    edServerPort: TEdit;
-    gbLobby: TGroupBox;
-    gbServer: TGroupBox;
-    gbSimulation: TGroupBox;
     labPortNumber: TLabel;
+    lbDLLs: TListBox;
+    lbPaths: TListBox;
     mTutorial: TMemo;
-    mServerLog: TMemo;
     prgServer: TProgressBar;
+    reLog: TRichEdit;
+    stDLLs: TStaticText;
+    stExtAIName: TStaticText;
+    stPathsDLL: TStaticText;
+    stPing: TStaticText;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnStartServerClick(Sender: TObject);
@@ -68,12 +80,17 @@ type
     procedure btnAutoFillClick(Sender: TObject);
     procedure cbOnChange(Sender: TObject);
     procedure btnSendEventClick(Sender: TObject);
+    procedure btnAddPathClick(Sender: TObject);
+    procedure btnRemoveClick(Sender: TObject);
   private
     // Game class
     fGame: TKMGame;
     // Pure GUI of the game and some methods to maintain lobby list, etc.
     fcbLoc: array[0..MAX_HANDS_COUNT-1] of TComboBox;
     fedPingLoc: array[0..MAX_HANDS_COUNT-1] of TEdit;
+    procedure RefreshDLLs();
+    procedure EnableLobbyGUI(aEnable: Boolean);
+    procedure EnableSimulationGUI(aEnable: Boolean);
     procedure RefreshComboBoxes(aServerClient: TExtAIInfo);
     procedure UpdateSimStatus();
   public
@@ -94,13 +111,13 @@ procedure TGame_form.FormCreate(Sender: TObject);
 begin
   // Game log (log every input from Socket)
   gLog := TLog.Create(Log);
-  gLog.Log('Initialization');
+  gLog.Log('TExtAI_TestBed-Create');
   // Game class
   fGame := TKMGame.Create(UpdateSimStatus);
-  // Game events
+  // Game events for GUI
   fGame.ExtAIMaster.OnAIConfigured := RefreshComboBoxes;
   fGame.ExtAIMaster.OnAIDisconnect := RefreshComboBoxes;
-
+  // Define ComboBoxes
   fedPingLoc[0]  := edPingLoc00;  fcbLoc[0]  := cbLoc00;
   fedPingLoc[1]  := edPingLoc01;  fcbLoc[1]  := cbLoc01;
   fedPingLoc[2]  := edPingLoc02;  fcbLoc[2]  := cbLoc02;
@@ -113,7 +130,10 @@ begin
   fedPingLoc[9]  := edPingLoc09;  fcbLoc[9]  := cbLoc09;
   fedPingLoc[10] := edPingLoc10;  fcbLoc[10] := cbLoc10;
   fedPingLoc[11] := edPingLoc11;  fcbLoc[11] := cbLoc11;
-  RefreshComboBoxes(nil);
+  // Init GUI
+  RefreshDLLs(); // Includes refresh combo boxes
+  EnableLobbyGUI(False);
+  EnableSimulationGUI(False);
 end;
 
 
@@ -125,9 +145,68 @@ begin
 end;
 
 
+
+
+//------------------------------------------------------------------------------
+// DLLs
+//------------------------------------------------------------------------------
+
+
+// Add new path for scanning DLLs (in game just 1 path with ExtAI folder)
+procedure TGame_form.btnAddPathClick(Sender: TObject);
+var
+  K: Integer;
+  Path: String;
+begin
+  Path := ParamStr(0);
+  if not FileCtrl.SelectDirectory(Path, [sdAllowCreate, sdPerformCreate, sdPrompt],1000) then
+    Exit
+  else
+    for K := 0 to lbPaths.Items.Count - 1 do
+      if (AnsiCompareText(lbPaths.Items[K],Path) = 0) then
+        Exit;
+  lbPaths.Items.Add(Path);
+  RefreshDLLs();
+end;
+
+
+// Remove selected path from DLL list
+procedure TGame_form.btnRemoveClick(Sender: TObject);
+begin
+  if (lbPaths.ItemIndex >= 0) then
+    lbPaths.Items.Delete(lbPaths.ItemIndex);
+  RefreshDLLs();
+end;
+
+
+// Refresh DLL
+procedure TGame_form.RefreshDLLs();
+var
+  K: Integer;
+  Paths: TArray<string>;
+begin
+  if (fGame = nil) then
+    Exit;
+  // Get paths
+  SetLength(Paths,lbPaths.Items.Count);
+  for K := 0 to lbPaths.Items.Count - 1 do
+    Paths[K] := lbPaths.Items[K];
+  // Refresh DLLs
+  fGame.ExtAIMaster.DLLs.RefreshList(Paths);
+  // Update GUI
+  RefreshComboBoxes(nil);
+  lbDLLs.Clear;
+  for K := 0 to fGame.ExtAIMaster.DLLs.Count - 1 do
+    lbDLLs.Items.Add(fGame.ExtAIMaster.DLLs[K].Name);
+end;
+
+
+
+
 //------------------------------------------------------------------------------
 // Server
 //------------------------------------------------------------------------------
+
 
 // Start / stop game server via button
 procedure TGame_form.btnStartServerClick(Sender: TObject);
@@ -140,10 +219,8 @@ begin
 
     fGame.ExtAIMaster.Net.StopListening();
     prgServer.Style := pbstNormal;
-    btnStartServer.Caption := 'Start Server';
-    btnServerStartMap.Enabled := False;
-    btnSendEvent.Enabled := False;
-    btnSendState.Enabled := False;
+    EnableLobbyGUI(False);
+    EnableSimulationGUI(False);
   end
   // Start server
   else
@@ -158,18 +235,30 @@ begin
     if fGame.ExtAIMaster.Net.Listening then
     begin
       prgServer.Style := pbstMarquee;
-      btnStartServer.Caption := 'Stop Server';
-      btnServerStartMap.Enabled := True;
-      btnSendEvent.Enabled := True;
-      //btnSendState.Enabled := True;
+      EnableLobbyGUI(True);
+      EnableSimulationGUI(True);
     end;
   end;
 end;
 
 
+
+
 //------------------------------------------------------------------------------
 // Lobby
 //------------------------------------------------------------------------------
+
+
+// Enable lobby GUI
+procedure TGame_form.EnableLobbyGUI(aEnable: Boolean);
+var
+  K: Integer;
+begin
+  btnAutoFill.Enabled := aEnable;
+  for K := Low(fcbLoc) to High(fcbLoc) do
+    fcbLoc[K].Enabled := aEnable;
+end;
+
 
 // Generic callback for combo boxes
 procedure TGame_form.cbOnChange(Sender: TObject);
@@ -247,9 +336,24 @@ begin
 end;
 
 
+
+
 //------------------------------------------------------------------------------
 // Simulation
 //------------------------------------------------------------------------------
+
+
+// Enable simulation GUI
+procedure TGame_form.EnableSimulationGUI(aEnable: Boolean);
+begin
+  btnStartServer.Caption := 'Start Server';
+  if aEnable then
+    btnStartServer.Caption := 'Stop Server';
+  btnServerStartMap.Enabled := aEnable;
+  btnSendEvent.Enabled := aEnable;
+  btnSendState.Enabled := aEnable;
+end;
+
 
 // Start the map (simulation of the game)
 procedure TGame_form.btnServerStartMapClick(Sender: TObject);
@@ -257,7 +361,6 @@ var
   K, Cnt: Integer;
   AIs: TStringArray;
 begin
-  btnServerStartMap.Enabled := True;
   if (fGame.GameState = gsLobby) then
   begin
     // Get AI players in the lobby
@@ -272,14 +375,11 @@ begin
     SetLength(AIs,Cnt);
     // Start / stop the simulation with specific AI players
     fGame.InitGame(AIs);
-    //btnServerStartMap.Caption := 'Loading...';
-    //btnServerStartMap.Enabled := False;
     btnServerStartMap.Caption := 'Stop Map';
-    btnServerStartMap.Enabled := True;
   end
   else if (fGame.GameState = gsPlaying) then
   begin
-    btnServerStartMap.Caption := 'Stop Map';
+    btnServerStartMap.Caption := 'Start Map';
     fGame.EndGame();
   end
   else
@@ -315,10 +415,27 @@ begin
 end;
 
 
+
+
+//------------------------------------------------------------------------------
+// Logs
+//------------------------------------------------------------------------------
+
+
 // Log to console
 procedure TGame_form.Log(const aText: String);
 begin
-  mServerLog.Lines.Append(aText);
+  with reLog.SelAttributes do
+  begin
+    if ContainsText(aText, 'Create'         ) then Color := clGreen;
+    if ContainsText(aText, 'Destroy'        ) then Color := clRed;
+    if ContainsText(aText, 'Server Status'  ) then Color := clPurple;
+    if ContainsText(aText, 'ExtAIInfo'      ) then Color := clMedGray;
+    if ContainsText(aText, 'TKMGame-Execute') then Color := clNavy;
+  end;
+
+  reLog.Lines.Add(aText);
+  SendMessage(reLog.handle, WM_VSCROLL, SB_BOTTOM, 0);
 end;
 
 

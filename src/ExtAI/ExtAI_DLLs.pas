@@ -40,14 +40,14 @@ end;
 
 procedure TExtAIDLLs.RefreshList(aPaths: TArray<string>);
 var
-  I: Integer;
+  K: Integer;
   subFolder, fileDLL: string;
 begin
   Clear();
   fileDLL := GetCurrentDir;
-  for I := Low(aPaths) to High(aPaths) do
-    if DirectoryExists(aPaths[I]) then
-      for subFolder in TDirectory.GetDirectories(aPaths[I]) do
+  for K := Low(aPaths) to High(aPaths) do
+    if DirectoryExists(aPaths[K]) then
+      for subFolder in TDirectory.GetDirectories(aPaths[K]) do
         for fileDLL in TDirectory.GetFiles(subFolder) do
           if ExtractFileExt(fileDLL) = '.dll' then
           begin

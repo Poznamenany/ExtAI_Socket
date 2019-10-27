@@ -3,26 +3,21 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
+  FileCtrl, StrUtils,
   KM_Game, KM_CommonTypes, ExtAIDelphi, ExtAILog, KM_Consts, ExtAIInfo,
   // Detection of IP address
   Winsock, Vcl.ComCtrls;
 
+// @Krom: This is my test bed, please ignore this project (WebSocketTest). The main project is called Game.
 type
   TExtAIAndGUI = record
     ID: Word;
     AI: TExtAIDelphi;
     Log: TLog;
-    //@Martin: Why do we need separate logs for ExtAIs created by the host app/Game?
-    //@Krom: The logs are not created by Game but by GUI of the ExtAI. They are used
-    //       for logging connection and problems with client. For communication with
-    //       the game you can use Actions.Log()
     tsTab: TTabSheet;
     mLog: TMemo;
   end;
 
-  //@Martin: wouldn't it be simpler to use TList<TExtAIAndGUI> which already has the Count/Capacity and auto-growth?
-  //@Krom: the Number must be fixed in case that ExtAI lost connection and connects back it can be TList of record if you wish
-  //@Martin: Please comment on the purpose of these fields and see if you can give them more meaningful names. Atm I'm puzzled as to what they mean and do
   TExtAIAndGUIArr = record
     Count: Word; // Count of elements in Arr
     ID: Word; // ID of ExtAI (imagine if we start game with 3 AIs and we lose connection with AI 2)
@@ -30,11 +25,13 @@ type
   end;
 
   TExtAI_TestBed = class(TForm)
+    btnAddPath: TButton;
     btnAutoFill: TButton;
     btnClientConnect: TButton;
     btnClientSendAction: TButton;
     btnClientSendState: TButton;
     btnCreateExtAI: TButton;
+    btnRemove: TButton;
     btnSendEvent: TButton;
     btnSendState: TButton;
     btnServerStartMap: TButton;
@@ -48,11 +45,12 @@ type
     cbLoc04: TComboBox;
     cbLoc05: TComboBox;
     cbLoc06: TComboBox;
+    cbLoc07: TComboBox;
     cbLoc08: TComboBox;
     cbLoc09: TComboBox;
-    cbLoc07: TComboBox;
     cbLoc10: TComboBox;
     cbLoc11: TComboBox;
+    chbControlAll: TCheckBox;
     edPingLoc00: TEdit;
     edPingLoc01: TEdit;
     edPingLoc02: TEdit;
@@ -67,12 +65,13 @@ type
     edPingLoc11: TEdit;
     edServerPort: TEdit;
     gbAIControlInterface: TGroupBox;
-    gbExtAIs: TGroupBox;
+    gbDLLs: TGroupBox;
+    gbExtAIsDLL: TGroupBox;
+    gbExtAIsExe: TGroupBox;
     gbKP: TGroupBox;
     gbLobby: TGroupBox;
     gbServer: TGroupBox;
     gbSimulation: TGroupBox;
-    chbControlAll: TCheckBox;
     labLoc00: TLabel;
     labLoc01: TLabel;
     labLoc02: TLabel;
@@ -86,12 +85,20 @@ type
     labLoc10: TLabel;
     labLoc11: TLabel;
     labPortNumber: TLabel;
-    mServerLog: TMemo;
-    pcLogExtAI: TPageControl;
-    prgServer: TProgressBar;
+    lbDLLs: TListBox;
+    lbPaths: TListBox;
     mTutorial: TMemo;
+    pcLogExtAIDLL: TPageControl;
+    pcLogExtAIExe: TPageControl;
+    prgServer: TProgressBar;
+    reLog: TRichEdit;
+    stDLLs: TStaticText;
+    stExtAIName: TStaticText;
+    stPathsDLL: TStaticText;
+    stPing: TStaticText;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure btnAddPathClick(Sender: TObject);
     procedure btnStartServerClick(Sender: TObject);
     procedure btnClientConnectClick(Sender: TObject);
     procedure btnClientSendActionClick(Sender: TObject);
@@ -104,13 +111,14 @@ type
     procedure pcOnChangeTab(Sender: TObject);
     procedure chbControlAllClick(Sender: TObject);
     procedure btnAutoFillClick(Sender: TObject);
-    procedure mTutorialChange(Sender: TObject);
     procedure cbOnChange(Sender: TObject);
+    procedure btnRemoveClick(Sender: TObject);
   private
     fGame: TKMGame;
     fExtAIAndGUIArr: TExtAIAndGUIArr;
     fcbLoc: array[0..MAX_HANDS_COUNT-1] of TComboBox;
     fedPingLoc: array[0..MAX_HANDS_COUNT-1] of TEdit;
+    procedure RefreshDLLs();
     procedure RefreshComboBoxes(aServerClient: TExtAIInfo);
     procedure ConnectClient(aIdx: Word);
     procedure DisconnectClient(aIdx: Integer);
@@ -141,16 +149,15 @@ uses
 
 procedure TExtAI_TestBed.FormCreate(Sender: TObject);
 begin
+  // Game log (log every input from Socket)
   gLog := TLog.Create(Log);
-  gLog.Log('Initialization');
+  gLog.Log('TExtAI_TestBed-Create');
+  // Game class
   fGame := TKMGame.Create(UpdateSimStatus);
+  // Game events for GUI
   fGame.ExtAIMaster.OnAIConfigured := RefreshComboBoxes;
   fGame.ExtAIMaster.OnAIDisconnect := RefreshComboBoxes;
-
-  fExtAIAndGUIArr.Count := 0;
-  fExtAIAndGUIArr.ID := 1;
-  InitializeCriticalSection(csCriticalSection);
-
+  // Define ComboBoxes
   fedPingLoc[0]  := edPingLoc00;  fcbLoc[0]  := cbLoc00;
   fedPingLoc[1]  := edPingLoc01;  fcbLoc[1]  := cbLoc01;
   fedPingLoc[2]  := edPingLoc02;  fcbLoc[2]  := cbLoc02;
@@ -163,7 +170,8 @@ begin
   fedPingLoc[9]  := edPingLoc09;  fcbLoc[9]  := cbLoc09;
   fedPingLoc[10] := edPingLoc10;  fcbLoc[10] := cbLoc10;
   fedPingLoc[11] := edPingLoc11;  fcbLoc[11] := cbLoc11;
-  RefreshComboBoxes(nil);
+  // Init GUI
+  RefreshDLLs(); // Includes refresh combo boxes
 end;
 
 
@@ -175,6 +183,67 @@ begin
   fGame.Free;
   gLog.Free;
 end;
+
+
+
+
+//------------------------------------------------------------------------------
+// DLLs
+//------------------------------------------------------------------------------
+
+
+procedure TExtAI_TestBed.btnAddPathClick(Sender: TObject);
+var
+  K: Integer;
+  Path: String;
+begin
+  Path := ParamStr(0);
+  if not FileCtrl.SelectDirectory(Path, [sdAllowCreate, sdPerformCreate, sdPrompt],1000) then
+    Exit
+  else
+    for K := 0 to lbPaths.Items.Count - 1 do
+      if (AnsiCompareText(lbPaths.Items[K],Path) = 0) then
+        Exit;
+  lbPaths.Items.Add(Path);
+  RefreshDLLs();
+end;
+
+
+procedure TExtAI_TestBed.btnRemoveClick(Sender: TObject);
+begin
+  if (lbPaths.ItemIndex >= 0) then
+    lbPaths.Items.Delete(lbPaths.ItemIndex);
+  RefreshDLLs();
+end;
+
+
+procedure TExtAI_TestBed.RefreshDLLs();
+var
+  K: Integer;
+  Paths: TArray<string>;
+begin
+  if (fGame = nil) then
+    Exit;
+  // Get paths
+  SetLength(Paths,lbPaths.Items.Count);
+  for K := 0 to lbPaths.Items.Count - 1 do
+    Paths[K] := lbPaths.Items[K];
+  // Refresh DLLs
+  fGame.ExtAIMaster.DLLs.RefreshList(Paths);
+  // Update GUI
+  RefreshComboBoxes(nil);
+  lbDLLs.Clear;
+  for K := 0 to fGame.ExtAIMaster.DLLs.Count - 1 do
+    lbDLLs.Items.Add(fGame.ExtAIMaster.DLLs[K].Name);
+end;
+
+
+
+
+
+//------------------------------------------------------------------------------
+// Server
+//------------------------------------------------------------------------------
 
 
 procedure TExtAI_TestBed.btnStartServerClick(Sender: TObject);
@@ -281,6 +350,26 @@ begin
 end;
 
 
+procedure TExtAI_TestBed.btnAutoFillClick(Sender: TObject);
+var
+  K: Integer;
+begin
+  for K := Low(fcbLoc) to High(fcbLoc) do
+    if (fcbLoc[K].ItemIndex = 0) AND (fcbLoc[K].Items.Count > 1) then // Loc is closed and we have available ExtAI
+    begin
+      fcbLoc[K].ItemIndex := 1;
+      RefreshComboBoxes(nil); // Refresh GUI
+    end;
+end;
+
+
+
+
+//------------------------------------------------------------------------------
+// Simulation
+//------------------------------------------------------------------------------
+
+
 procedure TExtAI_TestBed.btnServerStartMapClick(Sender: TObject);
 var
   K, Cnt: Integer;
@@ -324,46 +413,29 @@ begin
 end;
 
 
-procedure TExtAI_TestBed.btnAutoFillClick(Sender: TObject);
+procedure TExtAI_TestBed.UpdateSimStatus();
 var
-  K: Integer;
+  K,L: Integer;
+  AvailableAIs: TStringArray;
 begin
+  // Get available AI players
+  AvailableAIs := fGame.ExtAIMaster.GetExtAIClientNames();
+  // Update ping
   for K := Low(fcbLoc) to High(fcbLoc) do
-    if (fcbLoc[K].ItemIndex = 0) AND (fcbLoc[K].Items.Count > 1) then // Loc is closed and we have available ExtAI
-    begin
-      fcbLoc[K].ItemIndex := 1;
-      RefreshComboBoxes(nil); // Refresh GUI
-    end;
-end;
-
-
-procedure TExtAI_TestBed.btnClientConnectClick(Sender: TObject);
-var
-  Conn: Boolean;
-  K, Idx: Integer;
-begin
-  // Send command to all ExtAIs
-  if chbControlAll.Checked then
   begin
-    Conn := True;
-    for K := 0 to fExtAIAndGUIArr.Count - 1 do
-      with fExtAIAndGUIArr.Arr[K].AI do
-        Conn := Conn AND Client.Connected;
-    for Idx := 0 to pcLogExtAI.PageCount - 1 do
-      if Conn then
-        DisconnectClient(Idx)
-      else
-        ConnectClient(Idx);
-  end
-  // Send command only to selected AI
-  else if GetSelectedClient(Idx) then
-  begin
-    if fExtAIAndGUIArr.Arr[Idx].AI.Client.Connected then
-      DisconnectClient(Idx)
-    else
-      ConnectClient(Idx);
+    fedPingLoc[K].Text := '0';
+    for L := Low(AvailableAIs) to High(AvailableAIs) do
+      if (AnsiCompareText(AvailableAIs[L], fcbLoc[K].Items[ fcbLoc[K].ItemIndex ]) = 0) then
+        fedPingLoc[K].Text := IntToStr(fGame.ExtAIMaster.AIs[L].ServerClient.NetPing);
   end;
 end;
+
+
+
+
+//------------------------------------------------------------------------------
+// ExtAI
+//------------------------------------------------------------------------------
 
 
 procedure TExtAI_TestBed.btnCreateExtAIClick(Sender: TObject);
@@ -383,11 +455,11 @@ begin
     // Increase number
     Inc(fExtAIAndGUIArr.ID);
     // Create GUI
-    tsTab := TTabSheet.Create(pcLogExtAI);
+    tsTab := TTabSheet.Create(pcLogExtAIExe);
     tsTab.Caption := 'Log AI ' + IntToStr(ID);
     //tsTab.Caption := AI.Client.ClientName + ' ' + IntToStr(ID);
     tsTab.Name := TAB_NAME + IntToStr(ID);
-    tsTab.PageControl := pcLogExtAI;
+    tsTab.PageControl := pcLogExtAIExe;
     mLog := TMemo.Create(tsTab);
     mLog.Parent := tsTab;
     mLog.Align := alClient;
@@ -421,7 +493,6 @@ begin
 end;
 
 
-//@Martin: What is the purpose of this method? I'd think it should be inside the Game.GameEnd or alike
 procedure TExtAI_TestBed.btnTerminateExtAIsClick(Sender: TObject);
 var
   K: Integer;
@@ -439,6 +510,35 @@ begin
     end;
     Count := 0;
     //ID := 0;
+  end;
+end;
+
+
+procedure TExtAI_TestBed.btnClientConnectClick(Sender: TObject);
+var
+  Conn: Boolean;
+  K, Idx: Integer;
+begin
+  // Send command to all ExtAIs
+  if chbControlAll.Checked then
+  begin
+    Conn := True;
+    for K := 0 to fExtAIAndGUIArr.Count - 1 do
+      with fExtAIAndGUIArr.Arr[K].AI do
+        Conn := Conn AND Client.Connected;
+    for Idx := 0 to pcLogExtAIExe.PageCount - 1 do
+      if Conn then
+        DisconnectClient(Idx)
+      else
+        ConnectClient(Idx);
+  end
+  // Send command only to selected AI
+  else if GetSelectedClient(Idx) then
+  begin
+    if fExtAIAndGUIArr.Arr[Idx].AI.Client.Connected then
+      DisconnectClient(Idx)
+    else
+      ConnectClient(Idx);
   end;
 end;
 
@@ -496,9 +596,9 @@ var
   ID: Byte;
 begin
   Result := False;
-  if (pcLogExtAI.PageCount > 0) then
+  if (pcLogExtAIExe.PageCount > 0) then
   begin
-    tsTab := pcLogExtAI.ActivePage;
+    tsTab := pcLogExtAIExe.ActivePage;
     TabID := tsTab.Name;
     TabID := Copy(TabID, 1 + Length(TAB_NAME), Length(TabID) - Length(TAB_NAME));
     try
@@ -547,9 +647,9 @@ begin
     Exit;
   end;
   if USE_LOCALHOST_IP then
-      fExtAIAndGUIArr.Arr[aIdx].AI.Client.ConnectTo('127.0.0.1', Port)
+    fExtAIAndGUIArr.Arr[aIdx].AI.Client.ConnectTo('127.0.0.1', Port)
   else if GetIP(IP) then
-      fExtAIAndGUIArr.Arr[aIdx].AI.Client.ConnectTo(IP, Port);
+    fExtAIAndGUIArr.Arr[aIdx].AI.Client.ConnectTo(IP, Port);
 end;
 
 
@@ -600,27 +700,26 @@ begin
 end;
 
 
-procedure TExtAI_TestBed.UpdateSimStatus();
-var
-  K,L: Integer;
-  AvailableAIs: TStringArray;
-begin
-  // Get available AI players
-  AvailableAIs := fGame.ExtAIMaster.GetExtAIClientNames();
-  // Update ping
-  for K := Low(fcbLoc) to High(fcbLoc) do
-  begin
-    fedPingLoc[K].Text := '0';
-    for L := Low(AvailableAIs) to High(AvailableAIs) do
-      if (AnsiCompareText(AvailableAIs[L], fcbLoc[K].Items[ fcbLoc[K].ItemIndex ]) = 0) then
-        fedPingLoc[K].Text := IntToStr(fGame.ExtAIMaster.AIs[L].ServerClient.NetPing);
-  end;
-end;
+
+
+//------------------------------------------------------------------------------
+// Logs
+//------------------------------------------------------------------------------
 
 
 procedure TExtAI_TestBed.Log(const aText: String);
 begin
-  mServerLog.Lines.Append(aText);
+  with reLog.SelAttributes do
+  begin
+    if ContainsText(aText, 'Create'         ) then Color := clGreen;
+    if ContainsText(aText, 'Destroy'        ) then Color := clRed;
+    if ContainsText(aText, 'Server Status'  ) then Color := clPurple;
+    if ContainsText(aText, 'ExtAIInfo'      ) then Color := clMedGray;
+    if ContainsText(aText, 'TKMGame-Execute') then Color := clNavy;
+  end;
+
+  reLog.Lines.Add(aText);
+  SendMessage(reLog.handle, WM_VSCROLL, SB_BOTTOM, 0);
 end;
 
 
@@ -630,19 +729,6 @@ var
 begin
   if GetIdxByID(Idx, aID) then
     fExtAIAndGUIArr.Arr[Idx].mLog.Lines.Append(aText);
-end;
-
-
-procedure TExtAI_TestBed.mTutorialChange(Sender: TObject);
-begin
-  //@Martin: The app needs to be restructured a bit:
-  // 1. Start the server
-  // 2. Configure the AI types in the lobby list
-  // 3. Create AIs
-  // 4. Start the gameplay (map)
-  //@Krom: we already discussed it - the game does not know about ExtAI unless it connects to the game
-  //       so points 2 and 3 cannot be swapped
-  //@Martin: Okay, so we add step 1b inbetween 1 and 2, where ExtAI scans and makes up a list of available ExtAIs
 end;
 
 

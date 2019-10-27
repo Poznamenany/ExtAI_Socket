@@ -2,8 +2,8 @@ object ExtAI_TestBed: TExtAI_TestBed
   Left = 0
   Top = 0
   Caption = 'ExtAI_TestBed'
-  ClientHeight = 537
-  ClientWidth = 855
+  ClientHeight = 671
+  ClientWidth = 903
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,99 +17,111 @@ object ExtAI_TestBed: TExtAI_TestBed
   object gbKP: TGroupBox
     Left = 8
     Top = 8
-    Width = 513
-    Height = 521
+    Width = 561
+    Height = 662
     Caption = 'KP'
     TabOrder = 0
     object gbLobby: TGroupBox
       Left = 3
-      Top = 87
+      Top = 280
       Width = 280
       Height = 314
       Caption = 'Lobby'
       TabOrder = 0
       object labLoc01: TLabel
-        Left = 15
+        Left = 17
         Top = 67
         Width = 10
         Height = 13
+        Alignment = taRightJustify
         Caption = '1.'
       end
       object labLoc02: TLabel
-        Left = 15
+        Left = 17
         Top = 87
         Width = 10
         Height = 13
+        Alignment = taRightJustify
         Caption = '2.'
       end
       object labLoc03: TLabel
-        Left = 15
+        Left = 17
         Top = 107
         Width = 10
         Height = 13
+        Alignment = taRightJustify
         Caption = '3.'
       end
       object labLoc04: TLabel
-        Left = 15
+        Left = 17
         Top = 137
         Width = 10
         Height = 13
+        Alignment = taRightJustify
         Caption = '4.'
       end
       object labLoc05: TLabel
-        Left = 15
+        Left = 17
         Top = 157
         Width = 10
         Height = 13
+        Alignment = taRightJustify
         Caption = '5.'
       end
       object labLoc06: TLabel
-        Left = 15
+        Left = 17
         Top = 177
         Width = 10
         Height = 13
+        Alignment = taRightJustify
         Caption = '6.'
       end
       object labLoc07: TLabel
-        Left = 15
+        Left = 17
         Top = 197
         Width = 10
         Height = 13
+        Alignment = taRightJustify
         Caption = '7.'
       end
       object labLoc08: TLabel
-        Left = 15
+        Left = 17
         Top = 227
         Width = 10
         Height = 13
+        Alignment = taRightJustify
         Caption = '8.'
       end
       object labLoc09: TLabel
-        Left = 15
+        Left = 17
         Top = 247
         Width = 10
         Height = 13
+        Alignment = taRightJustify
         Caption = '9.'
       end
       object labLoc10: TLabel
-        Left = 10
+        Left = 11
         Top = 267
         Width = 16
         Height = 13
+        Alignment = taRightJustify
         Caption = '10.'
       end
       object labLoc11: TLabel
-        Left = 10
+        Left = 11
         Top = 287
         Width = 16
         Height = 13
+        Alignment = taRightJustify
         Caption = '11.'
       end
       object labLoc00: TLabel
-        Left = 15
+        Left = 17
         Top = 47
         Width = 10
         Height = 13
+        Alignment = taRightJustify
         Caption = '0.'
       end
       object cbLoc00: TComboBox
@@ -161,9 +173,9 @@ object ExtAI_TestBed: TExtAI_TestBed
         TabOrder = 5
       end
       object btnAutoFill: TButton
-        Left = 72
-        Top = 13
-        Width = 153
+        Left = 205
+        Top = 24
+        Width = 61
         Height = 25
         Caption = 'Auto Fill'
         TabOrder = 6
@@ -313,10 +325,32 @@ object ExtAI_TestBed: TExtAI_TestBed
         TabOrder = 24
         OnChange = cbOnChange
       end
+      object stExtAIName: TStaticText
+        Left = 32
+        Top = 24
+        Width = 82
+        Height = 17
+        Alignment = taCenter
+        Caption = 'Loc of the ExtAI'
+        Color = clBackground
+        ParentColor = False
+        TabOrder = 25
+      end
+      object stPing: TStaticText
+        Left = 166
+        Top = 24
+        Width = 24
+        Height = 17
+        Alignment = taCenter
+        Caption = 'Ping'
+        Color = clBackground
+        ParentColor = False
+        TabOrder = 26
+      end
     end
     object gbServer: TGroupBox
       Left = 3
-      Top = 15
+      Top = 208
       Width = 280
       Height = 66
       Caption = 'Server'
@@ -354,24 +388,17 @@ object ExtAI_TestBed: TExtAI_TestBed
         Text = '1234'
       end
     end
-    object mServerLog: TMemo
-      Left = 289
-      Top = 96
-      Width = 221
-      Height = 422
-      TabOrder = 2
-    end
     object gbSimulation: TGroupBox
       Left = 3
-      Top = 407
+      Top = 600
       Width = 280
-      Height = 111
+      Height = 59
       Caption = 'Simulation'
-      TabOrder = 3
+      TabOrder = 2
       object btnServerStartMap: TButton
         Left = 3
-        Top = 16
-        Width = 89
+        Top = 20
+        Width = 90
         Height = 25
         Caption = 'Start Map'
         Enabled = False
@@ -379,9 +406,9 @@ object ExtAI_TestBed: TExtAI_TestBed
         OnClick = btnServerStartMapClick
       end
       object btnSendEvent: TButton
-        Left = 3
-        Top = 47
-        Width = 89
+        Left = 95
+        Top = 20
+        Width = 90
         Height = 25
         Caption = 'Send Event'
         Enabled = False
@@ -389,9 +416,9 @@ object ExtAI_TestBed: TExtAI_TestBed
         OnClick = btnServerSendEventClick
       end
       object btnSendState: TButton
-        Left = 3
-        Top = 78
-        Width = 89
+        Left = 187
+        Top = 20
+        Width = 90
         Height = 25
         Caption = 'Send State'
         Enabled = False
@@ -401,26 +428,107 @@ object ExtAI_TestBed: TExtAI_TestBed
     end
     object mTutorial: TMemo
       Left = 288
-      Top = 16
-      Width = 222
+      Top = 18
+      Width = 270
       Height = 73
       Enabled = False
       Lines.Strings = (
-        '1. Start the server'
-        '2. Create new AI '
-        '3. Select the AI in lobby list'
-        '4. Start the map')
+        '1. Select paths to DLL(s)'
+        '2. Start the server'
+        '3. Create new AI'
+        '4. Select the AI in lobby list'
+        '5. Start the map')
       ReadOnly = True
+      TabOrder = 3
+    end
+    object gbDLLs: TGroupBox
+      Left = 3
+      Top = 16
+      Width = 280
+      Height = 186
+      Caption = 'DLLs'
       TabOrder = 4
-      OnChange = mTutorialChange
+      object lbDLLs: TListBox
+        Left = 10
+        Top = 120
+        Width = 257
+        Height = 57
+        ItemHeight = 13
+        TabOrder = 0
+      end
+      object lbPaths: TListBox
+        Left = 10
+        Top = 39
+        Width = 210
+        Height = 56
+        ItemHeight = 13
+        Items.Strings = (
+          'ExtAI\'
+          '..\..\..\ExtAI\'
+          '..\..\..\ExtAI\Delphi\Win32'
+          '..\..\ExtAI\Delphi\Win32')
+        TabOrder = 1
+      end
+      object stPathsDLL: TStaticText
+        Left = 10
+        Top = 20
+        Width = 179
+        Height = 17
+        Caption = 'Search paths (relative and absolute)'
+        TabOrder = 2
+      end
+      object btnAddPath: TButton
+        Left = 220
+        Top = 40
+        Width = 46
+        Height = 25
+        Caption = 'Add'
+        TabOrder = 3
+        OnClick = btnAddPathClick
+      end
+      object btnRemove: TButton
+        Left = 220
+        Top = 71
+        Width = 46
+        Height = 25
+        Caption = 'Remove'
+        TabOrder = 4
+        OnClick = btnRemoveClick
+      end
+      object stDLLs: TStaticText
+        Left = 12
+        Top = 101
+        Width = 98
+        Height = 17
+        Caption = 'Detected valid DLLs'
+        Color = clBackground
+        ParentColor = False
+        TabOrder = 5
+      end
+    end
+    object reLog: TRichEdit
+      Left = 289
+      Top = 97
+      Width = 269
+      Height = 562
+      Font.Charset = EASTEUROPE_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      HideScrollBars = False
+      ParentFont = False
+      ScrollBars = ssBoth
+      TabOrder = 5
+      Zoom = 100
     end
   end
-  object gbExtAIs: TGroupBox
-    Left = 527
-    Top = 8
+  object gbExtAIsExe: TGroupBox
+    Left = 575
+    Top = 10
     Width = 322
-    Height = 521
-    Caption = 'ExtAIs'
+    Height = 365
+    Caption = 'ExtAIs (executable emulation)'
     TabOrder = 1
     object gbAIControlInterface: TGroupBox
       Left = 3
@@ -488,11 +596,11 @@ object ExtAI_TestBed: TExtAI_TestBed
       TabOrder = 2
       OnClick = btnTerminateExtAIsClick
     end
-    object pcLogExtAI: TPageControl
+    object pcLogExtAIExe: TPageControl
       Left = 3
       Top = 126
       Width = 316
-      Height = 392
+      Height = 236
       TabOrder = 3
       OnChange = pcOnChangeTab
     end
@@ -504,6 +612,21 @@ object ExtAI_TestBed: TExtAI_TestBed
       Caption = 'Terminate AI'
       TabOrder = 4
       OnClick = btnTerminateExtAIClick
+    end
+  end
+  object gbExtAIsDLL: TGroupBox
+    Left = 576
+    Top = 378
+    Width = 321
+    Height = 292
+    Caption = 'ExtAIs (DLL)'
+    TabOrder = 2
+    object pcLogExtAIDLL: TPageControl
+      Left = 3
+      Top = 16
+      Width = 315
+      Height = 273
+      TabOrder = 0
     end
   end
 end
