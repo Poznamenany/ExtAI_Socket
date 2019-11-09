@@ -122,12 +122,13 @@ var
 begin
   //{
   ExtAI := GetExtAI(aServerClient);
-  if (ExtAI <> nil) then
+  if (ExtAI <> nil)then
+  begin
+    if Assigned(fOnAIDisconnect) then
+      fOnAIDisconnect(ExtAI);
     ExtAI.ServerClient := nil;
-    //fExtAIs.Remove(ExtAI);
-  if Assigned(fOnAIDisconnect) then
-    fOnAIDisconnect(ExtAI);
-  //ExtAI.Free;
+    fExtAIs.Remove(ExtAI); // Remove and free the object (TObjectList)
+  end;
   //}
 end;
 

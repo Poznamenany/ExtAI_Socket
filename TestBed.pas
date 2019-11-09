@@ -122,6 +122,7 @@ type
     procedure RefreshComboBoxes(aServerClient: TExtAIInfo = nil);
     procedure ConnectClient(aIdx: Word);
     procedure DisconnectClient(aIdx: Integer);
+    procedure UpdateAIGUI();
     procedure RefreshAIGUI(Sender: TObject);
     function GetIdxByID(var aIdx: Integer; aID: Byte): boolean;
     function GetSelectedClient(var aIdx: Integer): boolean;
@@ -139,7 +140,6 @@ const
   USE_LOCALHOST_IP = True;
 var
   ExtAI_TestBed: TExtAI_TestBed;
-  csCriticalSection: TRTLCriticalSection;
 
 implementation
 uses
@@ -665,39 +665,40 @@ begin
 end;
 
 
-procedure TExtAI_TestBed.RefreshAIGUI(Sender: TObject);
+procedure TExtAI_TestBed.UpdateAIGUI();
 var
   Conn: Boolean;
   K, ID: Integer;
 begin
-  EnterCriticalSection(csCriticalSection);
-  try
-    if GetSelectedClient(ID) then
+  if GetSelectedClient(ID) then
+  begin
+    // Check selected client
+    Conn := fExtAIAndGUIArr.Arr[ID].AI.Client.Connected;
+    // Check if all clients are connected
+    if Conn AND chbControlAll.Checked then
+      for K := 0 to fExtAIAndGUIArr.Count - 1 do
+        with fExtAIAndGUIArr.Arr[K].AI do
+          Conn := Conn AND Client.Connected;
+    // Update buttons
+    if Conn then
     begin
-      // Check selected client
-      Conn := fExtAIAndGUIArr.Arr[ID].AI.Client.Connected;
-      // Check if all clients are connected
-      if Conn AND chbControlAll.Checked then
-        for K := 0 to fExtAIAndGUIArr.Count - 1 do
-          with fExtAIAndGUIArr.Arr[K].AI do
-            Conn := Conn AND Client.Connected;
-      // Update buttons
-      if Conn then
-      begin
-        btnClientConnect.Caption := 'Disconnect client';
-        btnClientSendAction.Enabled := True;
-        //btnClientSendState.Enabled := True;
-      end
-      else
-      begin
-        btnClientConnect.Caption := 'Connect client';
-        btnClientSendAction.Enabled := False;
-        btnClientSendState.Enabled := False;
-      end;
+      btnClientConnect.Caption := 'Disconnect client';
+      btnClientSendAction.Enabled := True;
+      //btnClientSendState.Enabled := True;
+    end
+    else
+    begin
+      btnClientConnect.Caption := 'Connect client';
+      btnClientSendAction.Enabled := False;
+      btnClientSendState.Enabled := False;
     end;
-  finally
-     LeaveCriticalSection(csCriticalSection);
   end;
+end;
+
+
+procedure TExtAI_TestBed.RefreshAIGUI(Sender: TObject);
+begin
+  TThread.Synchronize(nil, UpdateAIGUI);
 end;
 
 

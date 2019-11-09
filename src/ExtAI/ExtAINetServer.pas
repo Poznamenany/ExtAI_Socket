@@ -297,7 +297,7 @@ begin
   fServer.OnClientDisconnect := ClientDisconnect;
   fServer.OnDataAvailable := DataAvailable;
   fServer.StartListening(aPort);
-  Status('Listening on port ' + IntToStr(aPort));
+  Status(Format('Listening on port %d',[aPort]));
   fListening := true;
 end;
 
@@ -320,7 +320,7 @@ end;
 procedure TExtAINetServer.Status(const S: string);
 begin
   if Assigned(fOnStatusMessage) then
-    fOnStatusMessage('Server status: ' + S);
+    fOnStatusMessage(Format('Server status: %s',[S]));
 end;
 
 
@@ -406,7 +406,7 @@ var
   Client: TExtAIServerClient;
 begin
   // Add new client
-  Status('New client: ' + IntToStr(aHandle));
+  Status(Format('New client: %d',[aHandle]));
   Client := TExtAIServerClient.Create(aHandle);
   fClients.Add(Client);
 
@@ -421,27 +421,20 @@ end;
 //Someone has disconnected
 procedure TExtAINetServer.ClientDisconnect(aHandle: TExtAINetHandleIndex);
 var
-  K: Integer;
   Client: TExtAIServerClient;
 begin
   Client := GetClientByHandle(aHandle);
   if (Client = nil) then
   begin
-    Status('Warning: Client ' + IntToStr(aHandle)+' was already disconnected');
+    Status(Format('Warning: Client %d has already been disconnected',[aHandle]));
     Exit;
   end;
 
   if Assigned(fOnClientDisconnect) then
     fOnClientDisconnect(Client);
 
-  Status('Client '+IntToStr(aHandle)+' has disconnected');
-  for K := 0 to fClients.Count-1 do
-    if (fClients[K].Handle = aHandle) then
-    begin
-      fClients[K].Free;
-      fClients.Delete(K);
-      Exit;
-    end;
+  fClients.Remove(Client); // TObjectList remove and free
+  Status(Format('Client %d has been disconnected',[aHandle]));
 end;
 
 

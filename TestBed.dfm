@@ -3,7 +3,7 @@ object ExtAI_TestBed: TExtAI_TestBed
   Top = 0
   Caption = 'ExtAI_TestBed'
   ClientHeight = 671
-  ClientWidth = 903
+  ClientWidth = 971
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,7 +17,7 @@ object ExtAI_TestBed: TExtAI_TestBed
   object gbKP: TGroupBox
     Left = 8
     Top = 8
-    Width = 561
+    Width = 636
     Height = 662
     Caption = 'KP'
     TabOrder = 0
@@ -441,7 +441,7 @@ object ExtAI_TestBed: TExtAI_TestBed
     object mTutorial: TMemo
       Left = 288
       Top = 18
-      Width = 270
+      Width = 345
       Height = 73
       Enabled = False
       Lines.Strings = (
@@ -519,7 +519,7 @@ object ExtAI_TestBed: TExtAI_TestBed
     object reLog: TRichEdit
       Left = 289
       Top = 97
-      Width = 269
+      Width = 344
       Height = 562
       Font.Charset = EASTEUROPE_CHARSET
       Font.Color = clWindowText
@@ -534,8 +534,8 @@ object ExtAI_TestBed: TExtAI_TestBed
     end
   end
   object gbExtAIsExe: TGroupBox
-    Left = 575
-    Top = 10
+    Left = 647
+    Top = 8
     Width = 322
     Height = 365
     Caption = 'ExtAIs (executable emulation)'
@@ -625,8 +625,8 @@ object ExtAI_TestBed: TExtAI_TestBed
     end
   end
   object gbExtAIsDLL: TGroupBox
-    Left = 576
-    Top = 378
+    Left = 650
+    Top = 376
     Width = 321
     Height = 292
     Caption = 'ExtAIs (DLL)'

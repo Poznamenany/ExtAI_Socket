@@ -97,7 +97,7 @@ begin
   // Check selection of players in lobby
   else if (Length(fExtAIsID) <= 0) then
   begin
-    gLog.Log('TKMGame-AI is NOT selected');
+    gLog.Log('TKMGame-AI is NOT selected / valid');
     Exit(False);
   end;
   Result := True;
@@ -114,10 +114,12 @@ begin
   SetLength(fExtAIsID, Length(aNamesExtAI));
   if not CheckGameConditions() then
     Exit;
-  // Find DLL players in lobby and call DLL to initialize new ExtAIs
+
+  // Try to find the AI in the ExtAIMaster (AI could be disconnected / lost in the meantime)
   for K := Low(aNamesExtAI) to High(aNamesExtAI) do
   begin
     ClientExists := False;
+    // Find AI in the list of directly connected AIs
     for L := 0 to fExtAIMaster.AIs.Count - 1 do
       if (AnsiCompareText(aNamesExtAI[K],fExtAIMaster.AIs[L].Name) = 0) then
       begin
@@ -125,11 +127,13 @@ begin
         fExtAIsID[K] := fExtAIMaster.AIs[L].ID;
         break;
       end;
+    // Find DLL players in lobby and call DLL to initialize new ExtAIs
     if not ClientExists then
       for L := 0 to fExtAIMaster.DLLs.Count - 1 do
         if (AnsiCompareText(aNamesExtAI[K],fExtAIMaster.DLLs[L].Name) = 0) then
           fExtAIsID[K] := fExtAIMaster.ConnectNewExtAI(L);
   end;
+
   // Update game state (loading screen)
   fGameState := gsLoading;
 end;

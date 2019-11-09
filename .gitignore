@@ -19,6 +19,7 @@
 *res
 __history/*.*
 __recovery/*.*
+ExtAI/Cpp/**
 ExtAI/Delphi/__history/*.*
 ExtAI/Delphi/__recovery/*.*
 ExtAI/Delphi/src/__history/*.*
