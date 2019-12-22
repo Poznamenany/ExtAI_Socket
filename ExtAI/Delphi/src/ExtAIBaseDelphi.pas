@@ -13,7 +13,7 @@ type
     fID: Word;
     fActive: Boolean;
     fClient: TExtAINetClient;
-    fLog: TLog;
+    fLog: TExtAILog;
     procedure ClientStatusMessage(const aMsg: String);
   protected
     fActions: TExtAIActions;
@@ -23,13 +23,15 @@ type
     procedure Execute(); override;
     // Game Events
     procedure OnMissionStart();                        virtual;
+    procedure OnMissionEnd();                          virtual;
     procedure OnTick(aTick: Cardinal);                 virtual;
     procedure OnPlayerVictory(aHandIndex: SmallInt);   virtual;
     procedure OnPlayerDefeated(aHandIndex: SmallInt);  virtual;
     // Log
-    procedure Log(aText: String);
+    procedure Log(const aText: String; const aArgs: array of const); overload;
+    procedure Log(const aText: String); overload;
   public
-    constructor Create(aLog: TLog; const aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
+    constructor Create(aLog: TExtAILog; const aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
     destructor Destroy(); override;
 
     property ID: Word read fID;
@@ -44,9 +46,9 @@ implementation
 
 
 { TExtAIBaseDelphi }
-constructor TExtAIBaseDelphi.Create(aLog: TLog; const aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
+constructor TExtAIBaseDelphi.Create(aLog: TExtAILog; const aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
 begin
-  inherited Create(False);
+  Inherited Create(False); // Create thread and start Execution
   FreeOnTerminate := False;
   Priority := tpLower;
 
@@ -63,11 +65,12 @@ begin
   fClient.OnStatusMessage := ClientStatusMessage;
 
   fEvents.Msg.OnMissionStart := OnMissionStart;
+  fEvents.Msg.OnMissionEnd := OnMissionEnd;
   fEvents.Msg.OnTick := OnTick;
   fEvents.Msg.OnPlayerVictory := OnPlayerVictory;
   fEvents.Msg.OnPlayerDefeated := OnPlayerDefeated;
 
-  Log(Format('TExtAIBaseDelphi-Create ID = %d', [fID]));
+  Log('TExtAIBaseDelphi-Create ID = %d', [fID]);
 end;
 
 
@@ -75,24 +78,24 @@ destructor TExtAIBaseDelphi.Destroy();
 begin
   if Client.Connected then
     Client.Disconnect();
-  Log(Format('TExtAIBaseDelphi-Destroy ID = %d', [fID]));
+  Log('TExtAIBaseDelphi-Destroy ID = %d', [fID]);
   fClient.Free;
   fActions.Free;
   fEvents.Free;
   fStates.Free;
-  inherited;
+  Inherited;
 end;
 
 
 procedure TExtAIBaseDelphi.Execute();
 begin
-  Log('Execute: Start');
+  Log('TExtAIBaseDelphi-Execute: Start');
   while fActive do
   begin
     fClient.ProcessReceivedMessages();
     Sleep(10);
   end;
-  Log('Execute: End');
+  Log('TExtAIBaseDelphi-Execute: End');
 end;
 
 
@@ -108,15 +111,22 @@ begin
 end;
 
 
-procedure TExtAIBaseDelphi.Log(aText: String);
+procedure TExtAIBaseDelphi.Log(const aText: String; const aArgs: array of const);
+begin
+  Log(Format(aText,aArgs));
+end;
+
+procedure TExtAIBaseDelphi.Log(const aText: String);
 begin
   if Assigned(fLog) then
     fLog.Log(aText);
 end;
 
 
+
 // Dummy Events so user does not have to define the methods in child class and can choose just the necessary
 procedure TExtAIBaseDelphi.OnMissionStart(); begin end;
+procedure TExtAIBaseDelphi.OnMissionEnd(); begin end;
 procedure TExtAIBaseDelphi.OnTick(aTick: Cardinal); begin end;
 procedure TExtAIBaseDelphi.OnPlayerVictory(aHandIndex: SmallInt); begin end;
 procedure TExtAIBaseDelphi.OnPlayerDefeated(aHandIndex: SmallInt); begin end;

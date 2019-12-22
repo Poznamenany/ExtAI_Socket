@@ -12,6 +12,7 @@ object Game_form: TGame_form
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object gbKP: TGroupBox
@@ -445,8 +446,9 @@ object Game_form: TGame_form
       Lines.Strings = (
         '1. Select paths to DLL(s)'
         '2. Start the server'
-        '3. Select the AI in lobby list'
-        '4. Start the map')
+        '3. (Optional) Connect ExtAI from executable'
+        '4. Select the AIs in lobby list (from DLL and also executable)'
+        '5. Start the map')
       ReadOnly = True
       TabOrder = 3
     end

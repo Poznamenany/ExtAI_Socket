@@ -2,7 +2,8 @@ unit ExtAIMaster;
 interface
 uses
   Classes, Windows, Math, System.SysUtils, Generics.Collections,
-  ExtAI_DLLs, ExtAINetServer, ExtAIInfo, KM_CommonTypes;
+  ExtAI_DLLs, ExtAINetServer, ExtAIInfo, KM_CommonTypes,
+  ExtAILog;
 
 type
   // Manages external AI (list of available AIs and communication)
@@ -24,7 +25,7 @@ type
     function GetExtAI(aID: Word): TExtAIInfo; overload;
     function GetExtAI(aServerClient: TExtAIServerClient): TExtAIInfo; overload;
   public
-    constructor Create(aDLLPaths: TArray<string>);
+    constructor Create(aDLLPaths: TStringList = nil);
     destructor Destroy; override;
 
     property OnAIConnect: TExtAIStatusEvent write fOnAIConnect;
@@ -43,21 +44,17 @@ type
 
 
 implementation
-uses
-  ExtAILog;
 
 
 { TExtAIMaster }
-// aDLLPaths should be like 'ExeDir\ExtAI\'.
-// We will scan 1 folder deep, since it'a handy to have each ExtAI DLL in it's own folder
-constructor TExtAIMaster.Create(aDLLPaths: TArray<string>);
+constructor TExtAIMaster.Create(aDLLPaths: TStringList = nil);
 begin
   fIDCounter := 0;
   fNetServer := TExtAINetServer.Create();
   fExtAIs := TObjectList<TExtAIInfo>.Create();
   fDLLs := TExtAIDLLs.Create(aDLLPaths);
   fNetServer.OnStatusMessage := gLog.Log;
-  fNetServer.OnClientConnect := nil; // Ignore incoming client till the moment when we receive config
+  fNetServer.OnClientConnect := nil; // Ignore incoming client untill we receive config
   fNetServer.OnClientNewID := ConnectExtAIWithID;
   fNetServer.OnClientDisconnect := DisconnectClient;
 end;
@@ -65,10 +62,10 @@ end;
 
 destructor TExtAIMaster.Destroy();
 begin
-  fDLLs.Free();
-  fNetServer.Free();
-  fExtAIs.Free();
-  inherited;
+  fNetServer.Free;
+  fExtAIs.Free;
+  fDLLs.Free;
+  Inherited;
 end;
 
 
@@ -112,7 +109,7 @@ function TExtAIMaster.ConnectNewExtAI(aIdxDLL: Word): Word;
 begin
   Result := GetNewID();
   CreateNewExtAI(Result, nil);
-  DLLs[aIdxDLL].ConnectNewExtAI(Result, Net.Server.Socket.PortNum, '127.0.0.1');// DLLs use localhost
+  DLLs[aIdxDLL].CreateNewExtAI(Result, Net.Server.Socket.PortNum, '127.0.0.1');// DLLs use localhost
 end;
 
 
@@ -127,7 +124,7 @@ begin
     if Assigned(fOnAIDisconnect) then
       fOnAIDisconnect(ExtAI);
     ExtAI.ServerClient := nil;
-    fExtAIs.Remove(ExtAI); // Remove and free the object (TObjectList)
+    //fExtAIs.Remove(ExtAI); // Remove and free the object (TObjectList)
   end;
   //}
 end;

@@ -20,6 +20,7 @@ type
     TPlayerUnits          = procedure(aHandIndex: SmallInt; aUnits: array of Integer)      of object;
   // Definition of events
     TMissionStartEvent    = procedure()                                                    of object;
+    TMissionEndEvent      = procedure()                                                    of object;
     TTickEvent            = procedure(aTick: Cardinal)                                     of object;
     TPlayerDefeatedEvent  = procedure(aHandIndex: SmallInt)                                of object;
     TPlayerVictoryEvent   = procedure(aHandIndex: SmallInt)                                of object;

@@ -88,9 +88,9 @@ procedure TKMemoryStream.WriteA(const Value: AnsiString);
 var I: Word;
 begin
   I := Length(Value);
-  inherited Write(I, SizeOf(I));
+  Inherited Write(I, SizeOf(I));
   if I = 0 then Exit;
-  inherited Write(Pointer(Value)^, I);
+  Inherited Write(Pointer(Value)^, I);
 end;
 
 procedure TKMemoryStream.ReadHugeString(out Value: AnsiString);
@@ -106,9 +106,9 @@ procedure TKMemoryStream.WriteHugeString(const Value: AnsiString);
 var I: Cardinal;
 begin
   I := Length(Value);
-  inherited Write(I, SizeOf(I));
+  Inherited Write(I, SizeOf(I));
   if I = 0 then Exit;
-  inherited Write(Pointer(Value)^, I);
+  Inherited Write(Pointer(Value)^, I);
 end;
 
 procedure TKMemoryStream.ReadHugeString(out Value: UnicodeString);
@@ -124,9 +124,9 @@ procedure TKMemoryStream.WriteHugeString(const Value: UnicodeString);
 var I: Cardinal;
 begin
   I := Length(Value);
-  inherited Write(I, SizeOf(I));
+  Inherited Write(I, SizeOf(I));
   if I = 0 then Exit;
-  inherited Write(Pointer(Value)^, I * SizeOf(WideChar));
+  Inherited Write(Pointer(Value)^, I * SizeOf(WideChar));
 end;
 
 procedure TKMemoryStream.ReadAssert(const Value: AnsiString);
@@ -141,9 +141,9 @@ procedure TKMemoryStream.WriteW(const Value: UnicodeString);
 var I: Word;
 begin
   I := Length(Value);
-  inherited Write(I, SizeOf(I));
+  Inherited Write(I, SizeOf(I));
   if I = 0 then Exit;
-  inherited Write(Pointer(Value)^, I * SizeOf(WideChar));
+  Inherited Write(Pointer(Value)^, I * SizeOf(WideChar));
 end;
 
 procedure TKMemoryStream.ReadBytes(out Value: TBytes);
@@ -161,37 +161,37 @@ var
   I: Word;
 begin
   I := Length(Value);
-  inherited Write(I, SizeOf(I));
+  Inherited Write(I, SizeOf(I));
   if I = 0 then Exit;
-  inherited Write(Pointer(Value)^, I);
+  Inherited Write(Pointer(Value)^, I);
 end;
 
 function TKMemoryStream.Write(const Value:single): Longint;
-begin Result := inherited Write(Value, SizeOf(Value)); end;
+begin Result := Inherited Write(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Write(const Value:integer): Longint;
-begin Result := inherited Write(Value, SizeOf(Value)); end;
+begin Result := Inherited Write(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Write(const Value:cardinal): Longint;
-begin Result := inherited Write(Value, SizeOf(Value)); end;
+begin Result := Inherited Write(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Write(const Value:byte): Longint;
-begin Result := inherited Write(Value, SizeOf(Value)); end;
+begin Result := Inherited Write(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Write(const Value:boolean): Longint;
-begin Result := inherited Write(Value, SizeOf(Value)); end;
+begin Result := Inherited Write(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Write(const Value:word): Longint;
-begin Result := inherited Write(Value, SizeOf(Value)); end;
+begin Result := Inherited Write(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Write(const Value:shortint): Longint;
-begin Result := inherited Write(Value, SizeOf(Value)); end;
+begin Result := Inherited Write(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Write(const Value:smallint): Longint;
-begin Result := inherited Write(Value, SizeOf(Value)); end;
+begin Result := Inherited Write(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Write(const Value:TDateTime): Longint;
-begin Result := inherited Write(Value, SizeOf(Value)); end;
+begin Result := Inherited Write(Value, SizeOf(Value)); end;
 
 
 procedure TKMemoryStream.ReadW(out Value: UnicodeString);
@@ -205,31 +205,31 @@ end;
 
 
 function TKMemoryStream.Read(out Value:single): Longint;
-begin Result := inherited Read(Value, SizeOf(Value)); end;
+begin Result := Inherited Read(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Read(out Value:integer): Longint;
-begin Result := inherited Read(Value, SizeOf(Value)); end;
+begin Result := Inherited Read(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Read(out Value:cardinal): Longint;
-begin Result := inherited Read(Value, SizeOf(Value)); end;
+begin Result := Inherited Read(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Read(out Value:byte): Longint;
-begin Result := inherited Read(Value, SizeOf(Value)); end;
+begin Result := Inherited Read(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Read(out Value:boolean): Longint;
-begin Result := inherited Read(Value, SizeOf(Value)); end;
+begin Result := Inherited Read(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Read(out Value:word): Longint;
-begin Result := inherited Read(Value, SizeOf(Value)); end;
+begin Result := Inherited Read(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Read(out Value:shortint): Longint;
-begin Result := inherited Read(Value, SizeOf(Value)); end;
+begin Result := Inherited Read(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Read(out Value:smallint): Longint;
-begin Result := inherited Read(Value, SizeOf(Value)); end;
+begin Result := Inherited Read(Value, SizeOf(Value)); end;
 
 function TKMemoryStream.Read(out Value:TDateTime): Longint;
-begin Result := inherited Read(Value, SizeOf(Value)); end;
+begin Result := Inherited Read(Value, SizeOf(Value)); end;
 
 
 procedure TKMemoryStream.CopyFromDecompression(Source: TStream);

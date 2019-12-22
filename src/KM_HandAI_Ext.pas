@@ -3,7 +3,7 @@ interface
 uses
   Windows, System.SysUtils,
   KM_Consts, KM_Terrain,
-  ExtAINetServer, ExtAIMsgActions, ExtAIMsgEvents, ExtAIMsgStates;
+  ExtAIInfo, ExtAINetServer, ExtAIMsgActions, ExtAIMsgEvents, ExtAIMsgStates;
 
 type
   // Main AI class in the hands
@@ -22,8 +22,8 @@ type
     fActions: TExtAIMsgActions;
     fEvents: TExtAIMsgEvents;
     fStates: TExtAIMsgStates;
-    // Client
-    fServerClient: TExtAIServerClient;
+    // ExtAI info, IDs, client server etc.
+    fExtAI: TExtAIInfo;
     // Process actions
     procedure GroupOrderAttackUnit(aGroupID, aUnitID: Integer);
     procedure GroupOrderWalk(aGroupID, aX, aY, aDir: Integer);
@@ -41,7 +41,7 @@ type
     TTerrainFertility     = procedure(aFertility: TBoolArr)                                of object;
     }
   public
-    constructor Create(aHandIndex: TKMHandIndex);
+    constructor Create(aHandIndex: TKMHandIndex; aExtAI: TExtAIInfo);
     destructor Destroy(); override;
 
     // Actions, Events, States
@@ -49,8 +49,12 @@ type
     property Events: TExtAIMsgEvents read fEvents;
     property States: TExtAIMsgStates read fStates;
 
+    procedure ConnectCallbacks(aExtAI: TExtAIInfo = nil);
+    procedure DisconnectCallbacks();
+
+    procedure MissionStart();
+    procedure MissionEnd();
     procedure UpdateState(aTick: Cardinal);
-    procedure ConnectCallbacks(aServerClient: TExtAIServerClient);
   end;
 
 
@@ -62,25 +66,26 @@ uses
 { TKMHandAI }
 constructor TKMHandAI.Create(aHandIndex: TKMHandIndex);
 begin
-  inherited Create;
+  Inherited Create;
 
   fHandIndex := aHandIndex;
 end;
 
 
 { THandAI_Ext }
-constructor THandAI_Ext.Create(aHandIndex: TKMHandIndex);
+constructor THandAI_Ext.Create(aHandIndex: TKMHandIndex; aExtAI: TExtAIInfo);
 begin
-  inherited Create(aHandIndex);
-
+  Inherited Create(aHandIndex);
+  // Declare main classes of Actions, Events and States
   fActions := TExtAIMsgActions.Create();
   fEvents := TExtAIMsgEvents.Create();
   fStates := TExtAIMsgStates.Create();
-
-  fServerClient := nil;
+  // Prepare callbacks for actions
   fActions.OnGroupOrderAttackUnit := GroupOrderAttackUnit;
   fActions.OnGroupOrderWalk := GroupOrderWalk;
   fActions.OnLog := Log;
+  // Connect callbacks
+  ConnectCallbacks(aExtAI);
 
   gLog.Log('THandAIExt-Create: HandIndex = %d', [fHandIndex]);
 end;
@@ -88,43 +93,45 @@ end;
 
 destructor THandAI_Ext.Destroy();
 begin
+  DisconnectCallbacks();
   fActions.Free;
   fEvents.Free;
   fStates.Free;
-  if (fServerClient <> nil) then
-  begin
-    fServerClient.OnAction := nil;
-    fServerClient.OnState := nil;
-  end;
-  fServerClient := nil;
   gLog.Log('THandAIExt-Destroy: HandIndex = %d', [fHandIndex]);
-  inherited;
+  Inherited;
 end;
 
 
-procedure THandAI_Ext.UpdateState(aTick: Cardinal);
+procedure THandAI_Ext.ConnectCallbacks(aExtAI: TExtAIInfo = nil);
 begin
-  if (aTick = FIRST_TICK) then
+  if (aExtAI <> nil) then
   begin
-    Events.MissionStartW();
-    States.TerrainSizeW(gTerrain.MapX, gTerrain.MapY);
+    fExtAI := aExtAI;
+    fExtAI.HandIdx := fHandIndex;
   end;
-
-  Events.TickW(aTick);
+  if (fExtAI <> nil) AND (fExtAI.ServerClient <> nil) then
+  begin
+    fExtAI.ServerClient.OnAction := fActions.ReceiveAction;
+    fExtAI.ServerClient.OnState := fStates.ReceiveState;
+    fStates.OnSendState := fExtAI.ServerClient.AddScheduledMsg;
+    fEvents.OnSendEvent := fExtAI.ServerClient.AddScheduledMsg;
+  end;
 end;
 
 
-procedure THandAI_Ext.ConnectCallbacks(aServerClient: TExtAIServerClient);
+procedure THandAI_Ext.DisconnectCallbacks();
 begin
-  fServerClient := aServerClient;
-  fServerClient.OnAction := fActions.ReceiveAction;
-  fServerClient.OnState := fStates.ReceiveState;
-  fStates.OnSendState := fServerClient.AddScheduledMsg;
-  fEvents.OnSendEvent := fServerClient.AddScheduledMsg;
+  if (fExtAI <> nil) AND (fExtAI.ServerClient <> nil) then
+  begin
+    fExtAI.ServerClient.OnAction := nil;
+    fExtAI.ServerClient.OnState := nil;
+    fStates.OnSendState := nil;
+    fEvents.OnSendEvent := nil;
+  end;
 end;
 
 
-// Process incoming actions
+// Process actions (Check if the parameters are correct and create new GIP command)
 
 procedure THandAI_Ext.GroupOrderAttackUnit(aGroupID, aUnitID: Integer);
 begin
@@ -148,5 +155,38 @@ begin
   gLog.Log(aLog);
 end;
 
+
+
+// Process events (or call directly for example HandAI_ext.Events.TickW(...))
+
+
+procedure THandAI_Ext.MissionStart();
+begin
+  Events.MissionStartW();
+end;
+
+
+procedure THandAI_Ext.MissionEnd();
+begin
+  Events.MissionEndW();
+end;
+
+
+procedure THandAI_Ext.UpdateState(aTick: Cardinal);
+begin
+  if (fExtAI = nil) OR (fExtAI.ServerClient = nil) then
+  begin
+    DisconnectCallbacks();
+    Exit;
+  end;
+
+  if (aTick = FIRST_TICK) then
+    States.TerrainSizeW(gTerrain.MapX, gTerrain.MapY); // Send terrain in the first tick (just for testing)
+
+  Events.TickW(aTick);
+end;
+
+
+// Process states (or call directly for example HandAI_ext.States.TerrainSizeW(...))
 
 end.

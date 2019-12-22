@@ -110,7 +110,7 @@ implementation
 procedure TGame_form.FormCreate(Sender: TObject);
 begin
   // Game log (log every input from Socket)
-  gLog := TLog.Create(Log);
+  gLog := TExtAILog.Create(Log);
   gLog.Log('TExtAI_TestBed-Create');
   // Game class
   fGame := TKMGame.Create(UpdateSimStatus);
@@ -140,7 +140,8 @@ end;
 procedure TGame_form.FormDestroy(Sender: TObject);
 begin
   gLog.Log('TExtAI_TestBed-Destroy');
-  fGame.TerminateSimulation();
+  fGame.TerminateSimulation(); // Tell thread to properly finish the simulation
+  fGame.WaitFor; // Wait for server to close (this method is called by main thread)
   fGame.Free;
   gLog.Free;
 end;
@@ -184,18 +185,25 @@ end;
 procedure TGame_form.RefreshDLLs();
 var
   K: Integer;
-  Paths: TArray<string>;
+  Paths: TStringList;
 begin
   if (fGame = nil) then
     Exit;
   // Get paths
-  SetLength(Paths,lbPaths.Items.Count);
-  for K := 0 to lbPaths.Items.Count - 1 do
-    Paths[K] := lbPaths.Items[K];
-  // Refresh DLLs
-  fGame.ExtAIMaster.DLLs.RefreshList(Paths);
+  Paths := TStringList.Create();
+  try
+    for K := 0 to lbPaths.Items.Count - 1 do
+      Paths.Add(lbPaths.Items[K]);
+    // Refresh DLLs
+    fGame.ExtAIMaster.DLLs.RefreshList(Paths);
+  finally
+    Paths.Free;
+  end;
   // Update GUI
   RefreshComboBoxes();
+  //lbPaths.Clear;
+  //for K := 0 to fGame.ExtAIMaster.DLLs.Paths.Count - 1 do
+  //  lbPaths.Items.Add(fGame.ExtAIMaster.DLLs.Paths[K]);
   lbDLLs.Clear;
   for K := 0 to fGame.ExtAIMaster.DLLs.Count - 1 do
     lbDLLs.Items.Add(fGame.ExtAIMaster.DLLs[K].Name);
@@ -375,10 +383,10 @@ begin
     end;
     SetLength(AIs,Cnt);
     // Start / stop the simulation with specific AI players
-    fGame.InitGame(AIs);
+    fGame.StartGame(AIs);
     btnServerStartMap.Caption := 'Stop Map';
   end
-  else if (fGame.GameState = gsPlaying) then
+  else if (fGame.GameState = gsPlay) then
   begin
     btnServerStartMap.Caption := 'Start Map';
     fGame.EndGame();
@@ -412,6 +420,12 @@ begin
     for L := Low(AvailableAIs) to High(AvailableAIs) do
       if (AnsiCompareText(AvailableAIs[L], fcbLoc[K].Items[ fcbLoc[K].ItemIndex ]) = 0) then
         fedPingLoc[K].Text := IntToStr(fGame.ExtAIMaster.AIs[L].ServerClient.NetPing);
+  end;
+  // Update Start simulation button
+  case fGame.GameState of
+    gsLobby, gsEnd: btnServerStartMap.Caption := 'Start Map';
+    gsLoad, gsPlay: btnServerStartMap.Caption := 'Stop Map';
+    else begin end;
   end;
 end;
 

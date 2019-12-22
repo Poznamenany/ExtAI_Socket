@@ -32,7 +32,7 @@ implementation
 { TKMTerrain }
 constructor TKMTerrain.Create;
 begin
-  inherited;
+  Inherited;
 
   fMapX := 128;
   fMapY := 256;

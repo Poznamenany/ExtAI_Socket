@@ -1,85 +1,104 @@
 unit ExtAILog;
 interface
 uses
-  Classes, SysUtils;
+  Windows, Messages, SysUtils, Variants, Classes;
 
 type
   TLogEvent = procedure (const aText: string) of object;
   TLogIDEvent = procedure (const aText: string; const aID: Byte) of object;
 
   // Global logger
-  TLog = class
+  TExtAILog = class
   private
+    fSynchronize: Boolean;
     fID: Byte;
     fOnLog: TLogEvent;
     fOnIDLog: TLogIDEvent;
   public
-    constructor Create(aOnLog: TLogEvent); overload;
-    constructor Create(aOnLogID: TLogIDEvent; aID: Byte); overload;
+    constructor Create(aOnLog: TLogEvent; aSynchronize: Boolean = True); overload;
+    constructor Create(aOnLogID: TLogIDEvent; aID: Byte; aSynchronize: Boolean = True); overload;
     destructor Destroy(); override;
     procedure Log(const aText: string); overload;
     procedure Log(const aText: string; const aArgs: array of const); overload;
   end;
 
 var
-  gLog: TLog;
+  gLog: TExtAILog;
 
 implementation
 
 
 { TLog }
-constructor TLog.Create(aOnLog: TLogEvent);
+constructor TExtAILog.Create(aOnLog: TLogEvent; aSynchronize: Boolean = True);
 begin
-  inherited Create;
+  Inherited Create;
 
+  fSynchronize := aSynchronize;
   fID := 0;
   fOnLog := aOnLog;
   fOnIDLog := nil;
-  Log('TLog-Create');
+  Log('TExtAILog-Create');
 end;
 
-constructor TLog.Create(aOnLogID: TLogIDEvent; aID: Byte);
+constructor TExtAILog.Create(aOnLogID: TLogIDEvent; aID: Byte; aSynchronize: Boolean = True);
 begin
-  inherited Create;
+  Inherited Create;
 
+  fSynchronize := aSynchronize;
   fID := aID;
   fOnLog := nil;
   fOnIDLog := aOnLogID;
-  Log('TLog-Create');
+  Log('TExtAILog-Create');
 end;
 
 
-destructor TLog.Destroy();
+destructor TExtAILog.Destroy();
 begin
-  Log('TLog-Destroy');
+  Log('TExtAILog-Destroy');
 
-  inherited;
+  Inherited;
 end;
 
 
-procedure TLog.Log(const aText: string);
+procedure TExtAILog.Log(const aText: string);
 begin
-  if Self = nil then Exit;
+  if (Self = nil) then
+    Exit;
 
   if Assigned(fOnLog) then
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        fOnLog(aText);
-      end
-    )
+  begin
+    // Logs in DLLs do not need to synchronize because they are stored to buffer
+    if not fSynchronize then
+      fOnLog(aText)
+    else
+    // Logs in threads need to synchronize because they are stored to GUI in a different thread
+      TThread.Synchronize(nil,
+        procedure
+        begin
+          fOnLog(aText);
+        end
+      )
+  end
   else if Assigned(fOnIDLog) then
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        fOnIDLog(aText, fID);
-      end
-    );
+  begin
+    if not fSynchronize then
+      fOnIDLog(aText, fID)
+    else
+      TThread.Synchronize(nil,
+        procedure
+        begin
+          fOnIDLog(aText, fID);
+        end
+      );
+  end;
 end;
 
 
-procedure TLog.Log(const aText: string; const aArgs: array of const);
+procedure TExtAILog.Log(const aText: string; const aArgs: array of const);
 begin
+  if (Self = nil) then
+    Exit;
+
   Log(Format(aText, aArgs));
 end;
 

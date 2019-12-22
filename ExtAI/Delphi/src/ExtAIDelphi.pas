@@ -13,10 +13,12 @@ type
     procedure HuntUnit();
   protected
     // Game Events (only events which are used)
+    procedure OnMissionStart(); override;
+    procedure OnMissionEnd(); override;
     procedure OnTick(aTick: Cardinal); override;
     procedure OnPlayerVictory(aHandIndex: SmallInt); override;
   public
-    constructor Create(aLog: TLog = nil; aID: Word = 0);
+    constructor Create(aLog: TExtAILog = nil; aID: Word = 0);
     destructor Destroy(); override;
   end;
 
@@ -24,27 +26,38 @@ implementation
 
 
 { TExtAIDelphi }
-constructor TExtAIDelphi.Create(aLog: TLog = nil; aID: Word = 0);
+constructor TExtAIDelphi.Create(aLog: TExtAILog = nil; aID: Word = 0);
 const
   AUTHOR: UnicodeString = 'Martin';
   DESCRIPTION: UnicodeString = 'Testing ExtAI with WebSocket';
   NAME: UnicodeString = 'Skynet';
   VERSION: Cardinal = 20190625;
 begin
-  inherited Create(aLog, aID, AUTHOR, NAME, DESCRIPTION, VERSION);
+  Inherited Create(aLog, aID, AUTHOR, NAME, DESCRIPTION, VERSION);
 
 end;
 
 
 destructor TExtAIDelphi.Destroy();
 begin
-  inherited;
+  Inherited;
+end;
+
+procedure TExtAIDelphi.OnMissionStart();
+begin
+  Log('TExtAIDelphi OnMissionStart');
+end;
+
+
+procedure TExtAIDelphi.OnMissionEnd();
+begin
+  Log('TExtAIDelphi OnMissionEnd');
 end;
 
 
 procedure TExtAIDelphi.OnTick(aTick: Cardinal);
 begin
-  Log(Format('TExtAIDelphi Tick: %d', [aTick]));
+  Log('TExtAIDelphi Tick: %d', [aTick]);
   //Actions.Log('This is message from ExtAI');
   //Actions.GroupOrderWalk(11,5,5,22);
   if (aTick = 1) AND (States.MapWidth > 0) then

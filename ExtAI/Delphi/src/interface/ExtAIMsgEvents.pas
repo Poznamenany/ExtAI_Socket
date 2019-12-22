@@ -14,6 +14,7 @@ type
     // Triggers
     fOnSendEvent       : TExtAIEventNewMsg;
     fOnMissionStart    : TMissionStartEvent;
+    fOnMissionEnd      : TMissionEndEvent;
     fOnTick            : TTickEvent;
     fOnPlayerDefeated  : TPlayerDefeatedEvent;
     fOnPlayerVictory   : TPlayerVictoryEvent;
@@ -23,6 +24,7 @@ type
     procedure SendEvent();
     // Unpack Events
     procedure MissionStartR();
+    procedure MissionEndR();
     procedure TickR();
     procedure PlayerDefeatedR();
     procedure PlayerVictoryR();
@@ -35,12 +37,14 @@ type
     // Connection to callbacks
     property OnSendEvent       : TExtAIEventNewMsg      write fOnSendEvent;
     property OnMissionStart    : TMissionStartEvent     write fOnMissionStart;
+    property OnMissionEnd      : TMissionEndEvent       write fOnMissionEnd;
     property OnTick            : TTickEvent             write fOnTick;
     property OnPlayerDefeated  : TPlayerDefeatedEvent   write fOnPlayerDefeated;
     property OnPlayerVictory   : TPlayerVictoryEvent    write fOnPlayerVictory;
 
     // Pack events
     procedure MissionStartW();
+    procedure MissionEndW();
     procedure TickW(aTick: Cardinal);
     procedure PlayerDefeatedW(aHandIndex: SmallInt);
     procedure PlayerVictoryW(aHandIndex: SmallInt);
@@ -114,6 +118,7 @@ begin
   fStream.Position := 0;
   case TExtAIMsgTypeEvent(aEventType) of
     teOnMissionStart     : MissionStartR();
+    teOnMissionEnd       : MissionEndR();
     teOnTick             : TickR();
     teOnPlayerDefeated   : PlayerDefeatedR();
     teOnPlayerVictory    : PlayerVictoryR();
@@ -134,6 +139,18 @@ procedure TExtAIMsgEvents.MissionStartR();
 begin
   if Assigned(fOnMissionStart) then
     fOnMissionStart();
+end;
+
+
+procedure TExtAIMsgEvents.MissionEndW();
+begin
+  InitMsg(teOnMissionEnd);
+  FinishMsg();
+end;
+procedure TExtAIMsgEvents.MissionEndR();
+begin
+  if Assigned(fOnMissionEnd) then
+    fOnMissionEnd();
 end;
 
 

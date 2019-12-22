@@ -3,25 +3,27 @@ interface
 uses
   Classes, SysUtils, OverbyteIcsWSocket, OverbyteIcsWSocketS, WinSock;
 
-//Tagging starts with some number away from -2 -1 0 used as sender/recipient constants
-//and off from usual players indexes 1..8, so we could not confuse them by mistake
+// Tagging starts with some number away from -2 -1 0 used as sender/recipient constants
+// and off from usual players indexes 1..8, so we could not confuse them by mistake
 const FIRST_TAG = 15;
 
 type
   THandleEvent = procedure (aHandle: SmallInt) of object;
-  TNotifyDataEvent = procedure(aHandle: SmallInt; aData:pointer; aLength:cardinal)of object;
+  TNotifyDataEvent = procedure (aHandle: SmallInt; aData: pointer; aLength: Cardinal) of object;
 
   TNetServerOverbyte = class
   private
-    fSocketServer:TWSocketServer;
+    fSocketServer: TWSocketServer;
     fLastTag: SmallInt;
-    fOnError:TGetStrProc;
-    fOnClientConnect:THandleEvent;
-    fOnClientDisconnect:THandleEvent;
-    fOnDataAvailable:TNotifyDataEvent;
-    procedure ClientConnect(Sender: TObject; Client: TWSocketClient; Error: Word);
-    procedure ClientDisconnect(Sender: TObject; Client: TWSocketClient; Error: Word);
-    procedure DataAvailable(Sender: TObject; Error: Word);
+    fOnError: TGetStrProc;
+    fOnClientConnect: THandleEvent;
+    fOnClientDisconnect: THandleEvent;
+    fOnDataAvailable: TNotifyDataEvent;
+    procedure NilEvents();
+    procedure Error(const aText: String);
+    procedure ClientConnect(aSender: TObject; aClient: TWSocketClient; aError: Word);
+    procedure ClientDisconnect(aSender: TObject; aClient: TWSocketClient; aError: Word);
+    procedure DataAvailable(aSender: TObject; aError: Word);
   public
     constructor Create();
     destructor Destroy(); override;
@@ -48,18 +50,36 @@ constructor TNetServerOverbyte.Create();
 var
   wsaData: TWSAData;
 begin
-  inherited Create;
+  Inherited Create;
+  fSocketServer := nil;
+  NilEvents();
   fLastTag := FIRST_TAG - 1; // First client will be fLastTag+1
   if (WSAStartup($101, wsaData) <> 0) then
-    fOnError('Error in Network');
+    Error('Error in Network');
 end;
 
 
 destructor TNetServerOverbyte.Destroy();
 begin
-  if (fSocketServer <> nil) then
-    fSocketServer.Free;
-  inherited;
+  NilEvents(); // Disable callbacks before destroying socket (the app is terminating, callbacks do not have to work anymore)
+  fSocketServer.Free;
+  Inherited;
+end;
+
+
+procedure TNetServerOverbyte.NilEvents();
+begin
+  fOnError := nil;
+  fOnClientConnect := nil;
+  fOnClientDisconnect := nil;
+  fOnDataAvailable := nil;
+end;
+
+
+procedure TNetServerOverbyte.Error(const aText: String);
+begin
+  if Assigned(fOnError) then
+    fOnError(aText);
 end;
 
 
@@ -83,67 +103,69 @@ end;
 procedure TNetServerOverbyte.StopListening();
 begin
   if (fSocketServer <> nil) then
-    fSocketServer.Close;
+    fSocketServer.ShutDown(1);
   FreeAndNil(fSocketServer);
   fLastTag := FIRST_TAG-1;
 end;
 
 
 // Someone has connected to us
-procedure TNetServerOverbyte.ClientConnect(Sender: TObject; Client: TWSocketClient; Error: Word);
+procedure TNetServerOverbyte.ClientConnect(aSender: TObject; aClient: TWSocketClient; aError: Word);
 begin
-  if (Error <> 0) then
+  if (aError <> 0) then
   begin
-    fOnError('ClientConnect. Error: ' + WSocketErrorDesc(Error) + ' (#' + IntToStr(Error) + ')');
-    exit;
+    Error(Format('ClientConnect. Error: %s (#%d)', [WSocketErrorDesc(aError), aError]));
+    Exit;
   end;
 
   // Identify index of the Client, so we can address it
   if (fLastTag = GetMaxHandle) then
     fLastTag := FIRST_TAG - 1;
   Inc(fLastTag);
-  Client.Tag := fLastTag;
+  aClient.Tag := fLastTag;
 
-  Client.OnDataAvailable := DataAvailable;
-  Client.ComponentOptions := [wsoTcpNoDelay]; //Send packets ASAP (disables Nagle's algorithm)
-  Client.SetTcpNoDelayOption;
-  fOnClientConnect(Client.Tag);
+  aClient.OnDataAvailable := DataAvailable;
+  aClient.ComponentOptions := [wsoTcpNoDelay]; //Send packets ASAP (disables Nagle's algorithm)
+  aClient.SetTcpNoDelayOption;
+  if Assigned(fOnClientConnect) then
+    fOnClientConnect(aClient.Tag);
 end;
 
 
-procedure TNetServerOverbyte.ClientDisconnect(Sender: TObject; Client: TWSocketClient; Error: Word);
+procedure TNetServerOverbyte.ClientDisconnect(aSender: TObject; aClient: TWSocketClient; aError: Word);
 begin
-  if (Error <> 0) then
+  if (aError <> 0) then
   begin
-    fOnError('ClientDisconnect. Error: ' + WSocketErrorDesc(Error) + ' (#' + IntToStr(Error) + ')');
-    //Do not exit because the client has still disconnected
+    Error(Format('ClientDisconnect. Error: %s (#%d)', [WSocketErrorDesc(aError), aError]));
+    // Do not exit because the client has to disconnect
   end;
 
-  fOnClientDisconnect(Client.Tag);
+  if Assigned(fOnClientDisconnect) then
+    fOnClientDisconnect(aClient.Tag);
 end;
 
 
 // We recieved data from someone
-procedure TNetServerOverbyte.DataAvailable(Sender: TObject; Error: Word);
+procedure TNetServerOverbyte.DataAvailable(aSender: TObject; aError: Word);
 const
   BufferSize = 10240; // 10kb
 var
   P: Pointer;
   L: Integer; // L could be -1 when no data is available
 begin
-  if (Error <> 0) then
+  if (aError <> 0) then
   begin
-    fOnError('DataAvailable. Error: ' + WSocketErrorDesc(Error) + ' (#' + IntToStr(Error) + ')');
-    exit;
+    Error(Format('DataAvailable. Error: %s (#%d)', [WSocketErrorDesc(aError), aError]));
+    Exit;
   end;
 
-  GetMem(P, BufferSize+1); // +1 to avoid RangeCheckError when L = BufferSize
-  L := TWSocket(Sender).Receive(P, BufferSize);
+  GetMem(P, BufferSize + 1); // +1 to avoid RangeCheckError when L = BufferSize
+  L := TWSocket(aSender).Receive(P, BufferSize);
 
-  if (L > 0) then // if L=0 then exit;
-    fOnDataAvailable(TWSocket(Sender).Tag, P, L);
-
-  //FreeMem(P); // Data will be freed in ServerClient
+  if (L > 0) AND Assigned(fOnDataAvailable) then
+    fOnDataAvailable(TWSocket(aSender).Tag, P, L) // The pointer is stored in ExtAINetServer and the memory will be freed later
+  else
+    FreeMem(P); // The pointer is NOT used and must be freed
 end;
 
 
@@ -152,13 +174,11 @@ procedure TNetServerOverbyte.SendData(aHandle: SmallInt; aData: Pointer; aLength
 var
   K: Integer;
 begin
-  for K := 0 to fSocketServer.ClientCount-1 do
+  for K := 0 to fSocketServer.ClientCount - 1 do
     if (fSocketServer.Client[K].Tag = aHandle) then
-    begin
       if (fSocketServer.Client[K].State <> wsClosed) then // Sometimes this occurs just before ClientDisconnect
         if (Cardinal(fSocketServer.Client[K].Send(aData, aLength)) <> aLength) then
-          fOnError('Overbyte Server: Failed to send packet to client ' + IntToStr(aHandle));
-    end;
+          Error(Format('Overbyte Server: Failed to send packet to client %d', [aHandle]));
 end;
 
 
@@ -172,7 +192,7 @@ procedure TNetServerOverbyte.Kick(aHandle: SmallInt);
 var
   K: Integer;
 begin
-  for K := 0 to fSocketServer.ClientCount-1 do
+  for K := 0 to fSocketServer.ClientCount - 1 do
     if (fSocketServer.Client[K].Tag = aHandle) then
     begin
       if (fSocketServer.Client[K].State <> wsClosed) then // Sometimes this occurs just before ClientDisconnect
@@ -190,9 +210,9 @@ begin
   for K := 0 to fSocketServer.ClientCount-1 do
     if (fSocketServer.Client[K].Tag = aHandle) then
     begin
-      if (fSocketServer.Client[K].State <> wsClosed) then //Sometimes this occurs just before ClientDisconnect
+      if (fSocketServer.Client[K].State <> wsClosed) then // Sometimes this occurs just before ClientDisconnect
         Result := fSocketServer.Client[K].GetPeerAddr;
-      Exit; //Only one client should have this handle
+      Exit; // Only one client should have this handle
     end;
 end;
 

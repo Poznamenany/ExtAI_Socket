@@ -2,7 +2,7 @@ unit KM_Hand;
 interface
 uses
   Windows, System.SysUtils,
-  KM_Consts, KM_HandAI_Ext;
+  KM_Consts, KM_HandAI_Ext, ExtAIInfo;
 
 type
   // Game class for Hand. It hides the ExtAI inside of it
@@ -18,7 +18,7 @@ type
     property HandIndex: TKMHandIndex read fHandIndex;
 
     // KP sets AI type after init
-    procedure SetAIType;
+    procedure SetAIType(aExtAI: TExtAIInfo);
 
     procedure UpdateState(aTick: Cardinal);
   end;
@@ -32,10 +32,9 @@ uses
 { TKMHand }
 constructor TKMHand.Create(aHandIndex: TKMHandIndex);
 begin
-  inherited Create;
+  Inherited Create;
 
   fHandIndex := aHandIndex;
-
   fAIExt := nil;
 
   gLog.Log('THand-Create: HandIndex = %d', [fHandIndex]);
@@ -47,13 +46,13 @@ begin
   FreeAndNil(fAIExt);
   gLog.Log('THand-Destroy: HandIndex = %d', [fHandIndex]);
 
-  inherited;
+  Inherited;
 end;
 
 
-procedure TKMHand.SetAIType;
+procedure TKMHand.SetAIType(aExtAI: TExtAIInfo);
 begin
-  fAIExt := THandAI_Ext.Create(fHandIndex);
+  fAIExt := THandAI_Ext.Create(fHandIndex, aExtAI);
 end;
 
 

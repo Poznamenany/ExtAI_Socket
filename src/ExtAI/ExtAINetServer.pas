@@ -85,7 +85,7 @@ type
     procedure ProcessReceivedMessages(aClient: TExtAIServerClient);
     // Ping
     procedure SendNetPingRequest(aClient: TExtAIServerClient);
-    procedure SendTickPingRequest(aClient: TExtAIServerClient);
+    procedure SendTickPingRequest(aClient: TExtAIServerClient); // In future time to process 1 tick by ExtAI
   public
     constructor Create();
     destructor Destroy(); override;
@@ -117,7 +117,7 @@ const
 { TExtAIServerClient }
 constructor TExtAIServerClient.Create(aHandle: TExtAINetHandleIndex);
 begin
-  inherited Create;
+  Inherited Create;
   fHandle := aHandle;
   fBuffer := TKExtAIMsgStream.Create();
   fScheduledMsg := TKExtAIMsgStream.Create();
@@ -150,7 +150,7 @@ begin
       FreeMem(fpEndData^.Ptr, fpEndData^.Length);
     Dispose(fpEndData);
   until (fpStartData = nil);
-  inherited;
+  Inherited;
 end;
 
 
@@ -241,10 +241,12 @@ begin
 end;
 
 
+
+
 { TExtAINetServer }
 constructor TExtAINetServer.Create();
 begin
-  inherited Create;
+  Inherited Create;
 
   fClients := TObjectList<TExtAIServerClient>.Create();
   fServer := TNetServerOverbyte.Create();
@@ -263,7 +265,7 @@ begin
   fClients.Free; // Clients are freed in TObjectList
   fServer.Free;
 
-  inherited;
+  Inherited;
 end;
 
 
@@ -418,7 +420,7 @@ begin
 end;
 
 
-//Someone has disconnected
+// Someone has disconnected
 procedure TExtAINetServer.ClientDisconnect(aHandle: TExtAINetHandleIndex);
 var
   Client: TExtAIServerClient;

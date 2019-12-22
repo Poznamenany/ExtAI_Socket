@@ -79,9 +79,10 @@ type
   {$Z2} // Use 2 Bytes to store enumeration
   TExtAIMsgTypeEvent = (
     teOnMissionStart       =   0,
-    teOnTick               =   1,
-    teOnPlayerDefeated     =   2,
-    teOnPlayerVictory      =   3
+    teOnMissionEnd         =   1,
+    teOnTick               =   2,
+    teOnPlayerDefeated     =   3,
+    teOnPlayerVictory      =   4
   );
   {$Z2} // Use 2 Bytes to store enumeration
   TExtAIMsgTypeState = (

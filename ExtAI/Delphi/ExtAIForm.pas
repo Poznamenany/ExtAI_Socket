@@ -25,7 +25,7 @@ type
   private
     { Private declarations }
     fExtAI: TExtAIDelphi;
-    fLog: TLog;
+    fLog: TExtAILog;
     procedure RefreshAIGUI(Sender: TObject);
     procedure Log(const aText: String);
   public
@@ -42,7 +42,7 @@ implementation
 
 procedure TExtAI.FormCreate(Sender: TObject);
 begin
-  fLog := TLog.Create(Log);
+  fLog := TExtAILog.Create(Log);
   fExtAI := TExtAIDelphi.Create(fLog,1);
   fExtAI.Client.OnConnectSucceed := RefreshAIGUI;
   fExtAI.Client.OnForcedDisconnect := RefreshAIGUI;
@@ -52,7 +52,7 @@ end;
 procedure TExtAI.FormDestroy(Sender: TObject);
 begin
   fExtAI.TerminateSimulation();
-  Sleep(100);
+  Sleep(500);
   fExtAI.Free;
   fLog.Free;
 end;

@@ -5,11 +5,11 @@ uses
   ExtAISharedInterface;
 
 type
-  TInitDLL = procedure(var aConfig: TDLLpConfig); StdCall;
-  TTerminDLL = procedure(); StdCall;
-  TCreateNewExtAI = function(aID: Word): boolean; StdCall;
-  TConnectExtAI = function(aID, aPort: Word; apIP: PWideChar; aLen: Cardinal): Boolean; StdCall;
-
+  TInitializeDLL = procedure(var aConfig: TDLLpConfig); StdCall;
+  TTerminateDLL = procedure(); StdCall;
+  TCreateExtAI = function(aID, aPort: Word; apIP: PWideChar; aLen: Cardinal): boolean; StdCall;
+  TTerminateExtAI = function(aID: Word): Boolean; StdCall;
+  TGetFirstLog = function(var aLog: PWideChar; var aLength: Cardinal): Boolean; StdCall;
 
   TDLLMainCfg = record
     Author, Description, ExtAIName, Path: UnicodeString;
@@ -24,10 +24,11 @@ type
     fLibHandle: THandle;
 
     // DLL Procedures
-    fDLLProc_Init: TInitDLL;
-    fDLLProc_Terminate: TTerminDLL;
-    fDLLProc_CreateNewExtAI: TCreateNewExtAI;
-    fDLLProc_ConnectExtAI: TConnectExtAI;
+    fDLLProc_InitDLL: TInitializeDLL;
+    fDLLProc_TerminateDLL: TTerminateDLL;
+    fDLLProc_CreateExtAI: TCreateExtAI;
+    fDLLProc_TerminateExtAI: TTerminateExtAI;
+    fDLLProc_GetFirstLog: TGetFirstLog;
 
     function LinkDLL(aDLLPath: String): Boolean;
     function GetName(): String;
@@ -38,7 +39,9 @@ type
     property Config: TDLLMainCfg read fDLLConfig;
     property Name: String read GetName;
 
-    function ConnectNewExtAI(aID, aPort: Word; aIP: UnicodeString): Boolean;
+    function CreateNewExtAI(aID, aPort: Word; aIP: UnicodeString): Boolean;
+    function TerminateExtAI(aID: Word): Boolean;
+    function GetAILog(var aLog: String): Boolean;
   end;
 
 
@@ -59,12 +62,12 @@ destructor TExtAI_DLL.Destroy;
 begin
   gLog.Log('TExtAI_DLL-Destroy: ExtAI name = %s', [fDLLConfig.ExtAIName]);
 
-  if Assigned(fDLLProc_Terminate) then
-    fDLLProc_Terminate();
+  if Assigned(fDLLProc_TerminateDLL) then
+    fDLLProc_TerminateDLL();
 
   FreeLibrary(fLibHandle);
 
-  inherited;
+  Inherited;
 end;
 
 
@@ -99,16 +102,18 @@ begin
     end;
 
     // Connect shared procedures
-    fDLLProc_Init := GetProcAddress(fLibHandle, 'InitDLL');
-    fDLLProc_Terminate := GetProcAddress(fLibHandle, 'TerminDLL');
-    fDLLProc_CreateNewExtAI := GetProcAddress(fLibHandle, 'CreateNewExtAI');
-    fDLLProc_ConnectExtAI := GetProcAddress(fLibHandle, 'ConnectExtAI');
+    fDLLProc_InitDLL := GetProcAddress(fLibHandle, 'InitializeDLL');
+    fDLLProc_TerminateDLL := GetProcAddress(fLibHandle, 'TerminateDLL');
+    fDLLProc_CreateExtAI := GetProcAddress(fLibHandle, 'CreateExtAI');
+    fDLLProc_TerminateExtAI := GetProcAddress(fLibHandle, 'TerminateExtAI');
+    fDLLProc_GetFirstLog := GetProcAddress(fLibHandle, 'GetFirstLog');
 
     // Check if procedures are assigned
-    if not Assigned(fDLLProc_Init)
-    or not Assigned(fDLLProc_Terminate)
-    or not Assigned(fDLLProc_CreateNewExtAI)
-    or not Assigned(fDLLProc_ConnectExtAI) then
+    if not Assigned(fDLLProc_InitDLL)
+    or not Assigned(fDLLProc_TerminateDLL)
+    or not Assigned(fDLLProc_CreateExtAI)
+    or not Assigned(fDLLProc_TerminateExtAI)
+    or not Assigned(fDLLProc_GetFirstLog) then
     begin
       gLog.Log('TExtAI_DLL-LinkDLL: Exported methods not found');
       Exit;
@@ -116,7 +121,7 @@ begin
 
     // Get DLL info
     fDLLConfig.Path := aDLLPath;
-    fDLLProc_Init(Cfg);
+    fDLLProc_InitDLL(Cfg);
     fDLLConfig.Version := Cfg.Version;
     SetLength(fDLLConfig.Author, Cfg.AuthorLen);
     SetLength(fDLLConfig.Description, Cfg.DescriptionLen);
@@ -139,16 +144,63 @@ begin
 end;
 
 
-function TExtAI_DLL.ConnectNewExtAI(aID, aPort: Word; aIP: UnicodeString): Boolean;
+function TExtAI_DLL.CreateNewExtAI(aID, aPort: Word; aIP: UnicodeString): Boolean;
 begin
-  Result := fDLLProc_CreateNewExtAI(aID) AND fDLLProc_ConnectExtAI(aID, aPort, Addr(aIP[1]), Length(aIP));
+  if not Assigned(fDLLProc_CreateExtAI) then
+    Exit(False);
+
+  // Connect ExtAI from the main thread - this call creates Overbyte client (new thread)
+  // If Synchronize or critical section is not used then the connection will not be initialized
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      fDLLProc_CreateExtAI(aID, aPort, Addr(aIP[1]), Length(aIP));
+    end
+  );
+  Result := True;
   gLog.Log('TExtAI_DLL-CreateNewExtAI: ID = %d', [aID]);
+end;
+
+
+function TExtAI_DLL.TerminateExtAI(aID: Word): Boolean;
+begin
+  if not Assigned(fDLLProc_TerminateExtAI) then
+    Exit(False);
+
+  // Connect ExtAI from the main thread - this call creates Overbyte client (new thread)
+  // If Synchronize or critical section is not used then the connection will not be initialized
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      fDLLProc_TerminateExtAI(aID);
+    end
+  );
+  Result := True;
+  gLog.Log('TExtAI_DLL-TerminateExtAI: ID = %d', [aID]);
 end;
 
 
 function TExtAI_DLL.GetName(): String;
 begin
   Result := Format('DLL: %s',[Config.ExtAIName]);
+end;
+
+
+function TExtAI_DLL.GetAILog(var aLog: String): Boolean;
+var
+  Length: Cardinal;
+  pLog: PWideChar;
+begin
+  Result := False;
+  if not Assigned(fDLLProc_GetFirstLog) then
+    Exit(False);
+
+  if fDLLProc_GetFirstLog(pLog, Length) AND (Length > 0) then
+  begin
+    SetLength(aLog, Length);
+    Move(pLog^, aLog[1], Length * SizeOf(aLog[1]));
+    Result := True;
+  end;
 end;
 
 

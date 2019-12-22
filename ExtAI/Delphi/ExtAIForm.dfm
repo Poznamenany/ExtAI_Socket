@@ -12,6 +12,7 @@ object ExtAI: TExtAI
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object gbExtAI: TGroupBox
@@ -70,8 +71,9 @@ object ExtAI: TExtAI
       Top = 18
       Width = 249
       Height = 231
+      Color = 13158600
       Lines.Strings = (
-        'mLog')
+        'Log:')
       ScrollBars = ssVertical
       TabOrder = 4
     end

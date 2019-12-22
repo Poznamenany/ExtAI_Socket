@@ -55,11 +55,11 @@ uses
 
 { TExtAIInfo }
 // Constructor have 2 options:
-// 1. AI is created in DLL => TExtAIInfo is created before client is connected and synchronization is required
-// 2. AI is compiled to exe => TExtAIInfo after connection of the ExtAI so TExtAIServerClient is already created
+// 1. AI is created in DLL => TExtAIInfo is created before client then the client is connected and synchronization is required
+// 2. AI is compiled to exe => TExtAIInfo after connection of the ExtAI so TExtAIServerClient is already available
 constructor TExtAIInfo.Create(aID: Word = 0; aServerClient: TExtAIServerClient = nil);
 begin
-  inherited Create;
+  Inherited Create;
 
   fID := aID;
   fHandIdx := -1;
@@ -68,7 +68,7 @@ begin
   fName := '';
   fDescription := '';
   fVersion := 0;
-  fSourceIsDLL := aServerClient = nil;
+  fSourceIsDLL := (aServerClient = nil);
   ChangeServerClient(aServerClient);
   gLog.Log('ExtAIInfo-Create, ID = %d', [ID]);
 end;
@@ -78,7 +78,7 @@ destructor TExtAIInfo.Destroy();
 begin
   fServerClient := nil;
   gLog.Log('ExtAIInfo-Destroy, ID = %d', [ID]);
-  inherited;
+  Inherited;
 end;
 
 

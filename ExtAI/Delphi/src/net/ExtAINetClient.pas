@@ -86,7 +86,7 @@ const
 { TExtAINetClient }
 constructor TExtAINetClient.Create(const aID: Word; const aAuthor, aName, aDescription: UnicodeString; const aVersion: Cardinal);
 begin
-  inherited Create;
+  Inherited Create;
 
   fID := aID;
   fAuthor := aAuthor;
@@ -119,7 +119,7 @@ begin
       FreeMem(fpEndData^.Ptr, fpEndData^.Length);
     Dispose(fpEndData);
   until (fpStartData = nil);
-  inherited;
+  Inherited;
 end;
 
 

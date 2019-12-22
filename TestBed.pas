@@ -13,7 +13,7 @@ type
   TExtAIAndGUI = record
     ID: Word;
     AI: TExtAIDelphi;
-    Log: TLog;
+    Log: TExtAILog;
     tsTab: TTabSheet;
     mLog: TMemo;
   end;
@@ -115,6 +115,7 @@ type
     procedure btnRemoveClick(Sender: TObject);
   private
     fGame: TKMGame;
+    fDLLLog: TExtAILog;
     fExtAIAndGUIArr: TExtAIAndGUIArr;
     fcbLoc: array[0..MAX_HANDS_COUNT-1] of TComboBox;
     fedPingLoc: array[0..MAX_HANDS_COUNT-1] of TEdit;
@@ -150,8 +151,10 @@ uses
 procedure TExtAI_TestBed.FormCreate(Sender: TObject);
 begin
   // Game log (log every input from Socket)
-  gLog := TLog.Create(Log);
+  gLog := TExtAILog.Create(Log);
   gLog.Log('TExtAI_TestBed-Create');
+  // ExtAI DLL log
+  //fDLLLog := TExtAILog.Create(LogDLL);
   // Game class
   fGame := TKMGame.Create(UpdateSimStatus);
   // Game events for GUI
@@ -178,9 +181,9 @@ end;
 procedure TExtAI_TestBed.FormDestroy(Sender: TObject);
 begin
   gLog.Log('TExtAI_TestBed-Destroy');
-  fGame.TerminateSimulation();
   btnTerminateExtAIsClick(nil);
-  Sleep(100);
+  fGame.TerminateSimulation(); // Tell thread to properly finish the simulation
+  fGame.WaitFor; // Wait for server to close (this method is called by main thread)
   fGame.Free;
   gLog.Free;
 end;
@@ -221,23 +224,29 @@ end;
 procedure TExtAI_TestBed.RefreshDLLs();
 var
   K: Integer;
-  Paths: TArray<string>;
+  Paths: TStringList;
 begin
   if (fGame = nil) then
     Exit;
   // Get paths
-  SetLength(Paths,lbPaths.Items.Count);
-  for K := 0 to lbPaths.Items.Count - 1 do
-    Paths[K] := lbPaths.Items[K];
-  // Refresh DLLs
-  fGame.ExtAIMaster.DLLs.RefreshList(Paths);
+  Paths := TStringList.Create();
+  try
+    for K := 0 to lbPaths.Items.Count - 1 do
+      Paths.Add(lbPaths.Items[K]);
+    // Refresh DLLs
+    fGame.ExtAIMaster.DLLs.RefreshList(Paths);
+  finally
+    Paths.Free;
+  end;
   // Update GUI
   RefreshComboBoxes();
+  //lbPaths.Clear;
+  //for K := 0 to fGame.ExtAIMaster.DLLs.Paths.Count - 1 do
+  //  lbPaths.Items.Add(fGame.ExtAIMaster.DLLs.Paths[K]);
   lbDLLs.Clear;
   for K := 0 to fGame.ExtAIMaster.DLLs.Count - 1 do
     lbDLLs.Items.Add(fGame.ExtAIMaster.DLLs[K].Name);
 end;
-
 
 
 
@@ -390,13 +399,11 @@ begin
     end;
     SetLength(AIs,Cnt);
     // Start / stop the simulation with specific AI players
-    fGame.InitGame(AIs);
-    //btnServerStartMap.Caption := 'Loading...';
-    //btnServerStartMap.Enabled := False;
+    fGame.StartGame(AIs);
     btnServerStartMap.Caption := 'Stop Map';
     btnServerStartMap.Enabled := True;
   end
-  else if (fGame.GameState = gsPlaying) then
+  else if (fGame.GameState = gsPlay) then
   begin
     btnServerStartMap.Caption := 'Stop Map';
     fGame.EndGame();
@@ -465,7 +472,7 @@ begin
     mLog.Parent := tsTab;
     mLog.Align := alClient;
     // Create new ExtAI
-    Log := TLog.Create(LogID, ID);
+    Log := TExtAILog.Create(LogID, ID);
     AI := TExtAIDelphi.Create(Log, ID);
     AI.Client.OnConnectSucceed := RefreshAIGUI;
     AI.Client.OnForcedDisconnect := RefreshAIGUI;
@@ -484,7 +491,7 @@ begin
     with fExtAIAndGUIArr do
     begin
       Arr[Idx].AI.TerminateSimulation();
-      Sleep(100); // Give some time to shut down the clients
+      Arr[Idx].AI.WaitFor; // Wait for ExtAI thread to close (this method is called by main thread)
       Arr[Idx].AI.Free;
       Arr[Idx].Log.Free;
       Arr[Idx].tsTab.Free; // Free tab and all GUI stuff in it
@@ -502,9 +509,9 @@ begin
   begin
     for K := Count - 1 downto 0 do
       Arr[K].AI.TerminateSimulation();
-    Sleep(100); // Give some time to shut down the clients
     for K := Count - 1 downto 0 do
     begin
+      Arr[K].AI.WaitFor; // Wait for ExtAI thread to close (this method is called by main thread)
       Arr[K].AI.Free;
       Arr[K].Log.Free;
       Arr[K].tsTab.Free; // Free tab and all GUI stuff in it
@@ -732,6 +739,24 @@ begin
   if GetIdxByID(Idx, aID) then
     fExtAIAndGUIArr.Arr[Idx].mLog.Lines.Append(aText);
 end;
+
+
+{
+procedure TExtAI_TestBed.LogDLL(const aText: String);
+begin
+  with reLog.SelAttributes do
+  begin
+    if      ContainsText(aText, 'Create'         ) then Color := clGreen
+    else if ContainsText(aText, 'Destroy'        ) then Color := clRed
+    else if ContainsText(aText, 'Server Status'  ) then Color := clPurple
+    else if ContainsText(aText, 'ExtAIInfo'      ) then Color := clMedGray
+    else if ContainsText(aText, 'TKMGame-Execute') then Color := clNavy;
+  end;
+
+  reLog.Lines.Add(aText);
+  SendMessage(reLog.handle, WM_VSCROLL, SB_BOTTOM, 0);
+end;
+}
 
 
 end.

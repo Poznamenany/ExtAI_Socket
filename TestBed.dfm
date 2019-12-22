@@ -12,6 +12,7 @@ object ExtAI_TestBed: TExtAI_TestBed
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object gbKP: TGroupBox
