@@ -23,7 +23,7 @@ type
     gsEnd // Finish game, return to lobby in this testing version
   );
   // Callback for GUI
-  TSimStatEvent = procedure of object;
+  TSimStatEvent = procedure (const aLog: String) of object;
 
   // The main thread of application (= KP, it contain access to ExtAI Interface and also Hands)
   TKMGame = class(TThread)
@@ -46,7 +46,7 @@ type
     procedure LoadGame();
     procedure ProcessTick();
     procedure FinishGame();
-    procedure UpdateSimulationStatus();
+    procedure UpdateSimulationStatus(const aLog: String = '');
   protected
     procedure Execute; override;
   public
@@ -253,14 +253,14 @@ begin
 end;
 
 
-procedure TKMGame.UpdateSimulationStatus();
+procedure TKMGame.UpdateSimulationStatus(const aLog: String = '');
 begin
   // Log status in GUI
   Synchronize(
     procedure
     begin
       if Assigned(fOnUpdateSimStatus) then
-        fOnUpdateSimStatus;
+        fOnUpdateSimStatus(aLog);
     end);
 end;
 
@@ -296,7 +296,7 @@ begin
     // Get logs from ExtAI in DLL
     for K := fExtAIMaster.DLLs.Count - 1 downto 0 do
       while fExtAIMaster.DLLs[K].GetAILog(Log) do
-        gLog.Log('   DLL: %s',[Log]);
+        UpdateSimulationStatus(Log);
   end;
 
   // If game has been terminated, then make sure that simulation is properly finished and ExtAIs are disconnected

@@ -528,6 +528,8 @@ object ExtAI_TestBed: TExtAI_TestBed
       Font.Name = 'Tahoma'
       Font.Style = []
       HideScrollBars = False
+      Lines.Strings = (
+        'Log')
       ParentFont = False
       ScrollBars = ssBoth
       TabOrder = 5
@@ -610,7 +612,7 @@ object ExtAI_TestBed: TExtAI_TestBed
     object pcLogExtAIExe: TPageControl
       Left = 3
       Top = 126
-      Width = 316
+      Width = 318
       Height = 236
       TabOrder = 3
       OnChange = pcOnChangeTab
@@ -626,18 +628,29 @@ object ExtAI_TestBed: TExtAI_TestBed
     end
   end
   object gbExtAIsDLL: TGroupBox
-    Left = 650
+    Left = 647
     Top = 376
-    Width = 321
+    Width = 322
     Height = 292
     Caption = 'ExtAIs (DLL)'
     TabOrder = 2
-    object pcLogExtAIDLL: TPageControl
+    object reLogDLL: TRichEdit
       Left = 3
       Top = 16
-      Width = 315
+      Width = 316
       Height = 273
+      Font.Charset = EASTEUROPE_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      HideScrollBars = False
+      Lines.Strings = (
+        'Log of ExtAIs in DLLs')
+      ParentFont = False
+      ScrollBars = ssBoth
       TabOrder = 0
+      Zoom = 100
     end
   end
 end

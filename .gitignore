@@ -37,3 +37,5 @@ src/__recovery/*.*
 src/ExtAI/__history/*.*
 src/ExtAI/__recovery/*.*
 src/OverbyteV8/*
+ExtAI/Delphi/ExtAIForm.vlb
+LOG_ExtAI_Delphi_DLL.txt

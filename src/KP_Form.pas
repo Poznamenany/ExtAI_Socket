@@ -92,7 +92,7 @@ type
     procedure EnableLobbyGUI(aEnable: Boolean);
     procedure EnableSimulationGUI(aEnable: Boolean);
     procedure RefreshComboBoxes(aServerClient: TExtAIInfo = nil);
-    procedure UpdateSimStatus();
+    procedure UpdateSimStatus(const aLogDLL: String = '');
   public
     procedure Log(const aText: String);
   end;
@@ -406,11 +406,15 @@ end;
 
 
 // Update simulation status (ping, etc.)
-procedure TGame_form.UpdateSimStatus();
+procedure TGame_form.UpdateSimStatus(const aLogDLL: String = '');
 var
   K,L: Integer;
   AvailableAIs: TStringArray;
 begin
+  // Add log if exists
+  if (Length(aLogDLL) > 0) then
+    Log(Format('DLL: %s',[aLogDLL]));
+
   // Get available AI players
   AvailableAIs := fGame.ExtAIMaster.GetExtAIClientNames();
   // Update ping

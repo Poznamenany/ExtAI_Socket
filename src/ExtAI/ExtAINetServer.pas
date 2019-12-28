@@ -590,12 +590,12 @@ begin
             mkServerCfg:   begin end;
             mkGameCfg:     begin end;
             mkExtAICfg:
-            begin
-              // Check if ID was received / changed
-              if (TExtAIMsgTypeCfgAI(DataType) = caID) AND Assigned(fOnClientNewID) then
-                fOnClientNewID(aClient, Word(pData^));
-              aClient.Cfg(pData, DataType, LengthData);
-            end;
+              begin
+                // Check if ID was received / changed
+                if (TExtAIMsgTypeCfgAI(DataType) = caID) AND Assigned(fOnClientNewID) then
+                  fOnClientNewID(aClient, Word(pData^));
+                aClient.Cfg(pData, DataType, LengthData);
+              end;
             mkPerformance: begin end;
             mkAction:      aClient.Action(pData, DataType, LengthData);
             mkEvent:       begin end;

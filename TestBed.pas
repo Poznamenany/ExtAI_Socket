@@ -88,10 +88,10 @@ type
     lbDLLs: TListBox;
     lbPaths: TListBox;
     mTutorial: TMemo;
-    pcLogExtAIDLL: TPageControl;
     pcLogExtAIExe: TPageControl;
     prgServer: TProgressBar;
     reLog: TRichEdit;
+    reLogDLL: TRichEdit;
     stDLLs: TStaticText;
     stExtAIName: TStaticText;
     stPathsDLL: TStaticText;
@@ -115,7 +115,6 @@ type
     procedure btnRemoveClick(Sender: TObject);
   private
     fGame: TKMGame;
-    fDLLLog: TExtAILog;
     fExtAIAndGUIArr: TExtAIAndGUIArr;
     fcbLoc: array[0..MAX_HANDS_COUNT-1] of TComboBox;
     fedPingLoc: array[0..MAX_HANDS_COUNT-1] of TEdit;
@@ -127,10 +126,11 @@ type
     procedure RefreshAIGUI(Sender: TObject);
     function GetIdxByID(var aIdx: Integer; aID: Byte): boolean;
     function GetSelectedClient(var aIdx: Integer): boolean;
-    procedure UpdateSimStatus();
+    procedure UpdateSimStatus(const aLogDLL: String = '');
   public
     procedure Log(const aText: String);
     procedure LogID(const aText: String; const aID: Byte);
+    procedure LogDLL(const aText: String);
 
     property AI: TExtAIAndGUIArr read fExtAIAndGUIArr write fExtAIAndGUIArr;
   end;
@@ -153,8 +153,6 @@ begin
   // Game log (log every input from Socket)
   gLog := TExtAILog.Create(Log);
   gLog.Log('TExtAI_TestBed-Create');
-  // ExtAI DLL log
-  //fDLLLog := TExtAILog.Create(LogDLL);
   // Game class
   fGame := TKMGame.Create(UpdateSimStatus);
   // Game events for GUI
@@ -173,6 +171,8 @@ begin
   fedPingLoc[9]  := edPingLoc09;  fcbLoc[9]  := cbLoc09;
   fedPingLoc[10] := edPingLoc10;  fcbLoc[10] := cbLoc10;
   fedPingLoc[11] := edPingLoc11;  fcbLoc[11] := cbLoc11;
+  // Init ExtAI ID
+  fExtAIAndGUIArr.ID := 1; // ID starts from 1
   // Init GUI
   RefreshDLLs(); // Includes refresh combo boxes
 end;
@@ -421,11 +421,15 @@ begin
 end;
 
 
-procedure TExtAI_TestBed.UpdateSimStatus();
+procedure TExtAI_TestBed.UpdateSimStatus(const aLogDLL: String = '');
 var
   K,L: Integer;
   AvailableAIs: TStringArray;
 begin
+  // Add log if exists
+  if (Length(aLogDLL) > 0) then
+    LogDLL(aLogDLL);
+
   // Get available AI players
   AvailableAIs := fGame.ExtAIMaster.GetExtAIClientNames();
   // Update ping
@@ -435,6 +439,12 @@ begin
     for L := Low(AvailableAIs) to High(AvailableAIs) do
       if (AnsiCompareText(AvailableAIs[L], fcbLoc[K].Items[ fcbLoc[K].ItemIndex ]) = 0) then
         fedPingLoc[K].Text := IntToStr(fGame.ExtAIMaster.AIs[L].ServerClient.NetPing);
+  end;
+  // Update Start simulation button
+  case fGame.GameState of
+    gsLobby, gsEnd: btnServerStartMap.Caption := 'Start Map';
+    gsLoad, gsPlay: btnServerStartMap.Caption := 'Stop Map';
+    else begin end;
   end;
 end;
 
@@ -464,13 +474,14 @@ begin
     Inc(fExtAIAndGUIArr.ID);
     // Create GUI
     tsTab := TTabSheet.Create(pcLogExtAIExe);
-    tsTab.Caption := 'Log AI ' + IntToStr(ID);
-    //tsTab.Caption := AI.Client.ClientName + ' ' + IntToStr(ID);
-    tsTab.Name := TAB_NAME + IntToStr(ID);
+    tsTab.Caption := Format('Log AI %d',[ID]);
+    //tsTab.Caption := Format('%s %d',[AI.Client.ClientName, ID]);
+    tsTab.Name := Format('%s%d',[TAB_NAME,ID]);
     tsTab.PageControl := pcLogExtAIExe;
     mLog := TMemo.Create(tsTab);
     mLog.Parent := tsTab;
     mLog.Align := alClient;
+    mLog.ScrollBars := ssBoth;
     // Create new ExtAI
     Log := TExtAILog.Create(LogID, ID);
     AI := TExtAIDelphi.Create(Log, ID);
@@ -565,12 +576,12 @@ begin
   begin
     for K := 0 to fExtAIAndGUIArr.Count - 1 do
       with fExtAIAndGUIArr.Arr[K].AI do
-        Actions.Log('This is debug message (Action.Log) from ExtAI ID = ' + IntToStr(ID));
+        Actions.Log(Format('This is debug message (Action.Log) from ExtAI ID = %d',[ID]));
   end
   else if GetSelectedClient(Idx) then
     with fExtAIAndGUIArr.Arr[Idx].AI do
     begin
-      Actions.Log('This is debug message (Action.Log) from ExtAI ID = ' + IntToStr(ID));
+      Actions.Log(Format('This is debug message (Action.Log) from ExtAI ID = %d',[ID]));
       //Actions.GroupOrderWalk(1,2,3,4);
     end;
 end;
@@ -741,22 +752,23 @@ begin
 end;
 
 
-{
 procedure TExtAI_TestBed.LogDLL(const aText: String);
 begin
-  with reLog.SelAttributes do
+  if (Length(aText) > 0) then
   begin
-    if      ContainsText(aText, 'Create'         ) then Color := clGreen
-    else if ContainsText(aText, 'Destroy'        ) then Color := clRed
-    else if ContainsText(aText, 'Server Status'  ) then Color := clPurple
-    else if ContainsText(aText, 'ExtAIInfo'      ) then Color := clMedGray
-    else if ContainsText(aText, 'TKMGame-Execute') then Color := clNavy;
-  end;
+    with reLogDLL.SelAttributes do
+    begin
+      if      ContainsText(aText, 'Create'         ) then Color := clGreen
+      else if ContainsText(aText, 'Destroy'        ) then Color := clRed
+      else if ContainsText(aText, 'Client'         ) then Color := clPurple;
+      //else if ContainsText(aText, 'ExtAIInfo'      ) then Color := clMedGray
+      //else if ContainsText(aText, 'TKMGame-Execute') then Color := clNavy;
+    end;
 
-  reLog.Lines.Add(aText);
-  SendMessage(reLog.handle, WM_VSCROLL, SB_BOTTOM, 0);
+    reLogDLL.Lines.Add(aText);
+    SendMessage(reLogDLL.handle, WM_VSCROLL, SB_BOTTOM, 0);
+  end;
 end;
-}
 
 
 end.
